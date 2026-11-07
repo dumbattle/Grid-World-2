@@ -1,6 +1,6 @@
 # First slice plan
 
-**Status:** planned. Not approved for implementation, and nothing is built yet.
+**Status:** in progress. Phase 1 is done and approved. Each later phase starts only when approved.
 
 **Goal:** press Play and walk or run a placeholder character across two touching areas, with walls blocking movement and the second area's scene loading before the player reaches it. This tests the riskiest parts of the design: the bake, `[SerializeReference]` records, additive streaming, the tick loop, and how movement feels.
 
@@ -21,9 +21,9 @@ The first needs an explicit OK before phase 3 starts. The others are recommendat
 
 Each phase ends with a compile check, EditMode test results, and a review before the next one starts. The Unity Editor may be open, so verification follows the `unity-verify` workflow.
 
-### Phase 1: foundation
+### Phase 1: foundation (done)
 
-Plain C# state with no scenes.
+Plain C# state with no scenes. Only the `tile`, `facing`, and `definition` components exist so far, and the rest arrive with the phases that use them. The player's ID on `WorldInstance` comes in phase 2.
 
 - `GridWorld` and `GridWorld.Tests` assemblies.
 - `WorldInstance`, `IWorldFunctionContext`, `WorldFunctionContext`, and context caching.

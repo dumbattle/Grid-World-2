@@ -76,7 +76,7 @@ Docs/                       Game docs. Start at INDEX.md
 Unity Project/Assets/
   2. Scripts/
     LPE/                    Library shared across my projects: confirm before changing
-    GridWorld/              Reusable framework (not created yet)
+    GridWorld/              Reusable framework, with EditMode tests in Tests/
     Game/                   Optional, for testing the framework only (not created yet)
 ```
 
