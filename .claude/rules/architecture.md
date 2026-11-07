@@ -57,7 +57,7 @@ The goal is a base that other games can be built on, so these rules favor a clea
 ## Tile data
 
 - Each area stores one `ushort` per tile. The low 8 bits belong to the framework and the high 8 belong to the game, which names them in its own code.
-- Framework bits: 4 for whether a tile can be entered from each direction, and 4 reserved.
+- Framework bits: 4 for whether a tile can be entered by a step moving in each direction, and 4 reserved. For example, `EnterRight` lets a step moving right enter the tile.
 - All logic goes through one lookup: tile changes first, then the area, then its array.
 - A tile outside every area is blocked, and so is an unpainted tile inside one.
 - Overlapping areas are a bake error, so every tile belongs to at most one area.
@@ -145,7 +145,7 @@ Each tick: Cutscene → Decision → Movement, then UI and render outside the ph
 
 ### Requests
 
-- The player, NPC AI, and cutscenes submit the same request: a direction plus a turn-only option. Each entity gets one per tick, and the latest wins. Only idle entities and entities that just finished a step can make one.
+- The player, NPC AI, and cutscenes submit the same request: a direction, a turn-only option, and a run option. Each entity gets one per tick, and the latest wins. Only idle entities and entities that just finished a step can make one.
 - The movement phase resolves requests in one staged pass, in tie-break order: player first, then lowest y, then lowest x. It applies the facing first, then tries the step, so a blocked step still turns the entity.
 - A step claims the target tile and releases the old one when it begins. An entity blocked by one that moves later in the pass retries next tick.
 - There's one entity per tile, and every present entity occupies its tile. A game that needs more, such as flyers, keeps its own grid.
@@ -158,6 +158,7 @@ Each tick: Cutscene → Decision → Movement, then UI and render outside the ph
 - When idle, pressing a direction the player isn't facing turns them. If it's still held after 6 ticks, they walk. If they already face that way, they walk immediately.
 - While walking, holding any direction starts the next step with no delay.
 - Running is read when a step starts, so speed never changes mid-step.
+- When several directions are held, the most recently pressed one wins.
 
 ## Hooks
 

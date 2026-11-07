@@ -35,5 +35,10 @@ namespace GridWorld {
 
             id2value[id] = value;
         }
+
+        // Don't call Set while enumerating: collect the IDs first.
+        public Dictionary<EntityID, T>.Enumerator GetEnumerator() {
+            return id2value.GetEnumerator();
+        }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using LPE;
 
 namespace GridWorld {
     /// <summary>
@@ -7,8 +8,24 @@ namespace GridWorld {
     /// reference. Systems receive contexts from <see cref="GetContext{T}"/> instead.
     /// </summary>
     public class WorldInstance {
+        // Entities
         public readonly EntityIDManager entityIds = new EntityIDManager();
         public readonly EntityComponentManager components = new EntityComponentManager();
+        public EntityID player = EntityID.INVALID;
+
+        // Tiles
+        public readonly WorldTiles tiles = new WorldTiles();
+        public readonly TileOccupancy occupancy = new TileOccupancy();
+
+        // Input, written by the root outside the phases
+        public readonly PlayerInput input = new PlayerInput();
+
+        // Owned by the decision phase
+        public readonly PlayerControlState playerControl = new PlayerControlState();
+
+        // Command queues
+        // Decision -> Movement. One per entity, and the latest wins.
+        public readonly Dictionary<EntityID, MoveRequest> id2moveRequest = new Dictionary<EntityID, MoveRequest>();
 
         Dictionary<Type, IWorldFunctionContext> type2context = new Dictionary<Type, IWorldFunctionContext>();
 

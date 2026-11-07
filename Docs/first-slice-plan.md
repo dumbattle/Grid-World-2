@@ -1,6 +1,6 @@
 # First slice plan
 
-**Status:** in progress. Phase 1 is done and approved. Each later phase starts only when approved.
+**Status:** in progress. Phases 1 and 2 are done and approved. Each later phase starts only when approved.
 
 **Goal:** press Play and walk or run a placeholder character across two touching areas, with walls blocking movement and the second area's scene loading before the player reaches it. This tests the riskiest parts of the design: the bake, `[SerializeReference]` records, additive streaming, the tick loop, and how movement feels.
 
@@ -15,7 +15,7 @@ The first needs an explicit OK before phase 3 starts. The others are recommendat
 1. **Build scene list:** the bake and test setup automatically add area scenes to the build's scene list, because `LoadSceneAsync` needs them there. This edits `ProjectSettings/EditorBuildSettings.asset`.
 2. **Tile properties:** a `TilePropertyTableSO` maps each tile asset to its entry bits, rather than subclassing tiles. It works with Unity's tiles and LPE's rule tiles unchanged. An unlisted tile on a logic layer bakes as blocked with a warning. This refines "each tile asset has default properties", so update that rule after review.
 3. **Test setup:** create the `Game` assembly for a menu command that builds the test world. Its generated assets go in `Game/` subfolders. Placeholder tiles are 16 px and the view is 15×11 tiles, for testing only.
-4. **Multiple direction keys:** the most recently pressed direction wins. Add this to the movement rules after review.
+4. **Multiple direction keys:** the most recently pressed direction wins. Done, and in the movement rules.
 
 ## Phases
 
@@ -31,9 +31,9 @@ Plain C# state with no scenes. Only the `tile`, `facing`, and `definition` compo
 
 **Tests:** component stores, the `Register` path, and ID allocation.
 
-### Phase 2: tiles and movement logic
+### Phase 2: tiles and movement logic (done)
 
-The core rules, fully testable without Unity scenes.
+The core rules, fully testable without Unity scenes. `WorldSetupContext` adds areas, spawns entities, and sets the player, ready for world startup in phase 3. The `failedMoves` and `stepsCompleted` hooks aren't written yet.
 
 - `WorldTiles` lookup.
 - `IPerm_*` markers, function extensions, and the decision and movement contexts.

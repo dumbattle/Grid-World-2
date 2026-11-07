@@ -4,7 +4,7 @@ Orientation map for the project. Keep it short and current; add one line per sys
 
 ## Status
 
-The first slice is being built, following the [first slice plan](first-slice-plan.md). Phase 1 is done: world state, contexts, and entity stores, with no scenes or gameplay yet. Remaining design questions are in [open decisions](open-decisions.md).
+The first slice is being built, following the [first slice plan](first-slice-plan.md). Phases 1 and 2 are done: world state, contexts, entity stores, tile data, and the movement and player input rules, all tested in EditMode. There are no scenes yet, so nothing can be played. Remaining design questions are in [open decisions](open-decisions.md).
 
 ## Systems
 
@@ -14,6 +14,10 @@ System docs come after the first slice. Until then, the design is in [architectu
 |---|---|---|
 | World state and contexts | [architecture.md](../.claude/rules/architecture.md#state-and-contexts) | `WorldInstance`, `IWorldFunctionContext`, `WorldFunctionContext` |
 | Entities | [architecture.md](../.claude/rules/architecture.md#entities) | `EntityIDManager`, `EntityComponent<T>`, `EntityComponentManager`, `EntityDefinitionSO` |
+| Tile data | [architecture.md](../.claude/rules/architecture.md#tile-data) | `TileBits`, `AreaTiles`, `WorldTiles`, `TileOccupancy` |
+| Phases | [architecture.md](../.claude/rules/architecture.md#phases) | `PhaseExecutionManager`, `DecisionPhaseContext`, `MovementPhaseContext`, `WorldSetupContext` |
+| Movement | [architecture.md](../.claude/rules/architecture.md#movement) | `MovementSystem`, `Step`, `MoveRequest` |
+| Player input | [architecture.md](../.claude/rules/architecture.md#player-movement) | `PlayerInputSystem`, `PlayerInput`, `PlayerControlState` |
 
 ## Related
 
