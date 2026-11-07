@@ -1,0 +1,89 @@
+# First slice plan
+
+**Status:** planned. Not approved for implementation, and nothing is built yet.
+
+**Goal:** press Play and walk or run a placeholder character across two touching areas, with walls blocking movement and the second area's scene loading before the player reaches it. This tests the riskiest parts of the design: the bake, `[SerializeReference]` records, additive streaming, the tick loop, and how movement feels.
+
+Design rules are in [architecture.md](../.claude/rules/architecture.md).
+
+**LPE changes:** none. The slice uses `EntityID` and `Direction4` as they are.
+
+## Decisions to confirm
+
+The first needs an explicit OK before phase 3 starts. The others are recommendations that stand unless changed.
+
+1. **Build scene list:** the bake and test setup automatically add area scenes to the build's scene list, because `LoadSceneAsync` needs them there. This edits `ProjectSettings/EditorBuildSettings.asset`.
+2. **Tile properties:** a `TilePropertyTableSO` maps each tile asset to its entry bits, rather than subclassing tiles. It works with Unity's tiles and LPE's rule tiles unchanged. An unlisted tile on a logic layer bakes as blocked with a warning. This refines "each tile asset has default properties", so update that rule after review.
+3. **Test setup:** create the `Game` assembly for a menu command that builds the test world. Its generated assets go in `Game/` subfolders. Placeholder tiles are 16 px and the view is 15×11 tiles, for testing only.
+4. **Multiple direction keys:** the most recently pressed direction wins. Add this to the movement rules after review.
+
+## Phases
+
+Each phase ends with a compile check, EditMode test results, and a review before the next one starts. The Unity Editor may be open, so verification follows the `unity-verify` workflow.
+
+### Phase 1: foundation
+
+Plain C# state with no scenes.
+
+- `GridWorld` and `GridWorld.Tests` assemblies.
+- `WorldInstance`, `IWorldFunctionContext`, `WorldFunctionContext`, and context caching.
+- `EntityComponent<T>`, `EntityComponentManager`, `EntityIDManager`, and `EntityDefinitionSO`.
+
+**Tests:** component stores, the `Register` path, and ID allocation.
+
+### Phase 2: tiles and movement logic
+
+The core rules, fully testable without Unity scenes.
+
+- `WorldTiles` lookup.
+- `IPerm_*` markers, function extensions, and the decision and movement contexts.
+- `PhaseExecutionManager` with Decision and Movement phases. The cutscene phase comes with cutscenes.
+- `MovementSystem` and `PlayerInputSystem`, reading stored input state from `WorldInstance`.
+
+**Tests:**
+- Tile lookup rules.
+- Movement: step duration, constant rate across steps, tile claim and release, entry bits, entity blocking, tie-break order, follower retry, blocked swaps, and idle clearing.
+- Player input: tap to turn, the 6-tick hold, walking while already facing that way, continuous walking, and reading run at step start.
+
+### Phase 3: bake and world features
+
+Authored scenes become data.
+
+- `AreaDataSO`, `WorldDataSO`, `WorldSettingsSO`, `AreaBehaviour`, `LogicLayerBehaviour`, and `TilePropertyTableSO`.
+- `WorldFeatureBehaviour`, `WorldFeatureType<TData>`, the catalogue, and `PlayerSpawnBehaviour` with its type.
+- `GridWorld.Editor` assembly: area bake on scene save, a "Bake All" menu command, pre-build bake, and overlap errors.
+- `Game.Editor` assembly: **Grid World → Test → Create Test World**, which creates placeholder tiles, the main scene, two area scenes, and the data assets, then bakes them.
+
+**Tests:** catalogue errors and overlap errors.
+
+**Check:** run the menu command and inspect the baked assets.
+
+### Phase 4: playable in one area
+
+The first time it can be played and judged.
+
+- `WorldRootBehaviour`: input capture, the tick accumulator, and world startup.
+- `WorldView` with `Tick()` and `Render(alpha)`, using a generated placeholder that shows facing.
+- `CameraView`, `ICameraController`, and the follow controller.
+
+**Play test:** walking and running feel smooth with no stutter at tile boundaries, tap to turn feels right, and walls block movement.
+
+### Phase 5: streaming across two areas
+
+Completes the slice.
+
+- Area activation in the tick, with separate load and unload distances.
+- `AreaSceneLoader`, loading additive scenes asynchronously.
+- Console logging for each area load and unload, with its time.
+
+**Tests:** active area distances, including no reload when stepping across a border.
+
+**Play test:** the second area appears before the player reaches it, the player walks across the border with no visible seam, and the first area unloads once far enough away. Check the logged load times for hitches.
+
+## After the slice
+
+Update `Docs/INDEX.md`, add system docs under `Docs/`, update the rules above, and remove this plan.
+
+## Left for later
+
+NPCs and AI, cutscenes and the cutscene phase, hooks, props, ledges, doors and interiors, pathfinding, saving, dialogue, the interact button, four-direction animation, Y-sorting, pixel snapping, the override tilemap, game extension, and the stress test for a large area scene. Test area sizes are constants, so that stress test is easy to try.

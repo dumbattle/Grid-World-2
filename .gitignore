@@ -1,0 +1,42 @@
+# Unity generated
+Unity Project/[Ll]ibrary/
+Unity Project/[Tt]emp/
+Unity Project/[Oo]bj/
+Unity Project/[Bb]uild/
+Unity Project/[Bb]uilds/
+Unity Project/[Ll]ogs/
+Unity Project/[Uu]ser[Ss]ettings/
+Unity Project/[Mm]emoryCaptures/
+Unity Project/[Rr]ecordings/
+
+# IDE generated
+.vs/
+.vscode/
+.idea/
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Builds and crash reports
+*.apk
+*.aab
+*.unitypackage
+sysinfo.txt
+crashlytics-build.properties
+
+# Personal Claude settings
+.claude/settings.local.json
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
