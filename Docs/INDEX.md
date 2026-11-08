@@ -4,27 +4,27 @@ Orientation map for the project. Keep it short and current; add one line per sys
 
 ## Status
 
-The first slice is being built, following the [first slice plan](first-slice-plan.md). All five phases are done: world state, contexts, entity stores, tile data, movement and player input rules, the bake from area scenes to data assets, the root, tick loop, view, and camera, and area streaming. **Grid World → Test → Create Test World** builds two touching test areas; open `TestMain` and press Play to walk between them. Remaining design questions are in [open decisions](open-decisions.md).
+The first slice is done: a player walks and runs across two touching areas, with baked tile data, walls, and area scenes streaming in and out. **Grid World → Test → Create Test World** builds the test world; open `TestMain` and press Play. There's no active plan. Remaining design questions and unbuilt work are in [open decisions](open-decisions.md).
 
 ## Systems
 
-System docs come after the first slice. Until then, the design is in [architecture.md](../.claude/rules/architecture.md).
+Design rules are in [architecture.md](../.claude/rules/architecture.md). The docs below describe the code as it is.
 
 | System | Doc | Key types |
 |---|---|---|
-| World state and contexts | [architecture.md](../.claude/rules/architecture.md#state-and-contexts) | `WorldInstance`, `IWorldFunctionContext`, `WorldFunctionContext` |
-| Entities | [architecture.md](../.claude/rules/architecture.md#entities) | `EntityIDManager`, `EntityComponent<T>`, `EntityComponentManager`, `EntityDefinitionSO` |
-| Tile data | [architecture.md](../.claude/rules/architecture.md#tile-data) | `TileBits`, `AreaTiles`, `WorldTiles`, `TileOccupancy` |
-| Phases | [architecture.md](../.claude/rules/architecture.md#phases) | `PhaseExecutionManager`, `DecisionPhaseContext`, `MovementPhaseContext`, `WorldSetupContext` |
-| Movement | [architecture.md](../.claude/rules/architecture.md#movement) | `MovementSystem`, `Step`, `MoveRequest` |
-| Player input | [architecture.md](../.claude/rules/architecture.md#player-movement) | `PlayerInputSystem`, `PlayerInput`, `PlayerControlState` |
-| World data and bake | [architecture.md](../.claude/rules/architecture.md#authoring) | `AreaBehaviour`, `LogicLayerBehaviour`, `AreaDataSO`, `WorldDataSO`, `WorldSettingsSO`, `TilePropertyTableSO`, `AreaBaker`, `WorldStartup` |
-| World features | [architecture.md](../.claude/rules/architecture.md#world-features) | `WorldFeatureBehaviour`, `WorldFeatureData`, `WorldFeatureType<TData>`, `WorldFeatureCatalogue`, `PlayerSpawnBehaviour` |
-| Areas and streaming | [architecture.md](../.claude/rules/architecture.md#loading) | `WorldAreas`, `AreaActivationSystem`, `AreaActivationContext`, `AreaSceneLoader` |
-| Root and tick loop | [architecture.md](../.claude/rules/architecture.md#tick-loop) | `WorldRootBehaviour`, `TickClock` |
-| Rendering | [architecture.md](../.claude/rules/architecture.md#rendering) | `WorldView`, `RenderContext`, `PlaceholderSprites`, `Step.BlendedPosition` |
-| Camera | [architecture.md](../.claude/rules/architecture.md#camera) | `ICameraController`, `FollowCameraController`, `CameraView` |
-| Test world | `Game/Editor/CreateTestWorld.cs` | Output in the `Game` subfolders of `1. Scenes`, `3. Sprites`, `6. Tiles`, and `8. Data` |
+| World state and contexts | [world-and-areas.md](world-and-areas.md#worldinstance) | `WorldInstance`, `WorldFunctionContext`, the `IPerm_*` markers |
+| Entities | [world-and-areas.md](world-and-areas.md#worldinstance) | `EntityIDManager`, `EntityComponent<T>`, `EntityComponentManager`, `EntityDefinitionSO` |
+| Startup | [world-and-areas.md](world-and-areas.md#startup) | `WorldStartup`, `WorldValidation` |
+| Areas and streaming | [world-and-areas.md](world-and-areas.md#area-activation) | `WorldAreas`, `AreaActivationSystem`, `AreaSceneLoader` |
+| Tile data | [tiles-and-movement.md](tiles-and-movement.md#tile-data) | `TileBits`, `AreaTiles`, `WorldTiles`, `TileOccupancy` |
+| Movement and phases | [tiles-and-movement.md](tiles-and-movement.md#a-tick) | `PhaseExecutionManager`, `MovementSystem`, `Step`, `MoveRequest` |
+| Player input | [tiles-and-movement.md](tiles-and-movement.md#player-input) | `PlayerInputSystem`, `PlayerInput`, `PlayerControlState` |
+| Root and tick loop | [root-view-camera.md](root-view-camera.md#worldrootbehaviour) | `WorldRootBehaviour`, `TickClock` |
+| Rendering | [root-view-camera.md](root-view-camera.md#worldview) | `WorldView`, `RenderContext`, `PlaceholderSprites` |
+| Camera | [root-view-camera.md](root-view-camera.md#camera) | `ICameraController`, `FollowCameraController`, `CameraView` |
+| Authoring and bake | [authoring-areas.md](authoring-areas.md) | `AreaBehaviour`, `LogicLayerBehaviour`, `TilePropertyTableSO`, `AreaDataSO`, `WorldDataSO`, `AreaBaker` |
+| World features | [authoring-areas.md](authoring-areas.md#adding-a-world-feature-type) | `WorldFeatureBehaviour`, `WorldFeatureType<TData>`, `WorldFeatureCatalogue`, `PlayerSpawnBehaviour` |
+| Test world | [authoring-areas.md](authoring-areas.md#the-test-world) | `CreateTestWorld` |
 
 ## Related
 

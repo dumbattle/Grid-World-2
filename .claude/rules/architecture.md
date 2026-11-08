@@ -40,8 +40,9 @@ The goal is a base that other games can be built on, so these rules favor a clea
 
 ### Loading
 
-- `WorldInstance` tracks which areas are active, updated once per tick after the phases. An area becomes active within the camera target's view plus a margin, and goes inactive at a larger distance so stepping across a border doesn't cause reloads.
-- Area scenes load additively and asynchronously to follow those flags. A persistent main scene holds the root, camera, and UI.
+- `WorldInstance` tracks which areas are active, updated once per tick after the phases. An area becomes active within the camera target's view plus a margin, and goes inactive at a larger distance so stepping across a border doesn't cause reloads. Both margins live in the world settings, defaulting to 4 and 8 tiles.
+- Area scenes load additively and asynchronously to follow those flags. A persistent main scene holds the root, camera, and UI. A scene already open when Play starts counts as loaded.
+- Each load and unload is logged with its time, so hitches show up.
 - Actual loading runs outside the phases and doesn't change world state. A late load only makes visuals appear late.
 - Entity sprites exist only in active areas.
 - A door's fade holds until the destination area is loaded.
@@ -104,7 +105,7 @@ The goal is a base that other games can be built on, so these rules favor a clea
 
 ### Tick loop
 
-- The game runs a fixed 60 ticks per second, from an accumulator of elapsed time. At most 4 ticks run in one frame, and extra time is dropped.
+- The game runs a fixed 60 ticks per second, from an accumulator of elapsed time. At most 4 ticks run in one frame, and extra time is dropped, keeping the fraction of a tick so the blend stays smooth.
 - Pausing stops ticks from running.
 - Sprites are drawn once per frame after any ticks have run. The view blends between the last two tick states, and nothing reads that back into logic.
 
@@ -211,7 +212,8 @@ Each tick: Cutscene → Decision → Movement, then UI and render outside the ph
 
 - `WorldView` reads state only through a read-only `RenderContext`, and never sees `WorldInstance`. The root calls it explicitly.
 - `Tick()` runs once per tick: it adds and removes pooled sprites keyed by `EntityID`, and advances animations. `Render(alpha)` runs once per frame and only positions sprites.
-- Sprite positions come from `step` (from, to, progress, plus `alpha`). Animation state comes from `step` and `facing`, not from position changes.
+- Sprite positions come from `step` (from, to, progress, plus `alpha`). The blend is worked out from the current step alone, treating the previous tick as `elapsed - 1`, so the view keeps no copy of the last tick. The follow camera uses the same calculation, so it can't drift from the sprite.
+- Animation state comes from `step` and `facing`, not from position changes.
 - Visuals come from each entity's definition. An entity with no visual gets a generated placeholder.
 - A step's visual style is an optional SO reference with a clip and an arc height. Movement ignores it.
 - Sorting layers are `Ground`, `World`, and `Above`. `World` sorts by Y, using a custom axis on the 2D renderer. Entity sprites and tall tilemaps share it, with bottom pivots.
@@ -247,6 +249,7 @@ Each tick: Cutscene → Decision → Movement, then UI and render outside the ph
 ## Player input
 
 - Unity input is stored on `WorldInstance`, and the player input system reads it during the decision phase through a permission.
+- The root maps `Player/Move` to four held directions, where a stick counts past 0.5 on an axis, and `Player/Sprint` to run.
 - Button presses stay buffered for 6 ticks, or until a tick consumes them. Held directions aren't buffered: a tick reads their current state.
 
 ## Logic is plain C#

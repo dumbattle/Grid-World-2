@@ -28,3 +28,24 @@ Settled design is in [architecture.md](../.claude/rules/architecture.md).
 - Handle a failed load during a door's fade, which would otherwise hang the cutscene.
 - Consider `AllAiInChunk(...)` as an optional helper if spawning sprites ends up building a per-area entity list.
 - Other stuck cutscene cases: watch for them and raise them when they come up. One known case: a cutscene waiting on an absent entity whose tile stays occupied.
+
+## Not built yet
+
+Settled in the rules, but not in the code after the first slice.
+
+- **Features:** NPCs and AI, cutscenes and the cutscene phase, props, ledges, doors and interiors, pathfinding, saving, dialogue, the interact button, and game extension.
+- **Hooks:** `failedMoves`, `stepsCompleted`, and `interactAttempts`.
+- **Rendering:** removing sprites and hiding them in inactive areas, sprite pooling, four-direction animation, sorting layers and Y-sorting, bottom pivots, and pixel snapping.
+- **World data:** world offsets for interiors (every area bakes at 0), the override tilemap, and the "Go to area" window.
+- **Input:** buffered button presses, and pausing.
+- **Camera:** the look-at controller, camera effects, and cutscene camera locks.
+
+## Unchecked
+
+- **Bake All and the pre-build bake** haven't been run. Unity may refuse to open scenes during a build.
+- **Bake on save** has only run in batch mode, through Create Test World.
+- **Large area stress test:** area sizes are constants in `CreateTestWorld`, so it's easy to try.
+
+## Editor tasks
+
+- Rename `Assets/Scenes/` to `1. Scenes` in the Editor, because the build settings point to it.
