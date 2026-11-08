@@ -4,7 +4,8 @@
     "references": [
         "LPE_ASM",
         "GridWorld",
-        "GridWorld.Editor"
+        "GridWorld.Editor",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [
         "Editor"

@@ -2,7 +2,8 @@
     "name": "GridWorld",
     "rootNamespace": "GridWorld",
     "references": [
-        "LPE_ASM"
+        "LPE_ASM",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

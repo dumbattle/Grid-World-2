@@ -4,6 +4,7 @@ using LPE;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
 
@@ -18,6 +19,7 @@ namespace Game {
         const string SpritesFolder = "Assets/3. Sprites/Game";
         const string TilesFolder = "Assets/6. Tiles/Game";
         const string DataFolder = "Assets/8. Data/Game";
+        const string InputActionsPath = "Assets/InputSystem_Actions.inputactions";
         static readonly string[] folders = { ScenesFolder, SpritesFolder, TilesFolder, DataFolder };
 
         // Constants so the large-area stress test only needs a change here.
@@ -72,7 +74,7 @@ namespace Game {
 
             // Area scenes are created additively, which needs a saved scene already open.
             var mainPath = $"{ScenesFolder}/TestMain.unity";
-            CreateMainScene(mainPath, settings);
+            CreateMainScene(mainPath, settings, world);
             BuildSceneList.Add(mainPath);
 
             // Opening the main scene as Single unloaded the assets created above, so load them again.
@@ -161,7 +163,7 @@ namespace Game {
             return tile;
         }
 
-        static void CreateMainScene(string path, WorldSettingsSO settings) {
+        static void CreateMainScene(string path, WorldSettingsSO settings, WorldDataSO world) {
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             var cameraObject = new GameObject("Main Camera");
@@ -174,7 +176,27 @@ namespace Game {
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = new Color32(24, 24, 32, 255);
 
+            var rootObject = new GameObject("World Root");
+            var root = rootObject.AddComponent<WorldRootBehaviour>();
+            var rootProperties = new SerializedObject(root);
+            rootProperties.FindProperty("worldData").objectReferenceValue = world;
+            rootProperties.FindProperty("viewCamera").objectReferenceValue = camera;
+            rootProperties.FindProperty("moveAction").objectReferenceValue = FindAction("Move");
+            rootProperties.FindProperty("runAction").objectReferenceValue = FindAction("Sprint");
+            rootProperties.ApplyModifiedPropertiesWithoutUndo();
+
             EditorSceneManager.SaveScene(scene, path);
+        }
+
+        static InputActionReference FindAction(string name) {
+            foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(InputActionsPath)) {
+                if (asset is InputActionReference reference && reference.action != null
+                        && reference.action.actionMap.name == "Player" && reference.action.name == name) {
+                    return reference;
+                }
+            }
+            Debug.LogError($"Grid World: no Player/{name} action in {InputActionsPath}.");
+            return null;
         }
 
         static void CreateAreaScene(string areaId, RectInt bounds, AreaDataSO data, WorldDataSO world, TileBase ground, TileBase wall,

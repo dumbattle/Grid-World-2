@@ -8,9 +8,10 @@ description: Check that Grid World 2 compiles and its tests pass, whether or not
 Unity allows only one Editor per project, so first check whether it's open:
 
 ```powershell
-Test-Path "Unity Project/Temp/UnityLockfile"
 Get-Process Unity -ErrorAction SilentlyContinue | Select-Object Id, MainWindowTitle
 ```
+
+A running Unity process means the Editor is open. Don't decide from `Temp/UnityLockfile` alone: a crashed batch run leaves it behind, and Unity ignores a stale one when it starts.
 
 Never close my Editor. It may have unsaved work.
 

@@ -20,6 +20,9 @@ namespace GridWorld {
         // Input, written by the root outside the phases
         public readonly PlayerInput input = new PlayerInput();
 
+        // Set by the root. Cutscenes will swap it.
+        public ICameraController cameraController;
+
         // Owned by the decision phase
         public readonly PlayerControlState playerControl = new PlayerControlState();
 

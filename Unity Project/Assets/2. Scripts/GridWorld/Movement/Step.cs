@@ -34,5 +34,19 @@ namespace GridWorld {
         public Step Advanced() {
             return new Step(from, to, duration, elapsed + 1);
         }
+
+        /// <summary>
+        /// The position in tiles, blended from the previous tick (at <paramref name="alpha"/> 0) to
+        /// this one (at 1). A step starts at elapsed 1, so the previous tick is elapsed - 1 even on
+        /// the step's first tick. For the view only.
+        /// </summary>
+        public Vector2 BlendedPosition(float alpha) {
+            if (duration == 0) {
+                return to;
+            }
+
+            float progress = Mathf.Clamp01((elapsed - 1 + alpha) / duration);
+            return Vector2.Lerp(from, to, progress);
+        }
     }
 }
