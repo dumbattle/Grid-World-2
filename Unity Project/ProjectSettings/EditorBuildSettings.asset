@@ -12,10 +12,22 @@ EditorBuildSettings:
     path: Assets/1. Scenes/Game/TestMain.unity
     guid: 8f2e2284443691e47a284b831bec474c
   - enabled: 1
-    path: Assets/1. Scenes/Game/Area_test_a.unity
+    path: Assets/1. Scenes/Manual Test Game/Area_test_a.unity
     guid: f4ddc54f97df56d43bebcee81154f111
   - enabled: 1
-    path: Assets/1. Scenes/Game/Area_test_b.unity
+    path: Assets/1. Scenes/Manual Test Game/Area_test_b.unity
     guid: a65c9f42711625c4fb621776e09368b4
+  - enabled: 1
+    path: Assets/1. Scenes/Manual Test Game/Area_test_c.unity
+    guid: 3a1d33f8c8d0106458215d0e6ae6a88e
+  - enabled: 1
+    path: Assets/1. Scenes/Manual Test Game/Area_area d.unity
+    guid: 738d1b6533385e548ad27939f887ed34
+  - enabled: 1
+    path: Assets/1. Scenes/Manual Test Game/Area_TestE.unity
+    guid: 57e7e30dc3650934986139d837b70599
+  - enabled: 1
+    path: Assets/1. Scenes/Manual Test Game/Area_TestF.unity
+    guid: 17e42f5e340c2824099d85ca05086c2d
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}

@@ -150,8 +150,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GridWorld::GridWorld.AreaBehaviour
   id: test_a
-  areaData: {fileID: 11400000, guid: d3c3ded39cedc6f40b85aa7ca409558b, type: 2}
-  worldData: {fileID: 11400000, guid: 325dc407e2c1fb04abe565e4bf377641, type: 2}
+  areaData: {fileID: 11400000, guid: c463d8c53c3bdcb4a936eb9abc550f63, type: 2}
+  worldData: {fileID: 11400000, guid: 2ee18ff4c3693da47922c89e773f9b0e, type: 2}
   tileBounds:
     x: 0
     y: 0
@@ -230,7 +230,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8a6afa6a8041c064a981641437998b62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: GridWorld::GridWorld.PlayerSpawnBehaviour
-  definition: {fileID: 11400000, guid: 0d4e607ffb6e5d0409e18035d982023d, type: 2}
+  definition: {fileID: 11400000, guid: 5c520c9ec9d9bfe419456b9d48643841, type: 2}
   facing: 2
 --- !u!1 &2068500704
 GameObject:

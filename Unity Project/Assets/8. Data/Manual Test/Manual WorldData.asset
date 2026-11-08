@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7b02c420a816c04e812ce754b2f215d, type: 3}
+  m_Name: Manual WorldData
+  m_EditorClassIdentifier: GridWorld::GridWorld.WorldDataSO
+  worldSettings: {fileID: 11400000, guid: d5d75225aa93cc942b3194cd05b6c2e9, type: 2}
+  tilePropertyTable: {fileID: 11400000, guid: 18b2a560eb0adca45b53dc2f99a67a4e, type: 2}
+  areaList:
+  - {fileID: 11400000, guid: c463d8c53c3bdcb4a936eb9abc550f63, type: 2}
+  - {fileID: 11400000, guid: 455a2ac0e6a3bc5448e7e3c83ac03959, type: 2}
+  - {fileID: 11400000, guid: ddd08e30b73c690418b2584309c78a5b, type: 2}
+  - {fileID: 11400000, guid: 41fbdc862c46bed42bc7e1f50ad69099, type: 2}
+  - {fileID: 11400000, guid: d9c8fd7042dde854c8e06101070b90ed, type: 2}
+  - {fileID: 11400000, guid: 2b1a05382dbbf05458c6ba70b3617334, type: 2}
