@@ -1,0 +1,19 @@
+{
+    "name": "GridWorld.Editor",
+    "rootNamespace": "GridWorld",
+    "references": [
+        "LPE_ASM",
+        "GridWorld"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,6 +1,6 @@
 # First slice plan
 
-**Status:** in progress. Phases 1 and 2 are done and approved. Each later phase starts only when approved.
+**Status:** in progress. Phases 1 to 3 are done and approved. Each later phase starts only when approved.
 
 **Goal:** press Play and walk or run a placeholder character across two touching areas, with walls blocking movement and the second area's scene loading before the player reaches it. This tests the riskiest parts of the design: the bake, `[SerializeReference]` records, additive streaming, the tick loop, and how movement feels.
 
@@ -10,11 +10,9 @@ Design rules are in [architecture.md](../.claude/rules/architecture.md).
 
 ## Decisions to confirm
 
-The first needs an explicit OK before phase 3 starts. The others are recommendations that stand unless changed.
-
-1. **Build scene list:** the bake and test setup automatically add area scenes to the build's scene list, because `LoadSceneAsync` needs them there. This edits `ProjectSettings/EditorBuildSettings.asset`.
-2. **Tile properties:** a `TilePropertyTableSO` maps each tile asset to its entry bits, rather than subclassing tiles. It works with Unity's tiles and LPE's rule tiles unchanged. An unlisted tile on a logic layer bakes as blocked with a warning. This refines "each tile asset has default properties", so update that rule after review.
-3. **Test setup:** create the `Game` assembly for a menu command that builds the test world. Its generated assets go in `Game/` subfolders. Placeholder tiles are 16 px and the view is 15×11 tiles, for testing only.
+1. **Build scene list:** approved and done. The bake and test setup add scenes to `ProjectSettings/EditorBuildSettings.asset`, because `LoadSceneAsync` needs them there.
+2. **Tile properties:** done, and in the authoring rules.
+3. **Test setup:** done, as the `Game.Editor` assembly. Placeholder tiles are 16 px and the view is 15×11 tiles.
 4. **Multiple direction keys:** the most recently pressed direction wins. Done, and in the movement rules.
 
 ## Phases
@@ -45,9 +43,9 @@ The core rules, fully testable without Unity scenes. `WorldSetupContext` adds ar
 - Movement: step duration, constant rate across steps, tile claim and release, entry bits, entity blocking, tie-break order, follower retry, blocked swaps, and idle clearing.
 - Player input: tap to turn, the 6-tick hold, walking while already facing that way, continuous walking, and reading run at step start.
 
-### Phase 3: bake and world features
+### Phase 3: bake and world features (done)
 
-Authored scenes become data.
+Authored scenes become data. Every area bakes with a world offset of 0 until doors give interiors their offsets. The bake on save ran during the batch test world build; Bake All and the pre-build bake haven't been run yet.
 
 - `AreaDataSO`, `WorldDataSO`, `WorldSettingsSO`, `AreaBehaviour`, `LogicLayerBehaviour`, and `TilePropertyTableSO`.
 - `WorldFeatureBehaviour`, `WorldFeatureType<TData>`, the catalogue, and `PlayerSpawnBehaviour` with its type.

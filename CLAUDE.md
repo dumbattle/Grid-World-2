@@ -77,7 +77,7 @@ Unity Project/Assets/
   2. Scripts/
     LPE/                    Library shared across my projects: confirm before changing
     GridWorld/              Reusable framework, with EditMode tests in Tests/
-    Game/                   Optional, for testing the framework only (not created yet)
+    Game/                   For testing the framework only. Editor/ holds the test world builder
 ```
 
 ## Rules

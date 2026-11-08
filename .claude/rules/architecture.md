@@ -65,8 +65,9 @@ The goal is a base that other games can be built on, so these rules favor a clea
 
 ### Authoring
 
-- Each tile asset has default properties, which the bake step reads.
-- Only tilemaps marked as logic layers count, and the topmost tile wins.
+- A `TilePropertyTableSO` on the world data maps each tile asset to its tile data, so tiles aren't subclassed and rule tiles work unchanged. An unlisted tile on a logic layer bakes as blocked, with a warning.
+- Only tilemaps marked with `LogicLayerBehaviour` count, and the topmost tile wins, by sorting layer and then order in layer.
+- An area scene has one `AreaBehaviour` on its grid, holding the area ID, bounds, and data assets. The bake adds the area to the world data and its scene to the build's scene list.
 - An optional hidden override tilemap handles exceptions, such as an invisible wall.
 
 ## Entities
@@ -172,7 +173,7 @@ Each tick: Cutscene → Decision → Movement, then UI and render outside the ph
 - Authored features derive from `WorldFeatureBehaviour`, one instance per feature or one manager for several. The bake step scans each area scene for them and stores their data classes in a `[SerializeReference]` list on the area's data asset, so records can hold asset references. They stay in the scene as inert authoring objects.
 - The root registers each `WorldFeatureType` in a catalogue keyed by its data type, before the world loads, passing any dependencies to its constructor. A game adds its own the same way.
 - At world startup, each record's type registers its data through an initialization context. Local tiles convert to world tiles using the area's offset.
-- An unknown data type or a duplicate registration is an error naming the area and type.
+- Startup adds every area's tiles before registering any feature. Overlapping areas, duplicate area IDs, an unknown data type, and a record whose class is missing are errors naming the area. A duplicate type registration in the catalogue is an error naming both types.
 - Entity placement uses this same path.
 
 ## Ledges
