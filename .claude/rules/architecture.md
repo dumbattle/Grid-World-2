@@ -40,7 +40,8 @@ The goal is a base that other games can be built on, so these rules favor a clea
 
 ### Loading
 
-- `WorldInstance` tracks which areas are active, updated once per tick after the phases. An area becomes active within the camera target's view plus a margin, and goes inactive at a larger distance so stepping across a border doesn't cause reloads. Both margins live in the world settings, defaulting to 4 and 8 tiles.
+- `WorldInstance` tracks which areas are active, updated once per tick after the phases. The area the camera target stands in is always active, along with every area touching it at an edge or corner.
+- As a backup, an area also becomes active within the target's view plus a margin. It goes inactive only once it doesn't touch the target's area and is beyond a larger margin, so stepping across a border doesn't cause reloads. Both margins live in the world settings, defaulting to 4 and 8 tiles.
 - Area scenes load additively and asynchronously to follow those flags. A persistent main scene holds the root, camera, and UI. A scene already open when Play starts counts as loaded.
 - Each load and unload is logged with its time, so hitches show up.
 - Actual loading runs outside the phases and doesn't change world state. A late load only makes visuals appear late.

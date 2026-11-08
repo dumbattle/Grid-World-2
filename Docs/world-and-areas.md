@@ -56,10 +56,14 @@ The root registers `PlayerSpawnFeatureType` before loading. It spawns the player
 
 `AreaActivationSystem` runs once per tick after the phases, and once at startup. It measures from the camera controller's `GetTarget`.
 
-- An inactive area activates when its bounds overlap the view plus the activate margin around the target.
-- An active area deactivates only when it no longer overlaps the view plus the deactivate margin.
+- The current area, the one containing the target's tile, is always active, along with every area touching it. Sharing a corner counts as touching (`AreaActivationSystem.Touches`).
+- As a backup, an inactive area also activates when its bounds overlap the view plus the activate margin around the target.
+- An active area deactivates only when it doesn't touch the current area and no longer overlaps the view plus the deactivate margin.
+- If the target is outside every area, only the margins apply.
 
-The view size and margins are on `WorldSettingsSO`: 15×11 tiles, 4 tiles to activate, and 8 to deactivate. The deactivate margin is never less than the activate margin. In the test world, area B activates when the player reaches x = 13 and deactivates when they're back at x = 8.
+The view size and margins are on `WorldSettingsSO`: 15×11 tiles, 4 tiles to activate, and 8 to deactivate. The deactivate margin is never less than the activate margin. In the test world, A and B touch, so both are active from the start.
+
+In a row of areas A, B, C, entering C deactivates A once it's beyond the margin, and going back into B loads it again. A is a whole area away, so this costs a load but nothing pops into view.
 
 ## Scene streaming
 

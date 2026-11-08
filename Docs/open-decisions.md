@@ -25,6 +25,7 @@ Settled design is in [architecture.md](../.claude/rules/architecture.md).
 - Measure the memory cost of always-loaded assets, since area data assets keep everything they reference in memory, including NPC sprites.
 - Check in play: the idle frame on a follower that waits a tick at the start of a chain, and the one-tick delay before a ledge hop.
 - Work out how an NPC with several components shares one `EntityID` through the world feature path. Starting idea: one entity behaviour gathers its components into a single record.
+- The camera sets only its height from the view size, so a wide Game view shows more tiles across than the activation margins assume. Touching areas are always loaded, so this matters only for areas that don't touch. A fix would letterbox or pillarbox the camera to the view size.
 - Handle a failed load during a door's fade, which would otherwise hang the cutscene.
 - Consider `AllAiInChunk(...)` as an optional helper if spawning sprites ends up building a per-area entity list.
 - Other stuck cutscene cases: watch for them and raise them when they come up. One known case: a cutscene waiting on an absent entity whose tile stays occupied.
@@ -44,7 +45,6 @@ Settled in the rules, but not in the code after the first slice.
 
 - **Bake All and the pre-build bake** haven't been run. Unity may refuse to open scenes during a build.
 - **Bake on save** has only run in batch mode, through Create Test World.
-- **Loading distance looks off in play.** Possibly because the Game view's aspect doesn't match the settings' view size, which activation uses. Not investigated.
 - **Large area stress test:** area sizes are constants in `CreateTestWorld`, so it's easy to try.
 
 ## Editor tasks
