@@ -1,6 +1,6 @@
 # First slice plan
 
-**Status:** in progress. Phases 1 to 3 are done and approved. Each later phase starts only when approved.
+**Status:** in progress. Phases 1 to 4 are done and approved. Each later phase starts only when approved.
 
 **Goal:** press Play and walk or run a placeholder character across two touching areas, with walls blocking movement and the second area's scene loading before the player reaches it. This tests the riskiest parts of the design: the bake, `[SerializeReference]` records, additive streaming, the tick loop, and how movement feels.
 
@@ -56,9 +56,9 @@ Authored scenes become data. Every area bakes with a world offset of 0 until doo
 
 **Check:** run the menu command and inspect the baked assets.
 
-### Phase 4: playable in one area
+### Phase 4: playable in one area (done)
 
-The first time it can be played and judged.
+The first time it can be played and judged. Until phase 5, the root loads every area scene at start. Sprites are never removed and use a fixed sorting order. `ICameraController.GetTarget` exists but nothing calls it until active areas do.
 
 - `WorldRootBehaviour`: input capture, the tick accumulator, and world startup.
 - `WorldView` with `Tick()` and `Render(alpha)`, using a generated placeholder that shows facing.
