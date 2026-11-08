@@ -1,6 +1,6 @@
 # First slice plan
 
-**Status:** in progress. Phases 1 to 4 are done and approved. Each later phase starts only when approved.
+**Status:** all five phases are done and approved. What's left is the wrap-up under [After the slice](#after-the-slice).
 
 **Goal:** press Play and walk or run a placeholder character across two touching areas, with walls blocking movement and the second area's scene loading before the player reaches it. This tests the riskiest parts of the design: the bake, `[SerializeReference]` records, additive streaming, the tick loop, and how movement feels.
 
@@ -58,7 +58,7 @@ Authored scenes become data. Every area bakes with a world offset of 0 until doo
 
 ### Phase 4: playable in one area (done)
 
-The first time it can be played and judged. Until phase 5, the root loads every area scene at start. Sprites are never removed and use a fixed sorting order. `ICameraController.GetTarget` exists but nothing calls it until active areas do.
+The first time it can be played and judged. Sprites are never removed and use a fixed sorting order.
 
 - `WorldRootBehaviour`: input capture, the tick accumulator, and world startup.
 - `WorldView` with `Tick()` and `Render(alpha)`, using a generated placeholder that shows facing.
@@ -66,9 +66,9 @@ The first time it can be played and judged. Until phase 5, the root loads every 
 
 **Play test:** walking and running feel smooth with no stutter at tile boundaries, tap to turn feels right, and walls block movement.
 
-### Phase 5: streaming across two areas
+### Phase 5: streaming across two areas (done)
 
-Completes the slice.
+Completes the slice. Margins are 4 tiles to activate and 8 to deactivate, set on `WorldSettingsSO`. Entity sprites don't yet hide in inactive areas, because the player is the only entity.
 
 - Area activation in the tick, with separate load and unload distances.
 - `AreaSceneLoader`, loading additive scenes asynchronously.

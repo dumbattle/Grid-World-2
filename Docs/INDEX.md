@@ -4,7 +4,7 @@ Orientation map for the project. Keep it short and current; add one line per sys
 
 ## Status
 
-The first slice is being built, following the [first slice plan](first-slice-plan.md). Phases 1 to 4 are done: world state, contexts, entity stores, tile data, movement and player input rules, the bake from area scenes to data assets, and the root, tick loop, view, and camera. **Grid World → Test → Create Test World** builds two touching test areas; open `TestMain` and press Play to walk around. Area streaming comes in phase 5. Remaining design questions are in [open decisions](open-decisions.md).
+The first slice is being built, following the [first slice plan](first-slice-plan.md). All five phases are done: world state, contexts, entity stores, tile data, movement and player input rules, the bake from area scenes to data assets, the root, tick loop, view, and camera, and area streaming. **Grid World → Test → Create Test World** builds two touching test areas; open `TestMain` and press Play to walk between them. Remaining design questions are in [open decisions](open-decisions.md).
 
 ## Systems
 
@@ -20,6 +20,7 @@ System docs come after the first slice. Until then, the design is in [architectu
 | Player input | [architecture.md](../.claude/rules/architecture.md#player-movement) | `PlayerInputSystem`, `PlayerInput`, `PlayerControlState` |
 | World data and bake | [architecture.md](../.claude/rules/architecture.md#authoring) | `AreaBehaviour`, `LogicLayerBehaviour`, `AreaDataSO`, `WorldDataSO`, `WorldSettingsSO`, `TilePropertyTableSO`, `AreaBaker`, `WorldStartup` |
 | World features | [architecture.md](../.claude/rules/architecture.md#world-features) | `WorldFeatureBehaviour`, `WorldFeatureData`, `WorldFeatureType<TData>`, `WorldFeatureCatalogue`, `PlayerSpawnBehaviour` |
+| Areas and streaming | [architecture.md](../.claude/rules/architecture.md#loading) | `WorldAreas`, `AreaActivationSystem`, `AreaActivationContext`, `AreaSceneLoader` |
 | Root and tick loop | [architecture.md](../.claude/rules/architecture.md#tick-loop) | `WorldRootBehaviour`, `TickClock` |
 | Rendering | [architecture.md](../.claude/rules/architecture.md#rendering) | `WorldView`, `RenderContext`, `PlaceholderSprites`, `Step.BlendedPosition` |
 | Camera | [architecture.md](../.claude/rules/architecture.md#camera) | `ICameraController`, `FollowCameraController`, `CameraView` |

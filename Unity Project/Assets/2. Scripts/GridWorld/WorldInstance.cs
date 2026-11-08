@@ -17,6 +17,9 @@ namespace GridWorld {
         public readonly WorldTiles tiles = new WorldTiles();
         public readonly TileOccupancy occupancy = new TileOccupancy();
 
+        // Areas, with active flags updated once per tick after the phases
+        public readonly WorldAreas areas = new WorldAreas();
+
         // Input, written by the root outside the phases
         public readonly PlayerInput input = new PlayerInput();
 

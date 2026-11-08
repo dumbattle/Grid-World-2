@@ -18,7 +18,7 @@ namespace GridWorld.Tests {
             for (int i = 0; i < tiles.Length; i++) {
                 tiles[i] = TileBits.EnterAll;
             }
-            world.GetContext<WorldSetupContext>().AddArea(new AreaTiles(AreaBounds, tiles));
+            world.GetContext<WorldSetupContext>().AddArea("test", new AreaTiles(AreaBounds, tiles));
         }
 
         public EntityID Spawn(Vector2Int tile, Direction4 facing) {

@@ -4,11 +4,12 @@ using UnityEngine;
 
 namespace GridWorld {
     public static class SetupFunctions {
-        public static void AddArea<T>(this T ctx, AreaTiles area)
+        public static void AddArea<T>(this T ctx, string areaId, AreaTiles area)
                     where T : IWorldFunctionContext, IPerm_SetupWorld {
             if (area == null) {
                 throw new ArgumentNullException(nameof(area));
             }
+            ctx.data.areas.Add(areaId, area.bounds);
             ctx.data.tiles.AddArea(area);
         }
 

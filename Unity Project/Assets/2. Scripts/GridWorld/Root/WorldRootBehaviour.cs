@@ -1,7 +1,6 @@
 using LPE;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 
 namespace GridWorld {
     /// <summary>
@@ -22,6 +21,9 @@ namespace GridWorld {
         PhaseExecutionManager phases = new PhaseExecutionManager();
         TickClock clock = new TickClock();
         RenderContext render;
+        AreaActivationContext activation;
+        AreaActivationSystem areaActivation;
+        AreaSceneLoader sceneLoader;
         WorldView view;
         CameraView cameraView;
 
@@ -42,10 +44,14 @@ namespace GridWorld {
 
             world = instance;
             render = world.GetContext<RenderContext>();
+            activation = world.GetContext<AreaActivationContext>();
+            areaActivation = new AreaActivationSystem(worldData.settings);
+            sceneLoader = new AreaSceneLoader(render, worldData.areas);
             view = new WorldView(transform);
             cameraView = new CameraView(viewCamera, worldData.settings);
 
-            LoadAllAreaScenes();
+            // Activate the starting areas now, so their scenes start loading on the first frame.
+            UpdateActiveAreas();
             view.Tick(render);
         }
 
@@ -59,9 +65,11 @@ namespace GridWorld {
             int ticks = clock.Advance(Time.deltaTime);
             for (int i = 0; i < ticks; i++) {
                 phases.Tick(world);
+                UpdateActiveAreas();
                 view.Tick(render);
             }
 
+            sceneLoader.Update(render);
             view.Render(render, clock.alpha);
             cameraView.Render(render, clock.alpha);
         }
@@ -81,14 +89,10 @@ namespace GridWorld {
             input.runHeld = runAction != null && runAction.action.IsPressed();
         }
 
-        // Temporary until area streaming: loads every area so the whole world is visible.
-        void LoadAllAreaScenes() {
-            var areas = worldData.areas;
-            for (int i = 0; i < areas.Count; i++) {
-                var path = areas[i].scenePath;
-                if (!SceneManager.GetSceneByPath(path).isLoaded) {
-                    SceneManager.LoadSceneAsync(path, LoadSceneMode.Additive);
-                }
+        void UpdateActiveAreas() {
+            var controller = world.cameraController;
+            if (controller != null) {
+                areaActivation.Run(activation, controller.GetTarget(render));
             }
         }
 

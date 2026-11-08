@@ -21,7 +21,7 @@ namespace GridWorld {
             }
 
             for (int i = 0; i < areas.Count; i++) {
-                ctx.AddArea(areas[i].CreateTiles());
+                ctx.AddArea(areas[i].areaId, areas[i].CreateTiles());
             }
 
             for (int i = 0; i < areas.Count; i++) {
