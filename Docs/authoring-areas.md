@@ -18,12 +18,34 @@ All of them are under **Create → Grid World**.
 
 ## Making an area scene
 
-1. Create a scene, and add a GameObject with a `Grid` and an `AreaBehaviour`.
-2. On the `AreaBehaviour`, set a unique ID, an empty `AreaDataSO`, the `WorldDataSO`, and the tile bounds. Bounds are in tile coordinates, and the cyan gizmo shows them. Areas use real world positions, and touching areas share an edge.
-3. Add tilemaps under the grid. Add `LogicLayerBehaviour` to each one whose tiles count for movement. Where logic layers overlap, the one drawn on top wins, by sorting layer and then order in layer.
-4. Add every tile used on a logic layer to the tile property table.
-5. Add world features, such as a `PlayerSpawnBehaviour` with a definition and facing. A world needs exactly one player spawn.
-6. Save the scene. Saving bakes it.
+Use the **New Area** window. It opens from:
+
+- **Grid World → New Area…**, with nothing filled in.
+- The **New Area…** button on a `WorldDataSO`, which fills in the world, folders beside its last area, and bounds to the right of that area.
+- The **New Neighbour** buttons (Left, Right, Up, Down) on an `AreaBehaviour`, which fill in its world and folders, and bounds of the same size touching that side.
+
+Fill in the ID. The scene and data names follow it (`Area_<id>`, `AreaData_<id>`) until you edit them. **Create** is disabled, with a message, while the ID is empty or taken, the bounds overlap an area, a folder is missing, or a file already exists.
+
+**Create** makes the scene, with a `Grid` and filled-in `AreaBehaviour`, a `Ground` tilemap, and a `Logic` tilemap with `LogicLayerBehaviour` and its renderer off. It creates the `AreaDataSO`, saves the scene so it bakes into the world's list, and leaves it open. **Open additively** keeps the current scenes open; it can't be used while an untitled scene is open. Without it, you're asked to save changed scenes first.
+
+Code: `Editor/NewAreaWindow`, `NewAreaCreator`, `NewAreaRules`, and the `WorldDataSO` and `AreaBehaviour` inspectors.
+
+Then:
+
+1. Paint art on `Ground` or other tilemaps, which the bake ignores.
+2. Paint the `Logic` tilemap, turning its renderer on while painting. Every walkable tile must be painted, since unpainted tiles are blocked. Add more logic layers if needed; where they overlap, the one drawn on top wins, by sorting layer and then order in layer.
+3. Add every tile used on a logic layer to the tile property table.
+4. Add world features, such as a `PlayerSpawnBehaviour` with a definition and facing. A world needs exactly one player spawn.
+5. Save the scene. Saving bakes it.
+
+Bounds are in tile coordinates, and the cyan gizmo shows them. Areas use real world positions, and touching areas share an edge. To change an area's ID, data asset, or bounds later, edit its `AreaBehaviour` and save.
+
+## Making a world
+
+1. Create a `WorldSettingsSO`, a `TilePropertyTableSO`, an `EntityDefinitionSO` for the player, and a `WorldDataSO` that references the settings and table.
+2. Add areas with the New Area window.
+3. Make a main scene with a camera and a `WorldRootBehaviour`, setting `worldData`, `viewCamera`, `moveAction` (`Player/Move`), and `runAction` (`Player/Sprint`). Don't add area scenes to it; they stream in.
+4. Open the main scene alone and press Play.
 
 ## The bake
 

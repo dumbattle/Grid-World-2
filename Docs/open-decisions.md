@@ -44,6 +44,7 @@ Settled in the rules, but not in the code after the first slice.
 
 - **Bake All and the pre-build bake** haven't been run. Unity may refuse to open scenes during a build.
 - **Bake on save** has only run in batch mode, through Create Test World.
+- **Loading distance looks off in play.** Possibly because the Game view's aspect doesn't match the settings' view size, which activation uses. Not investigated.
 - **Large area stress test:** area sizes are constants in `CreateTestWorld`, so it's easy to try.
 
 ## Editor tasks
