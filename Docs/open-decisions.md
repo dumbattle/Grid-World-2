@@ -36,7 +36,7 @@ Settled in the rules, but not in the code after the first slice.
 
 - **Features:** NPCs and AI, cutscenes and the cutscene phase, props, ledges, doors and interiors, pathfinding, saving, dialogue, the interact button, and game extension.
 - **Hooks:** `failedMoves`, `stepsCompleted`, and `interactAttempts`.
-- **Rendering:** removing sprites and hiding them in inactive areas, sprite pooling, four-direction animation, Y-sorting, bottom pivots, and pixel snapping.
+- **Rendering:** removing sprites and hiding them in inactive areas, sprite pooling, four-direction animation, bottom pivots for entity sprites (they sort by Y from a centre pivot for now), and pixel snapping.
 - **World data:** world offsets for interiors (every area bakes at 0), the override tilemap, and the "Go to area" window.
 - **Input:** buffered button presses, and pausing.
 - **Camera:** the look-at controller, camera effects, and cutscene camera locks.
