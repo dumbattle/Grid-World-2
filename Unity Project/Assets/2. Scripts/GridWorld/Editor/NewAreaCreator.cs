@@ -65,8 +65,9 @@ namespace GridWorld {
             SetProperty(properties, "tileBounds").rectIntValue = request.bounds;
             properties.ApplyModifiedPropertiesWithoutUndo();
 
-            CreateTilemap(root, "Ground");
-            var logic = CreateTilemap(root, "Logic");
+            CreateTilemap(root, "Ground", SortingLayerNames.Ground);
+            CreateTilemap(root, "Doodads", SortingLayerNames.GroundDoodad);
+            var logic = CreateTilemap(root, "Logic", SortingLayerNames.EditorOverlay);
             logic.AddComponent<LogicLayerBehaviour>();
             // Hidden so it doesn't draw over the art. Turn it on while painting.
             logic.GetComponent<TilemapRenderer>().enabled = false;
@@ -109,11 +110,11 @@ namespace GridWorld {
             return property;
         }
 
-        static GameObject CreateTilemap(GameObject root, string name) {
+        static GameObject CreateTilemap(GameObject root, string name, string sortingLayer) {
             var tilemapObject = new GameObject(name);
             tilemapObject.transform.SetParent(root.transform, false);
             tilemapObject.AddComponent<Tilemap>();
-            tilemapObject.AddComponent<TilemapRenderer>();
+            tilemapObject.AddComponent<TilemapRenderer>().sortingLayerName = sortingLayer;
             return tilemapObject;
         }
     }

@@ -9,8 +9,6 @@ namespace GridWorld {
     /// their facing. <see cref="Render"/> runs once per frame and only positions them.
     /// </summary>
     public class WorldView : IDisposable {
-        // Above the area tilemaps until sorting layers exist.
-        const int SortingOrder = 10;
         static readonly Vector2 tileCentre = new Vector2(0.5f, 0.5f);
 
         Transform parent;
@@ -58,7 +56,7 @@ namespace GridWorld {
             obj.transform.SetParent(parent, false);
 
             var sprite = obj.AddComponent<SpriteRenderer>();
-            sprite.sortingOrder = SortingOrder;
+            sprite.sortingLayerName = SortingLayerNames.EntityOnGround;
             return sprite;
         }
     }

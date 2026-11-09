@@ -189,7 +189,7 @@ Each tick: Cutscene → Decision → Movement, then UI and render outside the ph
 - `TriggerBehaviour` is a world feature with a set of tiles and a cutscene. It fires when the player finishes a step on one of its tiles, or an NPC if the trigger allows it. Entities with the `scripted` lock never fire triggers. If its cutscene can't start, the trigger does nothing and can fire again later.
 - Items aren't a framework concept. `PropBehaviour` is a world feature with a stable ID, a tile, an optional sprite, a blocking option, and an interact cutscene. Ground items, signs, and hidden items are all props, and inventory belongs to the game.
 - Prop state stays in `WorldInstance`, in a `tile2prop` lookup. A blocking prop marks its tile blocked through the tile changes data. Cutscenes can remove props, and removal is saved by stable ID.
-- `WorldView` draws props from state with pooled sprites in active areas, on the `World` layer.
+- `WorldView` draws props from state with pooled sprites in active areas, on the `Entity On Ground` layer.
 - Framework systems read `interactAttempts` and start the interact cutscene for the entity or prop on the target tile. An entity takes priority over a non-blocking prop. The player can interact only when idle.
 
 ## NPC AI
@@ -217,7 +217,8 @@ Each tick: Cutscene → Decision → Movement, then UI and render outside the ph
 - Animation state comes from `step` and `facing`, not from position changes.
 - Visuals come from each entity's definition. An entity with no visual gets a generated placeholder.
 - A step's visual style is an optional SO reference with a clip and an arc height. Movement ignores it.
-- Sorting layers are `Ground`, `World`, and `Above`. `World` sorts by Y, using a custom axis on the 2D renderer. Entity sprites and tall tilemaps share it, with bottom pivots.
+- Sorting layers, from bottom to top, are `Ground`, `Ground Doodad`, `Entity On Ground`, and `EDITOR OVERLAY`. Code uses the names in `SortingLayerNames`. Logic tilemaps use `EDITOR OVERLAY`, so they draw on top while being painted. An `Above` layer for things drawn over entities can be added when something needs it.
+- `Entity On Ground` sorts by Y, using a custom axis on the 2D renderer. Entity sprites and tall tilemaps share it, with bottom pivots.
 
 ## Camera
 

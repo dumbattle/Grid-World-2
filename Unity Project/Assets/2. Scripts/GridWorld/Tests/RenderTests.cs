@@ -92,5 +92,32 @@ namespace GridWorld.Tests {
                 Object.DestroyImmediate(parent);
             }
         }
+
+        [Test]
+        public void WorldView_Tick_PutsSpriteOnEntityLayer() {
+            var parent = new GameObject("View");
+            var view = new WorldView(parent.transform);
+            try {
+                test.Spawn(Vector2Int.zero, Direction4.down);
+
+                view.Tick(render);
+
+                var sprite = parent.GetComponentInChildren<SpriteRenderer>();
+                Assert.AreEqual(SortingLayerNames.EntityOnGround, sprite.sortingLayerName);
+            }
+            finally {
+                view.Dispose();
+                Object.DestroyImmediate(parent);
+            }
+        }
+
+        // Unity falls back to Default for a name it doesn't know, so a renamed layer wouldn't show up otherwise.
+        [TestCase(SortingLayerNames.Ground)]
+        [TestCase(SortingLayerNames.GroundDoodad)]
+        [TestCase(SortingLayerNames.EntityOnGround)]
+        [TestCase(SortingLayerNames.EditorOverlay)]
+        public void SortingLayerNames_Name_ExistsInProject(string name) {
+            Assert.IsTrue(System.Array.Exists(SortingLayer.layers, layer => layer.name == name), name);
+        }
     }
 }

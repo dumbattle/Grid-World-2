@@ -42,7 +42,7 @@ A plain class that owns one `SpriteRenderer` per entity, under the root's transf
 - `Render(ctx, alpha)`, once per frame: positions each sprite at its blended position plus half a tile.
 - `Dispose()`: destroys the sprites and placeholder textures.
 
-Every entity gets a `PlaceholderSprites` sprite for now: an orange square spanning one tile, with a dark bar on the side it faces. Sprites draw at sorting order 10, above the area tilemaps. They're never removed, and they don't yet hide in inactive areas.
+Every entity gets a `PlaceholderSprites` sprite for now: an orange square spanning one tile, with a dark bar on the side it faces. Sprites draw on the Entity On Ground sorting layer, above the ground and doodad tilemaps. They're never removed, and they don't yet hide in inactive areas.
 
 ## Camera
 

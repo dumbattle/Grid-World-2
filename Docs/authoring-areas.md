@@ -26,13 +26,13 @@ Use the **New Area** window. It opens from:
 
 Fill in the ID. The scene and data names follow it (`Area_<id>`, `AreaData_<id>`) until you edit them. **Create** is disabled, with a message, while the ID is empty or taken, the bounds overlap an area, a folder is missing, or a file already exists.
 
-**Create** makes the scene, with a `Grid` and filled-in `AreaBehaviour`, a `Ground` tilemap, and a `Logic` tilemap with `LogicLayerBehaviour` and its renderer off. It creates the `AreaDataSO`, saves the scene so it bakes into the world's list, and leaves it open. **Open additively** keeps the current scenes open; it can't be used while an untitled scene is open. Without it, you're asked to save changed scenes first.
+**Create** makes the scene, with a `Grid` and filled-in `AreaBehaviour`, and three tilemaps: `Ground` on the Ground sorting layer, `Doodads` on Ground Doodad, and `Logic` on EDITOR OVERLAY, with `LogicLayerBehaviour` and its renderer off. It creates the `AreaDataSO`, saves the scene so it bakes into the world's list, and leaves it open. **Open additively** keeps the current scenes open; it can't be used while an untitled scene is open. Without it, you're asked to save changed scenes first.
 
 Code: `Editor/NewAreaWindow`, `NewAreaCreator`, `NewAreaRules`, and the `WorldDataSO` and `AreaBehaviour` inspectors.
 
 Then:
 
-1. Paint art on `Ground` or other tilemaps, which the bake ignores.
+1. Paint art on `Ground`, `Doodads`, or other tilemaps, which the bake ignores.
 2. Paint the `Logic` tilemap, turning its renderer on while painting. Every walkable tile must be painted, since unpainted tiles are blocked. Add more logic layers if needed; where they overlap, the one drawn on top wins, by sorting layer and then order in layer.
 3. Add every tile used on a logic layer to the tile property table.
 4. Add world features, such as a `PlayerSpawnBehaviour` with a definition and facing. A world needs exactly one player spawn.

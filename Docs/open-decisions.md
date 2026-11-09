@@ -20,7 +20,7 @@ Settled design is in [architecture.md](../.claude/rules/architecture.md).
 - Confirm cached contexts can support a game context's second state reference. If they can't, the game's context needs its own small cache.
 - Prove the game extension pattern with a small test in `Game`.
 - Check how tile data authoring fits with LPE's rule tiles and tile metadata tools.
-- Test tall grass as an overlay tile on the `World` layer once real tiles exist.
+- Test tall grass as an overlay tile on the `Entity On Ground` layer once real tiles exist.
 - Test `[SerializeReference]` feature records at scale. A bulky feature can store its data as arrays in one record.
 - Measure the memory cost of always-loaded assets, since area data assets keep everything they reference in memory, including NPC sprites.
 - Check in play: the idle frame on a follower that waits a tick at the start of a chain, and the one-tick delay before a ledge hop.
@@ -36,7 +36,7 @@ Settled in the rules, but not in the code after the first slice.
 
 - **Features:** NPCs and AI, cutscenes and the cutscene phase, props, ledges, doors and interiors, pathfinding, saving, dialogue, the interact button, and game extension.
 - **Hooks:** `failedMoves`, `stepsCompleted`, and `interactAttempts`.
-- **Rendering:** removing sprites and hiding them in inactive areas, sprite pooling, four-direction animation, sorting layers and Y-sorting, bottom pivots, and pixel snapping.
+- **Rendering:** removing sprites and hiding them in inactive areas, sprite pooling, four-direction animation, Y-sorting, bottom pivots, and pixel snapping.
 - **World data:** world offsets for interiors (every area bakes at 0), the override tilemap, and the "Go to area" window.
 - **Input:** buffered button presses, and pausing.
 - **Camera:** the look-at controller, camera effects, and cutscene camera locks.

@@ -104,6 +104,18 @@ namespace GridWorld.Tests {
             Assert.IsFalse(logic.GetComponent<TilemapRenderer>().enabled);
         }
 
+        [TestCase("Ground", SortingLayerNames.Ground)]
+        [TestCase("Doodads", SortingLayerNames.GroundDoodad)]
+        [TestCase("Logic", SortingLayerNames.EditorOverlay)]
+        public void Create_ValidRequest_PutsTilemapOnSortingLayer(string tilemapName, string sortingLayer) {
+            var area = NewAreaCreator.Create(Request("fresh"));
+            scene = area.gameObject.scene;
+
+            var tilemap = area.transform.Find(tilemapName);
+            Assert.IsNotNull(tilemap, tilemapName);
+            Assert.AreEqual(sortingLayer, tilemap.GetComponent<TilemapRenderer>().sortingLayerName);
+        }
+
         [Test]
         public void FindError_FileExists_ReportsPath() {
             var first = Request("fresh");
