@@ -42,6 +42,7 @@ namespace GridWorld.Tests {
             var buildScenes = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
             if (buildScenes.RemoveAll(s => s.path.StartsWith(Folder + "/")) > 0) {
                 EditorBuildSettings.scenes = buildScenes.ToArray();
+                AssetDatabase.SaveAssets();
             }
 
             AssetDatabase.DeleteAsset(Folder);

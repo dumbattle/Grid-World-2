@@ -42,10 +42,11 @@ namespace GridWorld.Tests {
                 EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             }
 
-            // The bake adds the scene to the build list, so take it out again.
+            // The bake adds the scene to the build list and saves it, so take it out and save again.
             var buildScenes = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
             if (buildScenes.RemoveAll(s => s.path.StartsWith(Folder + "/")) > 0) {
                 EditorBuildSettings.scenes = buildScenes.ToArray();
+                AssetDatabase.SaveAssets();
             }
 
             AssetDatabase.DeleteAsset(Folder);
