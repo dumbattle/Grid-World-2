@@ -25,5 +25,12 @@ namespace GridWorld {
             }
             EditorBuildSettings.scenes = scenes.ToArray();
         }
+
+        public static void Remove(string scenePath) {
+            var scenes = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
+            if (scenes.RemoveAll(s => s.path == scenePath) > 0) {
+                EditorBuildSettings.scenes = scenes.ToArray();
+            }
+        }
     }
 }

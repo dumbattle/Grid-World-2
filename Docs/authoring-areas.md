@@ -40,6 +40,20 @@ Then:
 
 Bounds are in tile coordinates, and the cyan gizmo shows them. Areas use real world positions, and touching areas share an edge. To change an area's ID, data asset, or bounds later, edit its `AreaBehaviour` and save.
 
+## Deleting an area
+
+Choose **Delete Area…** from the three-dot menu on the area's `AreaBehaviour`, then click **Delete**. Only clicking **Delete** deletes: Enter and Esc pick **Cancel** and **Keep Area**. Unity's Undo can't bring the area back.
+
+It removes the area from every `WorldDataSO` that lists it and the scene from the build's scene list, closes the scene without saving, and moves the scene and the `AreaDataSO` to the Recycle Bin. If the scene was the only one open, an empty scene replaces it.
+
+It refuses, with a message, in Play mode, with more than one object selected, for a scene that's never been saved, for an area with no data asset, and when the data asset's scene path doesn't match the scene. If the scene has moved, saving it fixes the path.
+
+It doesn't check for the player spawn, so check whether the area holds it first. Neighbouring areas are left with a blocked edge where they touched it.
+
+To restore an area, put both files and their `.meta` files back from the Recycle Bin, then open and save the scene, which bakes it back into the lists.
+
+Code: `Editor/AreaDeleter`.
+
 ## Making a world
 
 1. Create a `WorldSettingsSO`, a `TilePropertyTableSO`, an `EntityDefinitionSO` for the player, and a `WorldDataSO` that references the settings and table.

@@ -21,5 +21,10 @@ namespace GridWorld {
             areaList.Add(area);
             return true;
         }
+
+        /// <summary>For deleting an area. Returns false if the area wasn't listed.</summary>
+        public bool RemoveArea(AreaDataSO area) {
+            return areaList.Remove(area);
+        }
     }
 }
