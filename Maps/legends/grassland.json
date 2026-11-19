@@ -1,0 +1,23 @@
+{
+    "layers": [
+        { "name": "Ground",  "sortingLayer": "Ground" },
+        { "name": "Doodads", "sortingLayer": "Ground Doodad" },
+        { "name": "Trees",   "sortingLayer": "Entity On Ground" }
+    ],
+    "entries": [
+        { "symbol": "g", "layer": "Ground",  "tile": "Assets/6. Tiles/SAMPLE/Grass Tile.asset",                    "logic": "Assets/6. Tiles/Game/GroundA.asset" },
+        { "symbol": "=", "layer": "Ground",  "tile": "Assets/6. Tiles/SAMPLE/Dirt Path on Grass Tile.asset",       "logic": "Assets/6. Tiles/Game/GroundA.asset" },
+
+        { "symbol": "f", "layer": "Doodads", "tile": "Assets/6. Tiles/SAMPLE/Flower on Grass - Mixed - Sparse.asset" },
+        { "symbol": "F", "layer": "Doodads", "tile": "Assets/6. Tiles/SAMPLE/Flower on Grass - Mixed - Dense.asset" },
+        { "symbol": "u", "layer": "Doodads", "tile": "Assets/6. Tiles/SAMPLE/Flower on Grass - Tulip - Sparse.asset" },
+        { "symbol": "U", "layer": "Doodads", "tile": "Assets/6. Tiles/SAMPLE/Flower on Grass - Tulip - Dense.asset" },
+        { "symbol": "w", "layer": "Doodads", "tile": "Assets/6. Tiles/SAMPLE/Tuft on Grass - Sparse.asset" },
+        { "symbol": "W", "layer": "Doodads", "tile": "Assets/6. Tiles/SAMPLE/Tuft on Grass - Dense.asset" },
+        { "symbol": "p", "layer": "Doodads", "tile": "Assets/6. Tiles/SAMPLE/Pebbles on Grass - Sparse.asset" },
+        { "symbol": "r", "layer": "Doodads", "tile": "Assets/6. Tiles/SAMPLE/Rocks on Grass - Sparse.asset" },
+
+        { "symbol": "T", "layer": "Trees",   "tile": "Assets/6. Tiles/SAMPLE/Trees_0.asset",                       "logic": "Assets/6. Tiles/Game/Wall.asset", "footprint": { "x": 0, "y": 0, "width": 2, "height": 1 } },
+        { "symbol": "t", "layer": "Trees",   "tile": "Assets/6. Tiles/SAMPLE/Trees_1.asset",                       "logic": "Assets/6. Tiles/Game/Wall.asset", "footprint": { "x": 0, "y": 0, "width": 2, "height": 1 } }
+    ]
+}

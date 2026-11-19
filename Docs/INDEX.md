@@ -25,6 +25,7 @@ Design rules are in [architecture.md](../.claude/rules/architecture.md). The doc
 | Authoring and bake | [authoring-areas.md](authoring-areas.md) | `AreaBehaviour`, `LogicLayerBehaviour`, `TilePropertyTableSO`, `AreaDataSO`, `WorldDataSO`, `AreaBaker` |
 | New Area window | [authoring-areas.md](authoring-areas.md#making-an-area-scene) | `NewAreaWindow`, `NewAreaCreator`, `NewAreaRules` |
 | Delete Area | [authoring-areas.md](authoring-areas.md#deleting-an-area) | `AreaDeleter` |
+| Area specs and previews | [authoring-areas.md](authoring-areas.md#drafting-areas-from-specs) | `MapSpecParser`, `MapSpecBuilder`, `AreaPreviewExporter`, `Tools/mapread.py` |
 | World features | [authoring-areas.md](authoring-areas.md#adding-a-world-feature-type) | `WorldFeatureBehaviour`, `WorldFeatureType<TData>`, `WorldFeatureCatalogue`, `PlayerSpawnBehaviour` |
 | Test world | [authoring-areas.md](authoring-areas.md#the-test-world) | `CreateTestWorld` |
 

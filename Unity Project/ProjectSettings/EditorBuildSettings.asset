@@ -26,5 +26,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/1. Scenes/Manual Test Game/Area_TestE.unity
     guid: 57e7e30dc3650934986139d837b70599
+  - enabled: 1
+    path: Assets/1. Scenes/Manual Test Game/Area_trial_meadow.unity
+    guid: e14c8c821597f8d45ba157bfa5c43be3
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}

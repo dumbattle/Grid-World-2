@@ -77,7 +77,7 @@ namespace GridWorld {
             return area;
         }
 
-        static bool HasUntitledScene() {
+        public static bool HasUntitledScene() {
             for (int i = 0; i < SceneManager.sceneCount; i++) {
                 if (string.IsNullOrEmpty(SceneManager.GetSceneAt(i).path)) {
                     return true;
@@ -110,7 +110,7 @@ namespace GridWorld {
             return property;
         }
 
-        static GameObject CreateTilemap(GameObject root, string name, string sortingLayer) {
+        internal static GameObject CreateTilemap(GameObject root, string name, string sortingLayer) {
             var tilemapObject = new GameObject(name);
             tilemapObject.transform.SetParent(root.transform, false);
             tilemapObject.AddComponent<Tilemap>();

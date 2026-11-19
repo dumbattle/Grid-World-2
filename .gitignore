@@ -40,3 +40,6 @@ crashlytics-build.properties
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Map previews, regenerated on demand
+Maps/previews/

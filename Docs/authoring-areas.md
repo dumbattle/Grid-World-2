@@ -54,6 +54,86 @@ To restore an area, put both files and their `.meta` files back from the Recycle
 
 Code: `Editor/AreaDeleter`.
 
+## Drafting areas from specs
+
+A text spec describes a new area as ASCII grids, and an Editor command builds it as a painted, baked area scene to polish by hand. Specs only create areas. Once an area exists its scene is the source of truth, and building a spec for a taken ID is refused.
+
+Files live in `Maps/` at the repo root, outside `Assets/`, so Unity doesn't import them:
+
+| Path | Holds |
+|---|---|
+| `Maps/legends/<name>.json` | A theme's legend, reused across areas |
+| `Maps/areas/<id>.txt` | One area's spec |
+| `Maps/previews/` | Exported PNGs. Gitignored |
+
+### Legends
+
+A legend lists tilemap layers bottom to top, then one entry per character. Tiles are asset paths.
+
+```json
+{
+    "layers": [ { "name": "Ground", "sortingLayer": "Ground" },
+                { "name": "Trees",  "sortingLayer": "Entity On Ground" } ],
+    "entries": [
+        { "symbol": "g", "layer": "Ground", "tile": "Assets/.../Grass Tile.asset", "logic": "Assets/.../GroundA.asset" },
+        { "symbol": "T", "layer": "Trees",  "tile": "Assets/.../Trees_0.asset",   "logic": "Assets/.../Wall.asset",
+          "footprint": { "x": 0, "y": 0, "width": 2, "height": 1 } } ]
+}
+```
+
+- `symbol` is one character, unique in the legend. `.`, `#` and `[` are reserved.
+- `logic` is optional. The Logic layer is filled from it: each cell takes the logic tile of the topmost layer whose entry covers it, so a tree over grass blocks. A cell no entry covers stays unpainted, so it's blocked. Logic tiles still need to be in the tile property table.
+- `footprint` is optional, measured from the painted cell, for art that covers more than one tile. Without it, logic covers just the painted cell. Footprint cells outside the bounds are dropped.
+- `Logic` can't be a legend layer name.
+
+`grassland.json` covers the `SAMPLE` tiles. Its trees are 2×2 sprites drawn up and right from the painted cell, with a 2×1 footprint so the player can walk behind the upper canopy.
+
+### Specs
+
+```
+# Comments start with '#'.
+id: trial_meadow
+world: Assets/8. Data/Manual Test/Manual WorldData.asset
+bounds: 0 16 24 10
+legend: grassland
+[Ground]
+gggg====
+gggg==gg
+[Trees]
+T.......
+........
+```
+
+- `bounds` is x, y, width, height in world tiles. `sceneFolder:` and `dataFolder:` are optional; by default they follow the New Area window.
+- Each `[Layer]` grid has one row per tile of height and one character per tile of width. The top row is the highest y. `.` leaves a cell empty.
+- A symbol must belong to the layer it's used in. A `[Logic]` section isn't allowed.
+
+### Building and previewing
+
+**Grid World → Build Area from Spec…** picks a spec, checks it, and lists every problem with its file and line. If it's valid, it creates the area as the New Area window does, opening it additively unless an untitled scene is open. It then makes any missing tilemaps, paints every layer and the Logic layer, and saves, which bakes. Tilemaps on `Entity On Ground` sort tile by tile. To rebuild an area from its spec, delete it first.
+
+**Export Preview** in the `AreaBehaviour` three-dot menu, or **Grid World → Export All Area Previews**, writes two PNGs to `Maps/previews/`:
+
+- `<id>.png` draws the bounds through a camera, at the sprites' pixels per unit. Other loaded scenes show where their art overlaps.
+- `<id>_logic.png` adds a tile grid, with blocked tiles in red and partly blocked ones in yellow. It reads the baked data, so it shows the scene as of its last save.
+
+Export All opens each area scene additively and closes it again. It can't run while an untitled scene is open.
+
+### Reading the world from Python
+
+`Tools/mapread.py` reads the project's text assets without the Editor, and never writes them. It needs only Python's standard library. Run it with `py`:
+
+| Command | Prints |
+|---|---|
+| `overview` | Every world's areas with IDs and bounds, and an ASCII map of them |
+| `area <id> [--legend NAME]` | Each tilemap in an area's scene as an ASCII grid |
+| `edges --bounds X Y W H [--depth N] [--legend NAME]` | The strips of neighbouring areas along proposed bounds, three tiles deep by default, and any overlap |
+| `tiles <folder>` | Tile assets in a folder, with their type and path |
+
+Grids use the legend's symbols where it has them, and made-up letters with a key for other tiles. The reader assumes tilemaps sit at the area's origin, and skips tiles placed through prefabs.
+
+Code: `Editor/MapSpecParser`, `MapSpecLayout`, `MapSpecBuilder`, `MapSpecMenu`, `AreaPreviewExporter`, and `Tools/mapread.py`.
+
 ## Making a world
 
 1. Create a `WorldSettingsSO`, a `TilePropertyTableSO`, an `EntityDefinitionSO` for the player, and a `WorldDataSO` that references the settings and table.
