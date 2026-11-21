@@ -175,6 +175,55 @@ namespace GridWorld.Tests {
         }
 
         [Test]
+        public void FindErrors_RegionOrKeepSymbol_ReportsEach() {
+            var spec = Spec();
+            spec.hasRegion = true;
+            spec.region = new RectInt(4, 2, 1, 1);
+            spec.layers[1].rows[1] = "?..";
+
+            var errors = MapSpecBuilder.FindErrors(spec, Legend(), false);
+
+            Assert.IsTrue(errors.Exists(e => e.Contains("region")));
+            Assert.IsTrue(errors.Exists(e => e.Contains("'?'")));
+        }
+
+        [Test]
+        public void Apply_ChangedSpec_PaintsOnlyChangesAndLeavesSceneUnsaved() {
+            var area = MapSpecBuilder.Build(Spec(), Legend(), false);
+            var edited = Spec();
+            edited.layers[1].rows[0] = "...";
+            edited.layers[1].rows[1] = "..T";
+
+            var errors = new List<string>();
+            Assert.IsNotNull(MapSpecApplier.FindArea(edited, Legend(), errors));
+            var snapshot = MapSpecApplier.Snapshot(area, errors, new List<string>());
+            CollectionAssert.IsEmpty(errors);
+            var changes = MapSpecDiff.Compute(edited, Legend(), snapshot);
+            MapSpecApplier.Apply(area, Legend(), changes);
+
+            var trees = TilemapNamed(area, "Trees");
+            var logic = TilemapNamed(area, MapSpecParser.LogicLayer);
+            Assert.IsNull(trees.GetTile(new Vector3Int(4, 3, 0)));
+            Assert.AreEqual(Load(TreePath), trees.GetTile(new Vector3Int(6, 2, 0)));
+            Assert.AreEqual(Load(WalkPath), logic.GetTile(new Vector3Int(4, 3, 0)));
+            Assert.AreEqual(Load(WallPath), logic.GetTile(new Vector3Int(6, 2, 0)));
+            Assert.AreEqual(Load(GrassPath), TilemapNamed(area, "Ground").GetTile(new Vector3Int(4, 3, 0)));
+            Assert.IsTrue(area.gameObject.scene.isDirty);
+        }
+
+        [Test]
+        public void FindArea_WrongBoundsOrUnknownId_ReportsEach() {
+            MapSpecBuilder.Build(Spec(), Legend(), false);
+            var errors = new List<string>();
+
+            Assert.IsNull(MapSpecApplier.FindArea(Spec("drafted", "4 2 3 3"), Legend(), errors));
+            Assert.IsNull(MapSpecApplier.FindArea(Spec("missing"), Legend(), errors));
+
+            Assert.IsTrue(errors.Exists(e => e.Contains("bounds don't match")));
+            Assert.IsTrue(errors.Exists(e => e.Contains("no area 'missing'")));
+        }
+
+        [Test]
         public void Build_InvalidSpec_CreatesNothing() {
             var legend = Legend();
             legend.entries[0].tile = Folder + "/Missing.asset";

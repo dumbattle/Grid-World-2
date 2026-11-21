@@ -19,22 +19,19 @@ namespace GridWorld {
             var errors = new List<string>();
             var source = spec.source;
 
+            if (spec.hasRegion) {
+                errors.Add($"{source}: 'region:' only works when applying to an existing area. A new area's grids cover its whole bounds.");
+            }
+            if (MapSpecParser.UsesKeep(spec)) {
+                errors.Add($"{source}: '{MapSpecParser.Keep}' keeps a cell of an existing area, so a new area can't use it.");
+            }
+
             var world = AssetDatabase.LoadAssetAtPath<WorldDataSO>(spec.world);
             if (world == null) {
                 errors.Add($"{source}: no world data asset at '{spec.world}'.");
             }
 
-            foreach (var layer in legend.layers) {
-                if (!SortingLayerExists(layer.sortingLayer)) {
-                    errors.Add($"legend '{spec.legend}': layer '{layer.name}' uses sorting layer '{layer.sortingLayer}', which doesn't exist.");
-                }
-            }
-            foreach (var entry in legend.entries) {
-                CheckTile(entry.tile, entry, spec.legend, errors);
-                if (entry.hasLogic) {
-                    CheckTile(entry.logic, entry, spec.legend, errors);
-                }
-            }
+            FindLegendErrors(legend, spec.legend, errors);
 
             if (world != null) {
                 var error = NewAreaCreator.FindError(Request(spec, world, openAdditively));
@@ -110,7 +107,22 @@ namespace GridWorld {
             };
         }
 
-        static Tilemap FindOrCreateTilemap(AreaBehaviour area, string layerName, MapLegend legend) {
+        /// <summary>Sorting layers and tile assets the legend names that don't exist.</summary>
+        internal static void FindLegendErrors(MapLegend legend, string legendName, List<string> errors) {
+            foreach (var layer in legend.layers) {
+                if (!SortingLayerExists(layer.sortingLayer)) {
+                    errors.Add($"legend '{legendName}': layer '{layer.name}' uses sorting layer '{layer.sortingLayer}', which doesn't exist.");
+                }
+            }
+            foreach (var entry in legend.entries) {
+                CheckTile(entry.tile, entry, legendName, errors);
+                if (entry.hasLogic) {
+                    CheckTile(entry.logic, entry, legendName, errors);
+                }
+            }
+        }
+
+        internal static Tilemap FindOrCreateTilemap(AreaBehaviour area, string layerName, MapLegend legend) {
             if (layerName == MapSpecParser.LogicLayer) {
                 return area.GetComponentInChildren<LogicLayerBehaviour>(true).GetComponent<Tilemap>();
             }

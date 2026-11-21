@@ -9,11 +9,13 @@ namespace GridWorld {
     /// </summary>
     public static class MapSpecParser {
         public const char Empty = '.';
+        /// <summary>Leaves whatever the area already has in a cell. Only applying to an existing area allows it.</summary>
+        public const char Keep = '?';
         /// <summary>The tilemap that logic tiles go on. Legends can't use this name.</summary>
         public const string LogicLayer = "Logic";
 
         // '#' starts a comment line and '[' a layer header, so neither can be a symbol.
-        const string ReservedSymbols = ".#[";
+        const string ReservedSymbols = ".#[?";
 
         /// <summary>Returns the spec, or null if a required header is missing.</summary>
         public static MapSpec Parse(string text, string source, List<string> errors) {
@@ -23,6 +25,7 @@ namespace GridWorld {
             // Seen at all, and seen valid. A bad bounds line is reported on its own line.
             bool sawBounds = false;
             bool hasBounds = false;
+            int regionLine = 0;
 
             for (int i = 0; i < lines.Length; i++) {
                 int lineNumber = i + 1;
@@ -58,9 +61,13 @@ namespace GridWorld {
                 }
 
                 bool isBounds = line.StartsWith("bounds", StringComparison.OrdinalIgnoreCase);
+                bool isRegion = line.StartsWith("region", StringComparison.OrdinalIgnoreCase);
                 sawBounds |= isBounds;
                 if (ReadHeader(spec, line, source, lineNumber, errors)) {
                     hasBounds |= isBounds;
+                    if (isRegion) {
+                        regionLine = lineNumber;
+                    }
                 }
             }
 
@@ -72,6 +79,9 @@ namespace GridWorld {
                 errors.Add($"{source}: missing 'bounds: x y width height'.");
             }
             complete &= hasBounds;
+            if (hasBounds && spec.hasRegion && !Contains(spec.bounds, spec.region)) {
+                errors.Add($"{source}:{regionLine}: the region must be inside the bounds.");
+            }
             if (spec.layers.Count == 0) {
                 errors.Add($"{source}: no layers. Add one with a header like [Ground].");
             }
@@ -155,21 +165,23 @@ namespace GridWorld {
                     errors.Add($"{source}:{layer.line}: layer [{layer.name}] isn't in legend '{spec.legend}'.");
                     continue;
                 }
-                if (layer.rows.Count != spec.bounds.height) {
-                    errors.Add($"{source}:{layer.line}: [{layer.name}] has {layer.rows.Count} rows, but the bounds are {spec.bounds.height} tall.");
+                var grid = spec.grid;
+                var gridName = spec.hasRegion ? "region" : "bounds";
+                if (layer.rows.Count != grid.height) {
+                    errors.Add($"{source}:{layer.line}: [{layer.name}] has {layer.rows.Count} rows, but the {gridName} is {grid.height} tall.");
                 }
 
                 for (int r = 0; r < layer.rows.Count; r++) {
                     var row = layer.rows[r];
                     int lineNumber = layer.rowLines[r];
-                    if (row.Length != spec.bounds.width) {
-                        errors.Add($"{source}:{lineNumber}: row is {row.Length} wide, but the bounds are {spec.bounds.width} wide.");
+                    if (row.Length != grid.width) {
+                        errors.Add($"{source}:{lineNumber}: row is {row.Length} wide, but the {gridName} is {grid.width} wide.");
                     }
 
                     // One message per symbol per row is enough to find it.
                     var reported = new HashSet<char>();
                     foreach (char symbol in row) {
-                        if (symbol == Empty || reported.Contains(symbol)) {
+                        if (symbol == Empty || symbol == Keep || reported.Contains(symbol)) {
                             continue;
                         }
                         if (!symbol2entry.TryGetValue(symbol, out var entry)) {
@@ -227,6 +239,14 @@ namespace GridWorld {
                     }
                     errors.Add($"{source}:{lineNumber}: bounds should be 'x y width height', with a width and height above 0.");
                     return false;
+                case "region":
+                    if (TryParseBounds(value, out var region)) {
+                        spec.region = region;
+                        spec.hasRegion = true;
+                        return true;
+                    }
+                    errors.Add($"{source}:{lineNumber}: region should be 'x y width height', with a width and height above 0.");
+                    return false;
                 default:
                     errors.Add($"{source}:{lineNumber}: unknown header '{key}'.");
                     return false;
@@ -250,6 +270,22 @@ namespace GridWorld {
             }
             bounds = new RectInt(numbers[0], numbers[1], numbers[2], numbers[3]);
             return true;
+        }
+
+        /// <summary>Whether any grid uses <see cref="Keep"/>.</summary>
+        public static bool UsesKeep(MapSpec spec) {
+            foreach (var layer in spec.layers) {
+                foreach (var row in layer.rows) {
+                    if (row.IndexOf(Keep) >= 0) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        static bool Contains(RectInt outer, RectInt inner) {
+            return inner.xMin >= outer.xMin && inner.yMin >= outer.yMin && inner.xMax <= outer.xMax && inner.yMax <= outer.yMax;
         }
 
         static bool Require(string value, string key, string source, List<string> errors) {

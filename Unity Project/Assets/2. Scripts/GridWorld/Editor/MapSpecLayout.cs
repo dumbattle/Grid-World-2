@@ -12,7 +12,7 @@ namespace GridWorld {
         public static List<MapTilePlacement> Layout(MapSpec spec, MapLegend legend) {
             var symbol2entry = MapSpecParser.SymbolLookup(legend);
             var placements = new List<MapTilePlacement>();
-            var cell2logic = new Dictionary<Vector2Int, (int order, string tile)>();
+            var logic = new MapLogicCover(spec.bounds);
 
             foreach (var layer in spec.layers) {
                 int order = Array.FindIndex(legend.layers, l => l.name == layer.name);
@@ -20,44 +20,27 @@ namespace GridWorld {
                 for (int r = 0; r < layer.rows.Count; r++) {
                     var row = layer.rows[r];
                     for (int c = 0; c < row.Length; c++) {
-                        if (row[c] == MapSpecParser.Empty || !symbol2entry.TryGetValue(row[c], out var entry)) {
+                        if (!symbol2entry.TryGetValue(row[c], out var entry)) {
                             continue;
                         }
 
-                        var cell = new Vector2Int(spec.bounds.x + c, spec.bounds.yMax - 1 - r);
+                        var cell = Cell(spec, r, c);
                         placements.Add(new MapTilePlacement(layer.name, cell, entry.tile));
-
-                        if (entry.hasLogic) {
-                            AddLogic(cell2logic, spec.bounds, Footprint(entry, cell), order, entry.logic);
-                        }
+                        logic.Add(entry, cell, order);
                     }
                 }
             }
 
-            foreach (var pair in cell2logic) {
+            foreach (var pair in logic.cells) {
                 placements.Add(new MapTilePlacement(MapSpecParser.LogicLayer, pair.Key, pair.Value.tile));
             }
             return placements;
         }
 
-        static RectInt Footprint(MapLegendEntry entry, Vector2Int cell) {
-            var footprint = entry.footprint;
-            if (footprint == null || !footprint.isSet) {
-                return new RectInt(cell, Vector2Int.one);
-            }
-            return new RectInt(cell.x + footprint.x, cell.y + footprint.y, footprint.width, footprint.height);
-        }
-
-        static void AddLogic(Dictionary<Vector2Int, (int order, string tile)> cell2logic, RectInt bounds, RectInt footprint, int order, string tile) {
-            foreach (var cell in footprint.allPositionsWithin) {
-                // Logic outside the area's bounds wouldn't bake, and could land in a neighbour's tiles.
-                if (!bounds.Contains(cell)) {
-                    continue;
-                }
-                if (!cell2logic.TryGetValue(cell, out var current) || order > current.order) {
-                    cell2logic[cell] = (order, tile);
-                }
-            }
+        /// <summary>The cell for a grid row and column. Row 0 is the top of the grid, the highest y.</summary>
+        public static Vector2Int Cell(MapSpec spec, int row, int column) {
+            var grid = spec.grid;
+            return new Vector2Int(grid.x + column, grid.yMax - 1 - row);
         }
     }
 }

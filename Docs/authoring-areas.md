@@ -56,7 +56,7 @@ Code: `Editor/AreaDeleter`.
 
 ## Drafting areas from specs
 
-A text spec describes a new area as ASCII grids, and an Editor command builds it as a painted, baked area scene to polish by hand. Specs only create areas. Once an area exists its scene is the source of truth, and building a spec for a taken ID is refused.
+A text spec describes an area as ASCII grids. One Editor command builds a new area from a spec as a painted, baked scene to polish by hand, and another applies an edited spec to an existing area, painting only the cells that changed. The scene stays the source of truth: export a fresh spec from it before editing, since hand edits since the last export would otherwise be overwritten.
 
 Files live in `Maps/` at the repo root, outside `Assets/`, so Unity doesn't import them:
 
@@ -81,7 +81,7 @@ A legend lists tilemap layers bottom to top, then one entry per character. Tiles
 }
 ```
 
-- `symbol` is one character, unique in the legend. `.`, `#` and `[` are reserved.
+- `symbol` is one character, unique in the legend. `.`, `?`, `#` and `[` are reserved.
 - `logic` is optional. The Logic layer is filled from it: each cell takes the logic tile of the topmost layer whose entry covers it, so a tree over grass blocks. A cell no entry covers stays unpainted, so it's blocked. Logic tiles still need to be in the tile property table.
 - `footprint` is optional, measured from the painted cell, for art that covers more than one tile. Without it, logic covers just the painted cell. Footprint cells outside the bounds are dropped.
 - `Logic` can't be a legend layer name.
@@ -107,6 +107,8 @@ T.......
 - `bounds` is x, y, width, height in world tiles. `sceneFolder:` and `dataFolder:` are optional; by default they follow the New Area window.
 - Each `[Layer]` grid has one row per tile of height and one character per tile of width. The top row is the highest y. `.` leaves a cell empty.
 - A symbol must belong to the layer it's used in. A `[Logic]` section isn't allowed.
+- `region: x y width height` is optional, and only for applying. The grids then cover just that rectangle, which must lie inside the bounds.
+- `?` keeps a cell as it is. It's only for applying, too.
 
 ### Building and previewing
 
@@ -119,9 +121,37 @@ T.......
 
 Export All opens each area scene additively and closes it again. It can't run while an untitled scene is open.
 
+### Editing existing areas
+
+1. Export the area's current spec with `py Tools/mapread.py spec <id>`. It writes `Maps/areas/<id>.txt`, and a legend if the area needs one.
+2. Edit the grids. Use `?` for cells to leave alone, and `region` to edit only part of a large area.
+3. Choose **Grid World → Apply Spec to Area…** and pick the spec.
+
+Applying refuses a spec whose area doesn't exist, whose bounds differ from the area's, or whose area scene can't be read: no logic layer, a tilemap away from the origin, or two tilemaps with the same name. It opens the scene additively if it isn't open, which it can't do while an untitled scene is open.
+
+It compares each cell with the scene, and lists the changes per layer, with any warnings, before you confirm. If nothing differs, it says so. On **Apply**, it paints the changes as one Undo step and marks the scene changed without saving it, so check the result before saving bakes it. Cancelling closes a scene it opened.
+
+Logic is redone only for affected cells: changed cells, plus the footprints of their old and new art. For each one:
+
+- If the legend gives it a logic tile, it's painted.
+- If no art is left in the cell, its logic is cleared.
+- If art is left but no entry has logic, its logic is kept, with a warning.
+- If its logic already differed from what the legend gave before the edit, it was painted by hand. It's kept, with a warning.
+
+Unchanged cells keep their logic, so hand-painted logic elsewhere is never touched.
+
+### Exporting specs
+
+`py Tools/mapread.py spec <id>` writes a spec from an area's scene. It works for areas made by hand, too.
+
+- **Legend:** it uses `--legend NAME`, then the `legend:` header of an existing spec, then none. Tiles the legend lacks are added to a copy named `<id>.json`, or to the legend itself with `--write-legend`. With no legend, it makes `<id>.json` from the scene.
+- **New symbols** come from the tile's name where possible, assigned bottom layer first and most-used tiles first.
+- **New logic:** a tile gets the logic tile under a strict majority of its cells, checked top layer first. Cells a higher layer already covers aren't counted. Art that covers more than one tile gets a footprint hint as a warning, to check by hand.
+- **The spec** keeps an existing spec's opening comments, and adds the Logic grid as comments for reference. `--region X Y W H` writes only that rectangle. Cells it can't name, such as tiles from outside the project, are written as `?`. It notes how many tiles lie outside the bounds.
+
 ### Reading the world from Python
 
-`Tools/mapread.py` reads the project's text assets without the Editor, and never writes them. It needs only Python's standard library. Run it with `py`:
+`Tools/mapread.py` reads the project's text assets without the Editor, and never writes them. Only `spec` writes files, and only under `Maps/`. It needs only Python's standard library. Run it with `py`:
 
 | Command | Prints |
 |---|---|
@@ -129,10 +159,11 @@ Export All opens each area scene additively and closes it again. It can't run wh
 | `area <id> [--legend NAME]` | Each tilemap in an area's scene as an ASCII grid |
 | `edges --bounds X Y W H [--depth N] [--legend NAME]` | The strips of neighbouring areas along proposed bounds, three tiles deep by default, and any overlap |
 | `tiles <folder>` | Tile assets in a folder, with their type and path |
+| `spec <id> [--legend NAME] [--write-legend] [--region X Y W H]` | Writes an area's spec, and a legend if needed. See [Exporting specs](#exporting-specs) |
 
 Grids use the legend's symbols where it has them, and made-up letters with a key for other tiles. The reader assumes tilemaps sit at the area's origin, and skips tiles placed through prefabs.
 
-Code: `Editor/MapSpecParser`, `MapSpecLayout`, `MapSpecBuilder`, `MapSpecMenu`, `AreaPreviewExporter`, and `Tools/mapread.py`.
+Code: `Editor/MapSpecParser`, `MapSpecLayout`, `MapLogicCover`, `MapSpecBuilder`, `MapSpecDiff`, `MapSpecApplier`, `MapAreaSnapshot`, `MapSpecMenu`, `AreaPreviewExporter`, and `Tools/mapread.py`.
 
 ## Making a world
 

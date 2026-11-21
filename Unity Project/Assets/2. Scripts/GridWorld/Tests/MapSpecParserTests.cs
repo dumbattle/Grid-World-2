@@ -190,6 +190,51 @@ namespace GridWorld.Tests {
         }
 
         [Test]
+        public void Parse_Region_ReadsItAndChecksGridsAgainstIt() {
+            var text = SpecText.Replace("legend: grassland", "legend: grassland\nregion: 11 20 2 1")
+                .Replace("gg=\ng==\n", "g=\n").Replace("T.f\n...\n", "?f\n");
+            var spec = Spec(text);
+
+            MapSpecParser.CheckAgainstLegend(spec, Legend(), errors);
+
+            CollectionAssert.IsEmpty(errors);
+            Assert.IsTrue(spec.hasRegion);
+            Assert.AreEqual(new RectInt(11, 20, 2, 1), spec.grid);
+        }
+
+        [Test]
+        public void Parse_RegionOutsideBounds_ReportsLine() {
+            Spec(SpecText.Replace("legend: grassland", "legend: grassland\nregion: 12 20 2 2"));
+
+            Assert.IsTrue(errors.Exists(e => e.StartsWith("forest.txt:6:") && e.Contains("inside the bounds")));
+        }
+
+        [Test]
+        public void CheckAgainstLegend_KeepSymbol_IsAllowed() {
+            MapSpecParser.CheckAgainstLegend(Spec(SpecText.Replace("T.f", "T??")), Legend(), errors);
+
+            CollectionAssert.IsEmpty(errors);
+        }
+
+        [Test]
+        public void ParseLegend_KeepSymbol_IsReserved() {
+            MapSpecParser.ParseLegend(LegendJson.Replace(@"""symbol"": ""f""", @"""symbol"": ""?"""), "grassland.json", errors);
+
+            Assert.IsTrue(errors.Exists(e => e.Contains("'?' is reserved")));
+        }
+
+        [Test]
+        public void Layout_Region_PlacesGridAtRegion() {
+            var text = SpecText.Replace("legend: grassland", "legend: grassland\nregion: 11 20 2 1")
+                .Replace("gg=\ng==\n", "g=\n").Replace("T.f\n...\n", "..\n");
+
+            var placements = MapSpecLayout.Layout(Spec(text), Legend());
+
+            Assert.IsTrue(placements.Contains(new MapTilePlacement("Ground", new Vector2Int(11, 20), "Assets/Grass.asset")));
+            Assert.IsTrue(placements.Contains(new MapTilePlacement("Ground", new Vector2Int(12, 20), "Assets/Path.asset")));
+        }
+
+        [Test]
         public void Layout_TopRowIsHighestY() {
             var placements = MapSpecLayout.Layout(Spec(), Legend());
 
