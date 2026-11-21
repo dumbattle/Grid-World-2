@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b98ebf591cf8e634e9a610291c9e2568, type: 3}
+  m_Name: TEST_TilePropertyTable
+  m_EditorClassIdentifier: GridWorld::GridWorld.TilePropertyTableSO
+  entries:
+  - tile: {fileID: 11400000, guid: 57314d3204428a5488bdb5a67a92a60c, type: 2}
+    enterUp: 1
+    enterDown: 1
+    enterLeft: 1
+    enterRight: 1
+    gameBits: 0
+  - tile: {fileID: 11400000, guid: 912d5bbf8d99b9941b0d807b777cd84d, type: 2}
+    enterUp: 1
+    enterDown: 1
+    enterLeft: 1
+    enterRight: 1
+    gameBits: 0
+  - tile: {fileID: 11400000, guid: a1c049268d375d24ba35f2b7f5dd593d, type: 2}
+    enterUp: 0
+    enterDown: 0
+    enterLeft: 0
+    enterRight: 0
+    gameBits: 0

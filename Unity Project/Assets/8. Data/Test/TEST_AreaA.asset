@@ -1,0 +1,90 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f51b1c01f52e9f14d98dda0cee29ff37, type: 3}
+  m_Name: TEST_AreaA
+  m_EditorClassIdentifier: GridWorld::GridWorld.AreaDataSO
+  id: TEST_a
+  sceneFilePath: Assets/1. Scenes/Test/TEST_Area_a.unity
+  localTileBounds:
+    x: 0
+    y: 0
+    width: 24
+    height: 16
+  worldOffset: {x: 0, y: 0}
+  tiles: 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f0000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f0000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f0000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f0000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f0000000f000f000f000f000f000f000f000000000000000f000f000f000f000f000f000f000f000f000f000f000f000f0000000f000f000f000f000f000f000f000000000000000f000f000f000f000f000f000f000f000f000f000f000f000f0000000f000f000f000f000f000f000f000000000000000f000f000f000f000f000f000f000f000f000f000f000f000f0000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f0000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f0000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f0000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f0000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f0000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  features:
+  - rid: 6223929002462543950
+  - rid: 6223929002462543951
+  - rid: 6223929002462543952
+  - rid: 6223929002462543953
+  references:
+    version: 2
+    RefIds:
+    - rid: 6223929002462543950
+      type: {class: PlayerSpawnData, ns: GridWorld, asm: GridWorld}
+      data:
+        entityDefinition: {fileID: 11400000, guid: b02cece9bf5965f41bf014e6561b3e58, type: 2}
+        localTile: {x: 5, y: 5}
+        facingDirection: 2
+    - rid: 6223929002462543951
+      type: {class: NpcData, ns: GridWorld, asm: GridWorld}
+      data:
+        entityDefinition: {fileID: 11400000, guid: 605b28d3caf974444ba76054690db636, type: 2}
+        localTile: {x: 3, y: 10}
+        facingDirection: 2
+        addonRecords:
+        - rid: 6223929002462543954
+    - rid: 6223929002462543952
+      type: {class: NpcData, ns: GridWorld, asm: GridWorld}
+      data:
+        entityDefinition: {fileID: 11400000, guid: 605b28d3caf974444ba76054690db636, type: 2}
+        localTile: {x: 15, y: 4}
+        facingDirection: 2
+        addonRecords:
+        - rid: 6223929002462543955
+    - rid: 6223929002462543953
+      type: {class: NpcData, ns: GridWorld, asm: GridWorld}
+      data:
+        entityDefinition: {fileID: 11400000, guid: b109d1517785140438f59c15a4adb8dd, type: 2}
+        localTile: {x: 12, y: 12}
+        facingDirection: 2
+        addonRecords:
+        - rid: 6223929002462543956
+    - rid: 6223929002462543954
+      type: {class: SpinAIData, ns: GridWorld, asm: GridWorld}
+      data:
+        pauseWhenAreaInactive: 1
+        minWait: 60
+        maxWait: 180
+    - rid: 6223929002462543955
+      type: {class: WanderAIData, ns: GridWorld, asm: GridWorld}
+      data:
+        pauseWhenAreaInactive: 1
+        localRegion:
+          x: 12
+          y: 2
+          width: 7
+          height: 5
+        minWait: 30
+        maxWait: 120
+    - rid: 6223929002462543956
+      type: {class: PatrolAIData, ns: GridWorld, asm: GridWorld}
+      data:
+        pauseWhenAreaInactive: 1
+        points:
+        - tile: {x: 12, y: 12}
+          facing: 3
+          waitTicks: 60
+        - tile: {x: 20, y: 12}
+          facing: 1
+          waitTicks: 60
+        mode: 1
