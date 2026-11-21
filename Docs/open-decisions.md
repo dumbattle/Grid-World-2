@@ -24,7 +24,6 @@ Settled design is in [architecture.md](../.claude/rules/architecture.md).
 - Test `[SerializeReference]` feature records at scale. A bulky feature can store its data as arrays in one record.
 - Measure the memory cost of always-loaded assets, since area data assets keep everything they reference in memory, including NPC sprites.
 - Check in play: the idle frame on a follower that waits a tick at the start of a chain, and the one-tick delay before a ledge hop.
-- Work out how an NPC with several components shares one `EntityID` through the world feature path. Starting idea: one entity behaviour gathers its components into a single record.
 - The camera sets only its height from the view size, so a wide Game view shows more tiles across than the activation margins assume. Touching areas are always loaded, so this matters only for areas that don't touch. A fix would letterbox or pillarbox the camera to the view size.
 - Handle a failed load during a door's fade, which would otherwise hang the cutscene.
 - Consider `AllAiInChunk(...)` as an optional helper if spawning sprites ends up building a per-area entity list.
@@ -34,7 +33,7 @@ Settled design is in [architecture.md](../.claude/rules/architecture.md).
 
 Settled in the rules, but not in the code after the first slice.
 
-- **Features:** NPCs and AI, cutscenes and the cutscene phase, props, ledges, doors and interiors, pathfinding, saving, dialogue, the interact button, and game extension.
+- **Features:** runtime spawning and despawning (for mobs, with spawn zones), the `absent` and `scripted` markers, `returnToRoute`, cutscenes and the cutscene phase, props, ledges, doors and interiors, pathfinding, saving, dialogue, the interact button, and game extension.
 - **Hooks:** `failedMoves`, `stepsCompleted`, and `interactAttempts`.
 - **Rendering:** removing sprites and hiding them in inactive areas, sprite pooling, four-direction animation, bottom pivots for entity sprites (they sort by Y from a centre pivot for now), and pixel snapping.
 - **World data:** world offsets for interiors (every area bakes at 0), the override tilemap, and the "Go to area" window.

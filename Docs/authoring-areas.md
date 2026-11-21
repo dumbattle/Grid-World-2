@@ -182,7 +182,7 @@ Code: `Editor/MapSpecParser`, `MapSpecChecks`, `MapSpecMode`, `MapSpecLayout`, `
 
 1. Create a `WorldSettingsSO`, a `TilePropertyTableSO`, an `EntityDefinitionSO` for the player, and a `WorldDataSO` that references the settings and table.
 2. Add areas with the New Area window.
-3. Make a main scene with a camera and a `WorldRootBehaviour`, setting `worldData`, `viewCamera`, `moveAction` (`Player/Move`), and `runAction` (`Player/Sprint`). Don't add area scenes to it; they stream in.
+3. Make a main scene with a camera and a `WorldRootBehaviour`, setting `worldData`, `viewCamera`, `moveAction` (`Player/Move`), and `runAction` (`Player/Sprint`). Don't add area scenes to it; they stream in. A root with no world data, or world data with no settings, logs an error and doesn't start.
 4. Open the main scene alone and press Play.
 
 ## The bake
@@ -215,15 +215,19 @@ Every area bakes with a world offset of 0 until doors give interiors their own.
 3. A `WorldFeatureType<TData>` whose `Register(ctx, area, data)` turns the record into world state, converting tiles with `area.ToWorldTile`.
 4. Register an instance in the root's `WorldFeatureCatalogue` before startup.
 
-`PlayerSpawnData`, `PlayerSpawnBehaviour`, and `PlayerSpawnFeatureType` are the example.
+`PlayerSpawnData`, `PlayerSpawnBehaviour`, and `PlayerSpawnFeatureType` are the example. NPCs are a feature type too, with add-on components of their own: see [NPCs and AI](npcs.md).
 
 ## The test world
 
-**Grid World → Test → Create Test World** replaces everything in the `Game` subfolders of `1. Scenes`, `3. Sprites`, `6. Tiles`, and `8. Data`, so don't keep your own work there.
+**Grid World → Test → Create Test World** replaces everything in the `Test` subfolders of `1. Scenes`, `3. Sprites`, `6. Tiles`, and `8. Data`, so don't keep your own work there. Everything it makes, including the objects in its scenes, is named with a `TEST_` prefix.
 
-- Three 16 px placeholder tiles: `GroundA`, `GroundB`, and `Wall`.
-- The table, world settings, a `Player` definition, `WorldData`, and `AreaA` and `AreaB` data.
-- `TestMain`: the camera and a `World Root`.
-- `Area_test_a` (0,0 to 24,16) and `Area_test_b` (24,0 to 48,16), with walls on the outer edges and one block each. The player spawns in `test_a` at (5, 5), facing down.
+- Three 16 px placeholder tiles: `TEST_GroundA`, `TEST_GroundB`, and `TEST_Wall`.
+- `TEST_TilePropertyTable`, `TEST_WorldSettings`, `TEST_WorldData`, and `TEST_AreaA` and `TEST_AreaB` data.
+- Definitions: `TEST_Player` (orange), `TEST_Villager` (blue), and `TEST_Guard` (purple, walking at 20 ticks a tile).
+- `TEST_Main`: the camera and a `TEST_World Root`.
+- `TEST_Area_a`, area `TEST_a` (0,0 to 24,16), and `TEST_Area_b`, area `TEST_b` (24,0 to 48,16), with walls on the outer edges and one block each. The player spawns in `TEST_a` at (5, 5), facing down.
+- NPCs:
+  - In `TEST_a`, a spinning villager at (3,10), a wandering villager at (15,4) in the region (12,2) to (18,6), and a guard walking back and forth on row 12 between x = 12 and 20, facing outward and waiting a second at each end.
+  - In `TEST_b`, a guard looping the rectangle from (28,4) to (40,7), waiting half a second at two corners, and a wandering villager at (38,12) in the region (36,11) to (43,13).
 
-Open `TestMain` and press Play. Area sizes are constants in `CreateTestWorld`, to make a large-area test easy.
+Open `TEST_Main` and press Play. Area sizes are constants in `CreateTestWorld`, to make a large-area test easy.

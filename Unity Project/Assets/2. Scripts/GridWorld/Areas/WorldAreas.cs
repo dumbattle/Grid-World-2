@@ -42,5 +42,15 @@ namespace GridWorld {
         public void SetActive(int index, bool value) {
             active[index] = value;
         }
+
+        /// <summary>The index of the area holding <paramref name="tile"/>, or -1 if none does.</summary>
+        public int IndexOf(Vector2Int tile) {
+            for (int i = 0; i < bounds.Count; i++) {
+                if (bounds[i].Contains(tile)) {
+                    return i;
+                }
+            }
+            return -1;
+        }
     }
 }

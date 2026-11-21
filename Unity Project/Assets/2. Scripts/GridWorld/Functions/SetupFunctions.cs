@@ -44,5 +44,22 @@ namespace GridWorld {
                     where T : IWorldFunctionContext, IPerm_SetupWorld {
             ctx.data.player = id;
         }
+
+        public static void AddAI<T>(this T ctx, EntityID id, EntityAI ai)
+                    where T : IWorldFunctionContext, IPerm_SetupWorld {
+            if (ai == null) {
+                throw new ArgumentNullException(nameof(ai));
+            }
+            var components = ctx.data.components;
+            if (components.ai.Has(id)) {
+                throw new InvalidOperationException($"{id} already has an AI. An entity can have only one.");
+            }
+            components.Register(components.ai, id, ai);
+        }
+
+        public static void SeedRandom<T>(this T ctx, int seed)
+                    where T : IWorldFunctionContext, IPerm_SetupWorld {
+            ctx.data.random = new System.Random(seed);
+        }
     }
 }

@@ -11,8 +11,11 @@ namespace GridWorld {
         [SerializeField, Min(0)] int activateMargin = 4;
         [Tooltip("An area that doesn't touch the target's area goes inactive once it's this many tiles from the edge of the view. Keep it larger than the activate margin.")]
         [SerializeField, Min(0)] int deactivateMargin = 8;
+        [Tooltip("Seeds the world's random generator, so the same inputs give the same run.")]
+        [SerializeField] int randomSeed = 0;
 
         public Vector2Int viewTiles => viewSizeInTiles;
+        public int seed => randomSeed;
         public int activateMarginTiles => activateMargin;
         public int deactivateMarginTiles => Mathf.Max(deactivateMargin, activateMargin);
     }

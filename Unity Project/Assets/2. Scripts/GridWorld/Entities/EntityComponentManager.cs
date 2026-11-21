@@ -11,6 +11,7 @@ namespace GridWorld {
         public readonly EntityComponent<Direction4> facing = new EntityComponent<Direction4>();
         public readonly EntityComponent<EntityDefinitionSO> definition = new EntityComponent<EntityDefinitionSO>();
         public readonly EntityComponent<Step> step = new EntityComponent<Step>();
+        public readonly EntityComponent<EntityAI> ai = new EntityComponent<EntityAI>();
 
         public void Register<T>(EntityComponent<T> component, EntityID id, T value) {
             component.Add(id, value);

@@ -31,6 +31,14 @@ namespace GridWorld.Tests {
             return id;
         }
 
+        public void AddAI(EntityID id, EntityAI ai) {
+            world.GetContext<WorldSetupContext>().AddAI(id, ai);
+        }
+
+        public void SetAreaActive(bool active) {
+            world.GetContext<AreaActivationContext>().SetAreaActive(0, active);
+        }
+
         public void Request(EntityID id, Direction4 direction, bool turnOnly = false, bool run = false) {
             world.GetContext<DecisionPhaseContext>().RequestMove(id, direction, turnOnly, run);
         }

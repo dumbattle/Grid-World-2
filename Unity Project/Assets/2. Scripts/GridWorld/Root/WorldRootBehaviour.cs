@@ -33,10 +33,19 @@ namespace GridWorld {
         }
 
         void Start() {
+            if (worldData == null || worldData.settings == null) {
+                Debug.LogError($"Grid World: '{name}' needs a world data asset that has world settings.", this);
+                return;
+            }
+
             var instance = new WorldInstance();
             var catalogue = new WorldFeatureCatalogue();
             catalogue.Register(new PlayerSpawnFeatureType());
-            WorldStartup.Load(instance.GetContext<WorldSetupContext>(), worldData, catalogue);
+            catalogue.Register(new NpcFeatureType());
+
+            var setup = instance.GetContext<WorldSetupContext>();
+            setup.SeedRandom(worldData.settings.seed);
+            WorldStartup.Load(setup, worldData, catalogue);
 
             if (instance.player.IsValid()) {
                 instance.cameraController = new FollowCameraController(instance.player);

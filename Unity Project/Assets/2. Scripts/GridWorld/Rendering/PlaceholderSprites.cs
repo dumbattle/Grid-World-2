@@ -15,8 +15,9 @@ namespace GridWorld {
         const int BarDepth = 3;
 
         static readonly Color32 clear = new Color32(0, 0, 0, 0);
-        static readonly Color32 body = new Color32(232, 112, 72, 255);
-        static readonly Color32 outline = new Color32(96, 40, 32, 255);
+        // White and grey, so the sprite renderer's colour tints them per definition.
+        static readonly Color32 body = new Color32(255, 255, 255, 255);
+        static readonly Color32 outline = new Color32(100, 100, 100, 255);
 
         // Indexed by Direction4.Enum.
         Texture2D[] textures = new Texture2D[4];

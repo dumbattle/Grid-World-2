@@ -28,6 +28,7 @@ namespace GridWorld {
                 var id = entities[i];
                 if (!id2sprite.TryGetValue(id, out var sprite)) {
                     sprite = CreateSprite(id);
+                    sprite.color = ctx.GetDefinition(id).placeholderTint;
                     id2sprite.Add(id, sprite);
                 }
                 sprite.sprite = placeholders.Get(ctx.GetFacing(id));

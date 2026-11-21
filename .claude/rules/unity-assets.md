@@ -27,7 +27,9 @@ Under `Unity Project/Assets/`, top-level content folders are numbered so they so
 1. Scenes    2. Scripts    3. Sprites    4. Animations    5. Prefabs    6. Tiles    7. Audio    8. Data
 ```
 
-Create them when first needed. `Scenes/` still has its default name and should become `1. Scenes` through the Editor, because the build settings point to it. Content that belongs to the reusable framework sits in a `GridWorld/` subfolder, and test content in a `Game/` subfolder.
+Create them when first needed. `Scenes/` still has its default name and should become `1. Scenes` through the Editor, because the build settings point to it. Content that belongs to the reusable framework sits in a `GridWorld/` subfolder, and test content in a `Test/` subfolder.
+
+Name every test asset, scene, prefab, and generated scene object with a `TEST_` prefix, such as `TEST_Main.unity`, `TEST_Villager.asset`, or `TEST_World Root`, so it can't be mistaken for real content. Test code stays in the `Game` assembly under `2. Scripts/Game/`.
 
 ## Art
 

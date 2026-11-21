@@ -20,6 +20,9 @@ namespace GridWorld {
         // Areas, with active flags updated once per tick after the phases
         public readonly WorldAreas areas = new WorldAreas();
 
+        // Seeded, so a run can be repeated. Startup reseeds it from the world settings.
+        public System.Random random = new System.Random(0);
+
         // Input, written by the root outside the phases
         public readonly PlayerInput input = new PlayerInput();
 

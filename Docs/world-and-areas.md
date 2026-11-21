@@ -10,7 +10,8 @@ Owns all overworld state as public fields. Only the root holds it.
 
 | Field | What it is | Written by |
 |---|---|---|
-| `entityIds`, `components` | Entity IDs and component stores (`tile`, `facing`, `definition`, `step`) | Startup, movement |
+| `entityIds`, `components` | Entity IDs and component stores (`tile`, `facing`, `definition`, `step`, `ai`) | Startup, movement |
+| `random` | A `System.Random`, seeded at startup from the world settings | Startup, decision phase |
 | `player` | The player's `EntityID` | Startup |
 | `tiles`, `occupancy` | Tile data lookup and `tile2entity` | Startup, movement |
 | `areas` | Each area's ID, world bounds, and active flag | Startup, area activation |
@@ -27,6 +28,7 @@ A system gets a context from `world.GetContext<T>()`, which creates it once and 
 |---|---|---|
 | `WorldSetupContext` | SetupWorld, ReadEntities | World startup and feature types |
 | `DecisionPhaseContext` | ReadEntities, RequestMove, PlayerControl | `PlayerInputSystem` |
+| `AIContext` | ReadTiles, ReadEntities, ReadAreas, RequestMove, UseRandom | `AISystem` and every `EntityAI` |
 | `MovementPhaseContext` | ReadTiles, ReadEntities, ResolveMovement | `MovementSystem` |
 | `AreaActivationContext` | ReadAreas, UpdateAreas | `AreaActivationSystem` |
 | `RenderContext` | ReadEntities, ReadCamera, ReadAreas | `WorldView`, `CameraView`, camera controllers, `AreaSceneLoader` |
@@ -72,7 +74,7 @@ In a row of areas A, B, C, entering C deactivates A once it's beyond the margin,
 - An active, unloaded area starts an additive `LoadSceneAsync`. An inactive, loaded area starts an `UnloadSceneAsync`.
 - A scene mid-load or mid-unload finishes first; the loader catches up on a later frame.
 - A scene already open when Play starts counts as loaded, so opening area scenes in the Editor doesn't duplicate them.
-- Each finished load and unload logs its time: `Grid World: loaded area 'test_b' in N ms.`
+- Each finished load and unload logs its time: `Grid World: loaded area 'TEST_b' in N ms.`
 - A scene missing from the build's scene list logs an error.
 
 The bake adds each area scene to the build's scene list, so this normally can't happen.

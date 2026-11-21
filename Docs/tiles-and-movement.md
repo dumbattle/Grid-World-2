@@ -36,7 +36,7 @@ The entity's tile is already `to` while a step runs. `BlendedPosition(alpha)` gi
 
 ## A tick
 
-`PhaseExecutionManager.Tick(world)` runs `PlayerInputSystem` (decision), then `MovementSystem` (movement). There's no cutscene phase yet.
+`PhaseExecutionManager.Tick(world)` runs `PlayerInputSystem` and `AISystem` (decision), then `MovementSystem` (movement). There's no cutscene phase yet. The two decision systems write requests for different entities, so their order doesn't matter. `AISystem` is described in [NPCs and AI](npcs.md#runtime).
 
 ### Requests
 

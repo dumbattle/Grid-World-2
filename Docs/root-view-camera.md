@@ -15,7 +15,7 @@ The framework's default root, and the only holder of `WorldInstance`. A game tha
 | `moveAction` | `Player/Move` from `InputSystem_Actions` |
 | `runAction` | `Player/Sprint` |
 
-**Start:** loads the world with `PlayerSpawnFeatureType` registered, sets a `FollowCameraController` on the player, creates the view, camera view, and scene loader, runs area activation once, and ticks the view once so sprites exist on the first frame.
+**Start:** logs an error and stops if the world data or its settings are missing. Otherwise it seeds the world's random generator from the settings, loads the world with `PlayerSpawnFeatureType` and `NpcFeatureType` registered, sets a `FollowCameraController` on the player, creates the view, camera view, and scene loader, runs area activation once, and ticks the view once so sprites exist on the first frame.
 
 **Each frame:**
 
@@ -42,7 +42,7 @@ A plain class that owns one `SpriteRenderer` per entity, under the root's transf
 - `Render(ctx, alpha)`, once per frame: positions each sprite at its blended position plus half a tile.
 - `Dispose()`: destroys the sprites and placeholder textures.
 
-Every entity gets a `PlaceholderSprites` sprite for now: an orange square spanning one tile, with a dark bar on the side it faces. Sprites draw on the Entity On Ground sorting layer, above the ground and doodad tilemaps. They're never removed, and they don't yet hide in inactive areas.
+Every entity gets a `PlaceholderSprites` sprite for now: a white square spanning one tile, with a grey outline and a bar on the side it faces, tinted by the **Placeholder Color** on its definition (orange by default). Sprites draw on the Entity On Ground sorting layer, above the ground and doodad tilemaps. They're never removed, and they don't yet hide in inactive areas.
 
 ## Camera
 
