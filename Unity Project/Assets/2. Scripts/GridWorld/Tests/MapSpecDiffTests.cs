@@ -44,7 +44,7 @@ namespace GridWorld.Tests {
         /// <summary>The area a new-area build of the spec would make.</summary>
         static MapAreaSnapshot Built(MapSpec spec) {
             var snapshot = new MapAreaSnapshot();
-            foreach (var placement in MapSpecLayout.Layout(spec, Legend())) {
+            foreach (var placement in MapSpecDiff.Compute(spec, Legend(), new MapAreaSnapshot()).changes) {
                 var cells = placement.layer == MapSpecParser.LogicLayer ? snapshot.logic : snapshot.Layer(placement.layer);
                 cells[placement.cell] = placement.tilePath;
             }

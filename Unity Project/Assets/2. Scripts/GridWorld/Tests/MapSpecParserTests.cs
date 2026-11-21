@@ -42,6 +42,11 @@ namespace GridWorld.Tests {
             return MapSpecParser.Parse(text, "forest.txt", errors);
         }
 
+        /// <summary>The tiles a new-area build paints: the diff against an empty area.</summary>
+        static List<MapTilePlacement> NewAreaChanges(MapSpec spec, MapLegend legend) {
+            return MapSpecDiff.Compute(spec, legend, new MapAreaSnapshot()).changes;
+        }
+
         [Test]
         public void Parse_ValidSpec_ReadsHeaderAndLayers() {
             var spec = Spec();
@@ -224,19 +229,19 @@ namespace GridWorld.Tests {
         }
 
         [Test]
-        public void Layout_Region_PlacesGridAtRegion() {
+        public void NewAreaChanges_Region_PlacesGridAtRegion() {
             var text = SpecText.Replace("legend: grassland", "legend: grassland\nregion: 11 20 2 1")
                 .Replace("gg=\ng==\n", "g=\n").Replace("T.f\n...\n", "..\n");
 
-            var placements = MapSpecLayout.Layout(Spec(text), Legend());
+            var placements = NewAreaChanges(Spec(text), Legend());
 
             Assert.IsTrue(placements.Contains(new MapTilePlacement("Ground", new Vector2Int(11, 20), "Assets/Grass.asset")));
             Assert.IsTrue(placements.Contains(new MapTilePlacement("Ground", new Vector2Int(12, 20), "Assets/Path.asset")));
         }
 
         [Test]
-        public void Layout_TopRowIsHighestY() {
-            var placements = MapSpecLayout.Layout(Spec(), Legend());
+        public void NewAreaChanges_TopRowIsHighestY() {
+            var placements = NewAreaChanges(Spec(), Legend());
 
             // Row 0 is y = 21, row 1 is y = 20.
             Assert.IsTrue(placements.Contains(new MapTilePlacement("Ground", new Vector2Int(12, 21), "Assets/Path.asset")));
@@ -245,8 +250,8 @@ namespace GridWorld.Tests {
         }
 
         [Test]
-        public void Layout_LogicFromTopmostLayerWithLogic() {
-            var placements = MapSpecLayout.Layout(Spec(), Legend());
+        public void NewAreaChanges_LogicFromTopmostLayerWithLogic() {
+            var placements = NewAreaChanges(Spec(), Legend());
             var logic = placements.FindAll(p => p.layer == MapSpecParser.LogicLayer);
 
             Assert.AreEqual(6, logic.Count);
@@ -256,11 +261,11 @@ namespace GridWorld.Tests {
         }
 
         [Test]
-        public void Layout_Footprint_CoversEachCellOverLowerLayers() {
+        public void NewAreaChanges_Footprint_CoversEachCellOverLowerLayers() {
             var legend = Legend();
             legend.entries[2].footprint = new MapFootprint { width = 2, height = 1 };
 
-            var logic = MapSpecLayout.Layout(Spec(), legend).FindAll(p => p.layer == MapSpecParser.LogicLayer);
+            var logic = NewAreaChanges(Spec(), legend).FindAll(p => p.layer == MapSpecParser.LogicLayer);
 
             // The tree at (10, 21) also blocks (11, 21), over the grass there.
             Assert.AreEqual(6, logic.Count);
@@ -270,11 +275,25 @@ namespace GridWorld.Tests {
         }
 
         [Test]
-        public void Layout_FootprintPastBounds_DropsOutsideCells() {
+        public void NewAreaChanges_TwoSymbolsShareTile_EachUsesItsOwnLogic() {
+            var legend = Legend();
+            var entries = new List<MapLegendEntry>(legend.entries);
+            // Same art as the path, but blocked.
+            entries.Add(new MapLegendEntry { symbol = "x", layer = "Ground", tile = "Assets/Path.asset", logic = "Assets/Wall.asset" });
+            legend.entries = entries.ToArray();
+
+            var logic = NewAreaChanges(Spec(SpecText.Replace("g==", "g=x")), legend).FindAll(p => p.layer == MapSpecParser.LogicLayer);
+
+            Assert.IsTrue(logic.Contains(new MapTilePlacement("Logic", new Vector2Int(11, 20), "Assets/Walk.asset")));
+            Assert.IsTrue(logic.Contains(new MapTilePlacement("Logic", new Vector2Int(12, 20), "Assets/Wall.asset")));
+        }
+
+        [Test]
+        public void NewAreaChanges_FootprintPastBounds_DropsOutsideCells() {
             var legend = Legend();
             legend.entries[2].footprint = new MapFootprint { width = 2, height = 2 };
 
-            var logic = MapSpecLayout.Layout(Spec(SpecText.Replace("T.f", "..T")), legend).FindAll(p => p.layer == MapSpecParser.LogicLayer);
+            var logic = NewAreaChanges(Spec(SpecText.Replace("T.f", "..T")), legend).FindAll(p => p.layer == MapSpecParser.LogicLayer);
 
             // The tree at (12, 21) is in the top-right corner, so only its own cell is inside.
             Assert.AreEqual(6, logic.Count);

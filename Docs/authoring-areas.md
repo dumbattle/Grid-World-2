@@ -85,6 +85,7 @@ A legend lists tilemap layers bottom to top, then one entry per character. Tiles
 - `logic` is optional. The Logic layer is filled from it: each cell takes the logic tile of the topmost layer whose entry covers it, so a tree over grass blocks. A cell no entry covers stays unpainted, so it's blocked. Logic tiles still need to be in the tile property table.
 - `footprint` is optional, measured from the painted cell, for art that covers more than one tile. Without it, logic covers just the painted cell. Footprint cells outside the bounds are dropped.
 - `Logic` can't be a legend layer name.
+- Two entries can share a tile, for example the same art with different logic. A cell the spec writes uses its own symbol's entry. When applying, other cells are matched to an entry by tile, which takes the first entry listed.
 
 `grassland.json` covers the `SAMPLE` tiles. Its trees are 2×2 sprites drawn up and right from the painted cell, with a 2×1 footprint so the player can walk behind the upper canopy.
 
@@ -112,7 +113,7 @@ T.......
 
 ### Building and previewing
 
-**Grid World → Build Area from Spec…** picks a spec, checks it, and lists every problem with its file and line. If it's valid, it creates the area as the New Area window does, opening it additively unless an untitled scene is open. It then makes any missing tilemaps, paints every layer and the Logic layer, and saves, which bakes. Tilemaps on `Entity On Ground` sort tile by tile. To rebuild an area from its spec, delete it first.
+**Grid World → Build Area from Spec…** picks a spec, checks it, and lists every problem with its file and line. If it's valid, it creates the area as the New Area window does, opening it additively unless an untitled scene is open. It then gives each spec layer a tilemap on the legend's sorting layer, including the ones New Area made, paints every layer and the Logic layer, and saves, which bakes. Painting works the same way as applying, compared against the empty area. Tilemaps on `Entity On Ground` sort tile by tile. To rebuild an area from its spec, delete it first.
 
 **Export Preview** in the `AreaBehaviour` three-dot menu, or **Grid World → Export All Area Previews**, writes two PNGs to `Maps/previews/`:
 
@@ -163,7 +164,19 @@ Unchanged cells keep their logic, so hand-painted logic elsewhere is never touch
 
 Grids use the legend's symbols where it has them, and made-up letters with a key for other tiles. The reader assumes tilemaps sit at the area's origin, and skips tiles placed through prefabs.
 
-Code: `Editor/MapSpecParser`, `MapSpecLayout`, `MapLogicCover`, `MapSpecBuilder`, `MapSpecDiff`, `MapSpecApplier`, `MapAreaSnapshot`, `MapSpecMenu`, `AreaPreviewExporter`, and `Tools/mapread.py`.
+### Extending specs
+
+Building and applying share one pipeline, so new spec content is added once and both commands get it:
+
+1. **Parse** in `MapSpecParser`: a header key, or a section, plus checks against the legend that don't need assets.
+2. **Check** in `MapSpecChecks.Find`, which takes a `MapSpecMode`. Rules that only one mode allows go under that mode, as `region:` and `?` do for applying. Asset checks go here too.
+3. **Read the scene** in `MapSpecApplier.Snapshot`, into `MapAreaSnapshot`.
+4. **Compare** in `MapSpecDiff.Compute`, adding to `MapSpecChanges`. A new area compares against an empty snapshot.
+5. **Paint** in `MapSpecApplier.Paint`, which Build calls directly and `Commit` calls with Undo.
+
+`MapSpecApplier.Prepare` runs steps 2 to 4 for an existing area, and returns a `MapSpecApplyPlan` to pass to `Commit` or `Cancel`. The menu only picks the file and shows the dialogs. If the format changes, update `Tools/mapread.py` to match. `MapSpecFilesTests` reads every committed spec and legend, so a mismatch shows up as a failed test.
+
+Code: `Editor/MapSpecParser`, `MapSpecChecks`, `MapSpecMode`, `MapSpecLayout`, `MapLogicCover`, `MapSpecBuilder`, `MapSpecDiff`, `MapSpecApplier`, `MapSpecApplyPlan`, `MapAreaSnapshot`, `MapSpecMenu`, `AreaPreviewExporter`, and `Tools/mapread.py`.
 
 ## Making a world
 

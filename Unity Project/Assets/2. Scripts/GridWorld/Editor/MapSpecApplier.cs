@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.IO;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -10,39 +9,67 @@ namespace GridWorld {
     /// <summary>
     /// Applies a spec to an existing area, painting only the cells that differ. Changes are recorded
     /// for Undo and the scene is left unsaved, so they can be checked before saving bakes them.
+    /// Building a new area paints through the same path, from an empty area.
     /// </summary>
     public static class MapSpecApplier {
         const string UndoName = "Apply Spec to Area";
 
-        /// <summary>The area's data, or null after adding every problem the spec has with it.</summary>
-        public static AreaDataSO FindArea(MapSpec spec, MapLegend legend, List<string> errors) {
-            var source = spec.source;
-            MapSpecBuilder.FindLegendErrors(legend, spec.legend, errors);
+        /// <summary>
+        /// Checks the spec, opens the area's scene if it isn't open, and works out the changes. If the
+        /// plan has errors, any scene it opened is closed again.
+        /// </summary>
+        public static MapSpecApplyPlan Prepare(MapSpec spec, MapLegend legend) {
+            var plan = new MapSpecApplyPlan { spec = spec, legend = legend };
+            plan.errors.AddRange(MapSpecChecks.Find(spec, legend, MapSpecMode.Apply));
+            if (plan.errors.Count > 0) {
+                return plan;
+            }
 
             var world = AssetDatabase.LoadAssetAtPath<WorldDataSO>(spec.world);
-            if (world == null) {
-                errors.Add($"{source}: no world data asset at '{spec.world}'.");
-                return null;
+            var data = MapSpecChecks.FindArea(world, spec.id);
+            plan.scene = SceneManager.GetSceneByPath(data.scenePath);
+            if (!plan.scene.isLoaded) {
+                if (NewAreaCreator.HasUntitledScene()) {
+                    plan.errors.Add("Unity can't open the area's scene next to an untitled one. Save it first, or open the area's scene.");
+                    return plan;
+                }
+                plan.scene = EditorSceneManager.OpenScene(data.scenePath, OpenSceneMode.Additive);
+                plan.openedScene = true;
             }
 
-            AreaDataSO data = null;
-            foreach (var area in world.areas) {
-                if (area != null && area.areaId == spec.id) {
-                    data = area;
-                }
+            plan.area = FindInScene(plan.scene, spec.id);
+            MapAreaSnapshot snapshot = null;
+            if (plan.area == null) {
+                plan.errors.Add($"{data.scenePath} has no {nameof(AreaBehaviour)} with ID '{spec.id}'.");
             }
-            if (data == null) {
-                errors.Add($"{source}: world '{Path.GetFileNameWithoutExtension(spec.world)}' has no area '{spec.id}'. Use Build Area from Spec for a new area.");
-                return null;
+            else {
+                snapshot = Snapshot(plan.area, plan.errors, plan.warnings);
             }
-            if (!data.worldBounds.Equals(spec.bounds)) {
-                var b = data.worldBounds;
-                errors.Add($"{source}: the bounds don't match area '{spec.id}' ({b.x} {b.y} {b.width} {b.height}). Changing an area's bounds isn't supported.");
+            if (snapshot == null) {
+                Cancel(plan);
+                return plan;
             }
-            if (string.IsNullOrEmpty(data.scenePath) || !File.Exists(data.scenePath)) {
-                errors.Add($"{source}: area '{spec.id}' has no scene at '{data.scenePath}'. Open and save its scene to fix the path.");
+
+            plan.changes = MapSpecDiff.Compute(spec, legend, snapshot);
+            plan.warnings.AddRange(plan.changes.warnings);
+            return plan;
+        }
+
+        /// <summary>Paints the plan's changes as one Undo step and marks the scene dirty. Doesn't save.</summary>
+        public static void Commit(MapSpecApplyPlan plan) {
+            Undo.SetCurrentGroupName(UndoName);
+            int group = Undo.GetCurrentGroup();
+            Paint(plan.area, plan.legend, plan.changes, true);
+            Undo.CollapseUndoOperations(group);
+            EditorSceneManager.MarkSceneDirty(plan.area.gameObject.scene);
+        }
+
+        /// <summary>Closes the area's scene if <see cref="Prepare"/> opened it.</summary>
+        public static void Cancel(MapSpecApplyPlan plan) {
+            if (plan.openedScene && plan.scene.isLoaded) {
+                EditorSceneManager.CloseScene(plan.scene, true);
             }
-            return errors.Count == 0 ? data : null;
+            plan.openedScene = false;
         }
 
         /// <summary>The scene's area with this ID, or null.</summary>
@@ -90,11 +117,11 @@ namespace GridWorld {
             return errors.Count == 0 ? snapshot : null;
         }
 
-        /// <summary>Paints the changes, making any tilemap the area doesn't have yet. Doesn't save.</summary>
-        public static void Apply(AreaBehaviour area, MapLegend legend, MapSpecChanges changes) {
-            Undo.SetCurrentGroupName(UndoName);
-            int group = Undo.GetCurrentGroup();
-
+        /// <summary>
+        /// Sets each changed cell, making any tilemap the area doesn't have yet. With
+        /// <paramref name="recordUndo"/>, the caller groups the Undo records.
+        /// </summary>
+        internal static void Paint(AreaBehaviour area, MapLegend legend, MapSpecChanges changes, bool recordUndo) {
             var name2tilemap = new Dictionary<string, Tilemap>();
             foreach (var tilemap in area.GetComponentsInChildren<Tilemap>(true)) {
                 if (tilemap.GetComponent<LogicLayerBehaviour>() == null) {
@@ -123,20 +150,23 @@ namespace GridWorld {
                 Tilemap tilemap;
                 if (pair.Key == MapSpecParser.LogicLayer) {
                     tilemap = LogicTilemap(area, new List<string>());
-                    Undo.RegisterCompleteObjectUndo(tilemap, UndoName);
+                    if (recordUndo) {
+                        Undo.RegisterCompleteObjectUndo(tilemap, UndoName);
+                    }
                 }
                 else if (name2tilemap.TryGetValue(pair.Key, out tilemap)) {
-                    Undo.RegisterCompleteObjectUndo(tilemap, UndoName);
+                    if (recordUndo) {
+                        Undo.RegisterCompleteObjectUndo(tilemap, UndoName);
+                    }
                 }
                 else {
                     tilemap = MapSpecBuilder.FindOrCreateTilemap(area, pair.Key, legend);
-                    Undo.RegisterCreatedObjectUndo(tilemap.gameObject, UndoName);
+                    if (recordUndo) {
+                        Undo.RegisterCreatedObjectUndo(tilemap.gameObject, UndoName);
+                    }
                 }
                 tilemap.SetTiles(pair.Value.ToArray(), layer2tiles[pair.Key].ToArray());
             }
-
-            Undo.CollapseUndoOperations(group);
-            EditorSceneManager.MarkSceneDirty(area.gameObject.scene);
         }
 
         static Tilemap LogicTilemap(AreaBehaviour area, List<string> warnings) {

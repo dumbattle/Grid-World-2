@@ -11,6 +11,8 @@ namespace GridWorld {
     /// <item>A cell no entry with logic covers keeps its logic if it still has art, and is cleared if not.</item>
     /// <item>A cell whose logic differed from the legend's before the edit was hand-painted, so it's kept, with a warning. A cell the legend gave no logic before takes the new logic.</item>
     /// </list>
+    /// Cells the spec writes use their symbol's entry. Other cells are matched to an entry by tile,
+    /// taking the first entry when two share one. Diffing against an empty area gives a new area's tiles.
     /// </summary>
     public static class MapSpecDiff {
         public static MapSpecChanges Compute(MapSpec spec, MapLegend legend, MapAreaSnapshot before) {
@@ -25,6 +27,9 @@ namespace GridWorld {
 
             var after = before.CopyArt();
             var affected = new HashSet<Vector2Int>();
+            // The scene only holds tiles, but the spec names each symbol, which matters when two
+            // entries share a tile.
+            var written = new Dictionary<(string layer, Vector2Int cell), MapLegendEntry>();
 
             foreach (var layer in spec.layers) {
                 var cells = after.Layer(layer.name);
@@ -33,17 +38,21 @@ namespace GridWorld {
                     for (int c = 0; c < row.Length; c++) {
                         char symbol = row[c];
                         string newTile = null;
+                        MapLegendEntry entry = null;
                         if (symbol == MapSpecParser.Keep) {
                             continue;
                         }
                         if (symbol != MapSpecParser.Empty) {
-                            if (!symbol2entry.TryGetValue(symbol, out var entry)) {
+                            if (!symbol2entry.TryGetValue(symbol, out entry)) {
                                 continue;
                             }
                             newTile = entry.tile;
                         }
 
                         var cell = MapSpecLayout.Cell(spec, r, c);
+                        if (entry != null) {
+                            written[(layer.name, cell)] = entry;
+                        }
                         bool had = cells.TryGetValue(cell, out var oldTile);
                         // A tile with no asset has a null path, so '.' still clears it.
                         if (had ? newTile != null && oldTile == newTile : newTile == null) {
@@ -59,8 +68,8 @@ namespace GridWorld {
                         result.changes.Add(new MapTilePlacement(layer.name, cell, newTile));
 
                         affected.Add(cell);
-                        AddFootprint(affected, layerTile2entry, layer.name, oldTile, cell);
-                        AddFootprint(affected, layerTile2entry, layer.name, newTile, cell);
+                        AddFootprint(affected, EntryFor(layerTile2entry, layer.name, oldTile), cell);
+                        AddFootprint(affected, entry, cell);
                     }
                 }
             }
@@ -69,8 +78,8 @@ namespace GridWorld {
                 return result;
             }
 
-            var coverBefore = Cover(before, legend, layerTile2entry, spec.bounds);
-            var coverAfter = Cover(after, legend, layerTile2entry, spec.bounds);
+            var coverBefore = Cover(before, legend, layerTile2entry, null, spec.bounds);
+            var coverAfter = Cover(after, legend, layerTile2entry, written, spec.bounds);
             var ordered = new List<Vector2Int>(affected);
             // Top row first, like the grids, so warnings read in spec order.
             ordered.Sort((a, b) => a.y != b.y ? b.y.CompareTo(a.y) : a.x.CompareTo(b.x));
@@ -103,8 +112,15 @@ namespace GridWorld {
             return result;
         }
 
-        static void AddFootprint(HashSet<Vector2Int> affected, Dictionary<(string, string), MapLegendEntry> layerTile2entry, string layer, string tile, Vector2Int cell) {
-            if (tile == null || !layerTile2entry.TryGetValue((layer, tile), out var entry) || !entry.hasLogic) {
+        static MapLegendEntry EntryFor(Dictionary<(string, string), MapLegendEntry> layerTile2entry, string layer, string tile) {
+            if (tile == null || !layerTile2entry.TryGetValue((layer, tile), out var entry)) {
+                return null;
+            }
+            return entry;
+        }
+
+        static void AddFootprint(HashSet<Vector2Int> affected, MapLegendEntry entry, Vector2Int cell) {
+            if (entry == null || !entry.hasLogic) {
                 return;
             }
             foreach (var covered in MapLogicCover.Footprint(entry, cell).allPositionsWithin) {
@@ -112,7 +128,8 @@ namespace GridWorld {
             }
         }
 
-        static MapLogicCover Cover(MapAreaSnapshot art, MapLegend legend, Dictionary<(string, string), MapLegendEntry> layerTile2entry, RectInt bounds) {
+        /// <summary>The logic the art gives. Cells in <paramref name="written"/>, if given, use its entry.</summary>
+        static MapLogicCover Cover(MapAreaSnapshot art, MapLegend legend, Dictionary<(string, string), MapLegendEntry> layerTile2entry, Dictionary<(string, Vector2Int), MapLegendEntry> written, RectInt bounds) {
             var cover = new MapLogicCover(bounds);
             for (int order = 0; order < legend.layers.Length; order++) {
                 var name = legend.layers[order].name;
@@ -120,7 +137,11 @@ namespace GridWorld {
                     continue;
                 }
                 foreach (var pair in cells) {
-                    if (pair.Value != null && layerTile2entry.TryGetValue((name, pair.Value), out var entry)) {
+                    MapLegendEntry entry = null;
+                    if (written == null || !written.TryGetValue((name, pair.Key), out entry)) {
+                        entry = EntryFor(layerTile2entry, name, pair.Value);
+                    }
+                    if (entry != null) {
                         cover.Add(entry, pair.Key, order);
                     }
                 }

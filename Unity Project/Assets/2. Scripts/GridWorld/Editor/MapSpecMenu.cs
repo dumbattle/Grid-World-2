@@ -4,7 +4,6 @@ using System.Text;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace GridWorld {
     /// <summary>
@@ -31,7 +30,7 @@ namespace GridWorld {
                 if (!additive && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) {
                     return;
                 }
-                errors = MapSpecBuilder.FindErrors(spec, legend, additive);
+                errors = MapSpecChecks.Find(spec, legend, MapSpecMode.Build, additive);
                 if (errors.Count == 0) {
                     var area = MapSpecBuilder.Build(spec, legend, additive);
                     if (area != null) {
@@ -53,49 +52,28 @@ namespace GridWorld {
 
             var errors = new List<string>();
             var spec = Read(path, errors, out var legend);
-            var data = errors.Count == 0 ? MapSpecApplier.FindArea(spec, legend, errors) : null;
-            if (data == null) {
+            if (errors.Count > 0) {
                 ShowErrors(ApplyTitle, "Can't apply spec", errors);
                 return;
             }
 
-            var scene = SceneManager.GetSceneByPath(data.scenePath);
-            bool opened = !scene.isLoaded;
-            if (opened) {
-                if (NewAreaCreator.HasUntitledScene()) {
-                    ShowErrors(ApplyTitle, "Can't apply spec", new List<string> { "Unity can't open the area's scene next to an untitled one. Save it first, or open the area's scene." });
-                    return;
-                }
-                scene = EditorSceneManager.OpenScene(data.scenePath, OpenSceneMode.Additive);
-            }
-
-            var area = MapSpecApplier.FindInScene(scene, spec.id);
-            var warnings = new List<string>();
-            MapAreaSnapshot snapshot = null;
-            if (area == null) {
-                errors.Add($"{data.scenePath} has no {nameof(AreaBehaviour)} with ID '{spec.id}'.");
-            }
-            else {
-                snapshot = MapSpecApplier.Snapshot(area, errors, warnings);
-            }
-            if (snapshot == null) {
-                CloseIfOpened(scene, opened);
-                ShowErrors(ApplyTitle, "Can't apply spec", errors);
+            var plan = MapSpecApplier.Prepare(spec, legend);
+            if (plan.errors.Count > 0) {
+                ShowErrors(ApplyTitle, "Can't apply spec", plan.errors);
                 return;
             }
-
-            var changes = MapSpecDiff.Compute(spec, legend, snapshot);
-            warnings.AddRange(changes.warnings);
+            var warnings = plan.warnings;
             foreach (var warning in warnings) {
                 Debug.LogWarning($"Apply {Path.GetFileName(path)}: {warning}");
             }
 
-            if (changes.changes.Count == 0) {
-                CloseIfOpened(scene, opened);
+            if (!plan.hasChanges) {
+                MapSpecApplier.Cancel(plan);
                 EditorUtility.DisplayDialog(ApplyTitle, $"'{spec.id}' already matches the spec." + Lines("\n\nWarnings:\n", warnings), "OK");
                 return;
             }
 
+            var changes = plan.changes;
             var summary = new StringBuilder($"Apply {Path.GetFileName(path)} to '{spec.id}'?\n");
             foreach (var layer in LayersChanged(changes)) {
                 summary.Append($"\n{layer}: {changes.CountOn(layer)} cells");
@@ -103,12 +81,12 @@ namespace GridWorld {
             summary.Append(Lines("\n\nWarnings:\n", warnings));
             summary.Append("\n\nThe scene stays unsaved, and Undo reverts it.");
             if (!EditorUtility.DisplayDialog(ApplyTitle, summary.ToString(), "Apply", "Cancel")) {
-                CloseIfOpened(scene, opened);
+                MapSpecApplier.Cancel(plan);
                 return;
             }
 
-            MapSpecApplier.Apply(area, legend, changes);
-            Selection.activeGameObject = area.gameObject;
+            MapSpecApplier.Commit(plan);
+            Selection.activeGameObject = plan.area.gameObject;
             Debug.Log($"Applied {Path.GetFileName(path)} to '{spec.id}': {changes.changes.Count} cells changed. Save the scene to bake them.");
         }
 
@@ -150,12 +128,6 @@ namespace GridWorld {
                 }
             }
             return layers;
-        }
-
-        static void CloseIfOpened(Scene scene, bool opened) {
-            if (opened) {
-                EditorSceneManager.CloseScene(scene, true);
-            }
         }
 
         static void ShowErrors(string title, string prefix, List<string> errors) {

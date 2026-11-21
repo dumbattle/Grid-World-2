@@ -134,7 +134,7 @@ namespace GridWorld.Tests {
         public void FindErrors_TakenId_ReportsIt() {
             MapSpecBuilder.Build(Spec(), Legend(), false);
 
-            var errors = MapSpecBuilder.FindErrors(Spec("drafted", "20 0 3 2"), Legend(), false);
+            var errors = MapSpecChecks.Find(Spec("drafted", "20 0 3 2"), Legend(), MapSpecMode.Build);
 
             Assert.IsTrue(errors.Exists(e => e.Contains("already used")));
         }
@@ -145,7 +145,7 @@ namespace GridWorld.Tests {
             legend.entries[0].tile = Folder + "/Missing.asset";
             legend.layers[1].sortingLayer = "No Such Layer";
 
-            var errors = MapSpecBuilder.FindErrors(Spec(), legend, false);
+            var errors = MapSpecChecks.Find(Spec(), legend, MapSpecMode.Build);
 
             Assert.IsTrue(errors.Exists(e => e.Contains("Missing.asset")));
             Assert.IsTrue(errors.Exists(e => e.Contains("No Such Layer")));
@@ -181,7 +181,7 @@ namespace GridWorld.Tests {
             spec.region = new RectInt(4, 2, 1, 1);
             spec.layers[1].rows[1] = "?..";
 
-            var errors = MapSpecBuilder.FindErrors(spec, Legend(), false);
+            var errors = MapSpecChecks.Find(spec, Legend(), MapSpecMode.Build);
 
             Assert.IsTrue(errors.Exists(e => e.Contains("region")));
             Assert.IsTrue(errors.Exists(e => e.Contains("'?'")));
@@ -194,12 +194,10 @@ namespace GridWorld.Tests {
             edited.layers[1].rows[0] = "...";
             edited.layers[1].rows[1] = "..T";
 
-            var errors = new List<string>();
-            Assert.IsNotNull(MapSpecApplier.FindArea(edited, Legend(), errors));
-            var snapshot = MapSpecApplier.Snapshot(area, errors, new List<string>());
-            CollectionAssert.IsEmpty(errors);
-            var changes = MapSpecDiff.Compute(edited, Legend(), snapshot);
-            MapSpecApplier.Apply(area, Legend(), changes);
+            var plan = MapSpecApplier.Prepare(edited, Legend());
+            CollectionAssert.IsEmpty(plan.errors);
+            Assert.IsTrue(plan.hasChanges);
+            MapSpecApplier.Commit(plan);
 
             var trees = TilemapNamed(area, "Trees");
             var logic = TilemapNamed(area, MapSpecParser.LogicLayer);
@@ -212,15 +210,53 @@ namespace GridWorld.Tests {
         }
 
         [Test]
-        public void FindArea_WrongBoundsOrUnknownId_ReportsEach() {
+        public void Find_ApplyWithWrongBoundsOrUnknownId_ReportsEach() {
             MapSpecBuilder.Build(Spec(), Legend(), false);
             var errors = new List<string>();
 
-            Assert.IsNull(MapSpecApplier.FindArea(Spec("drafted", "4 2 3 3"), Legend(), errors));
-            Assert.IsNull(MapSpecApplier.FindArea(Spec("missing"), Legend(), errors));
+            errors.AddRange(MapSpecChecks.Find(Spec("drafted", "4 2 3 3"), Legend(), MapSpecMode.Apply));
+            errors.AddRange(MapSpecChecks.Find(Spec("missing"), Legend(), MapSpecMode.Apply));
 
             Assert.IsTrue(errors.Exists(e => e.Contains("bounds don't match")));
             Assert.IsTrue(errors.Exists(e => e.Contains("no area 'missing'")));
+        }
+
+        [Test]
+        public void Find_ApplyWithRegionAndKeep_AllowsThem() {
+            MapSpecBuilder.Build(Spec(), Legend(), false);
+            var spec = Spec();
+            spec.hasRegion = true;
+            spec.region = new RectInt(4, 2, 3, 2);
+            spec.layers[1].rows[1] = "?..";
+
+            CollectionAssert.IsEmpty(MapSpecChecks.Find(spec, Legend(), MapSpecMode.Apply));
+        }
+
+        [Test]
+        public void Prepare_UnchangedSpec_HasNoChanges() {
+            MapSpecBuilder.Build(Spec(), Legend(), false);
+
+            var plan = MapSpecApplier.Prepare(Spec(), Legend());
+
+            CollectionAssert.IsEmpty(plan.errors);
+            Assert.IsFalse(plan.hasChanges);
+            Assert.IsFalse(plan.openedScene);
+        }
+
+        [Test]
+        public void Prepare_SceneClosed_OpensItAndCancelClosesIt() {
+            var area = MapSpecBuilder.Build(Spec(), Legend(), false);
+            var scenePath = area.gameObject.scene.path;
+            var other = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            EditorSceneManager.SaveScene(other, $"{Folder}/Other.unity");
+
+            var plan = MapSpecApplier.Prepare(Spec(), Legend());
+
+            CollectionAssert.IsEmpty(plan.errors);
+            Assert.IsTrue(plan.openedScene);
+            Assert.IsTrue(UnityEngine.SceneManagement.SceneManager.GetSceneByPath(scenePath).isLoaded);
+            MapSpecApplier.Cancel(plan);
+            Assert.IsFalse(UnityEngine.SceneManagement.SceneManager.GetSceneByPath(scenePath).isLoaded);
         }
 
         [Test]
