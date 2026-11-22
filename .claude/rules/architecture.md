@@ -96,7 +96,7 @@ The goal is a base that other games can be built on, so these rules favor a clea
 - An entity that only appears under certain conditions is still created at startup, with the `absent` marker.
 - It keeps its components and stable ID, releases its tile, has no sprite, and is skipped by AI.
 - If its tile is occupied when it returns, it stays absent and retries each tick.
-- There's no despawn until runtime spawning needs one. Because all components go through `Register`, a cleanup registry can be added then.
+- Absent is for baked entities that come and go. Runtime-spawned entities, such as mobs, are removed with `Despawn` instead, which clears them from every component store through the manager's cleanup registry. A game adds its own stores to that registry.
 
 ## Timing is in ticks
 
@@ -127,7 +127,9 @@ The goal is a base that other games can be built on, so these rules favor a clea
 
 ## Phases
 
-Each tick: Cutscene → Decision → Movement, then UI and render outside the phases.
+Each tick: Spawn → Cutscene → Decision → Movement, then UI and render outside the phases.
+
+- Spawn zones run in the spawn phase, so a new mob decides on the tick it appears, and a removed one is forgotten before anything else runs.
 
 - `PhaseExecutionManager` is deliberately simple and hard-coded. A game that needs different phases writes its own manager.
 - Add a phase only for a new permission or a new queue between systems.
