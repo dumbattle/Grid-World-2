@@ -10,7 +10,7 @@ using UnityEngine.Tilemaps;
 
 namespace Game {
     /// <summary>
-    /// <b>Grid World → Test → Create Test World</b>: builds two touching placeholder areas, a main
+    /// <b>Grid World → Test → Create Test World</b>: builds three placeholder areas in a row (C, A, B), a main
     /// scene, and their data assets, then bakes them. Everything goes in Test folders, named with a
     /// <c>TEST_</c> prefix, and is replaced on each run. Runs without dialogs in batch mode.
     /// </summary>
@@ -76,6 +76,7 @@ namespace Game {
 
             CreateAsset<AreaDataSO>("TEST_AreaA");
             CreateAsset<AreaDataSO>("TEST_AreaB");
+            CreateAsset<AreaDataSO>("TEST_AreaC");
             AssetDatabase.SaveAssets();
 
             // Area scenes are created additively, which needs a saved scene already open.
@@ -91,15 +92,18 @@ namespace Game {
             var slime = Load<EntityDefinitionSO>(DataFolder, "TEST_Slime");
             var dataA = Load<AreaDataSO>(DataFolder, "TEST_AreaA");
             var dataB = Load<AreaDataSO>(DataFolder, "TEST_AreaB");
+            var dataC = Load<AreaDataSO>(DataFolder, "TEST_AreaC");
             var groundTileA = Load<TileBase>(TilesFolder, "TEST_GroundA");
             var groundTileB = Load<TileBase>(TilesFolder, "TEST_GroundB");
             var wallTile = Load<TileBase>(TilesFolder, "TEST_Wall");
 
             var boundsA = new RectInt(0, 0, AreaWidth, AreaHeight);
             var boundsB = new RectInt(AreaWidth, 0, AreaWidth, AreaHeight);
+            // West of A, touching A but not B, so standing in C deactivates B.
+            var boundsC = new RectInt(-AreaWidth, 0, AreaWidth, AreaHeight);
 
-            // Walls on the outer edges only, so the two areas join along their shared border.
-            CreateAreaScene("TEST_a", "a", boundsA, dataA, world, groundTileA, wallTile, westWall: true, eastWall: false,
+            // Walls on the outer edges only, so the areas join along their shared borders.
+            CreateAreaScene("TEST_a", "a", boundsA, dataA, world, groundTileA, wallTile, westWall: false, eastWall: false,
                 block: new RectInt(8, 6, 3, 3), player: player, addNpcs: root => {
                     AddSpinner(root, villager, new Vector2Int(3, 10));
                     AddWanderer(root, villager, new Vector2Int(15, 4), new RectInt(12, 2, 7, 5));
@@ -116,6 +120,10 @@ namespace Game {
                         new PatrolPointSettings(new Vector2Int(AreaWidth + 4, 7), Direction4.Enum.down, 30));
                     AddWanderer(root, villager, new Vector2Int(AreaWidth + 14, 12), new RectInt(AreaWidth + 12, 11, 8, 3));
                     AddSpawnZone(root, slime, new RectInt(AreaWidth + 17, 1, 5, 9), maxCount: 4, respawnDelayTicks: 180);
+                });
+            CreateAreaScene("TEST_c", "c", boundsC, dataC, world, groundTileB, wallTile, westWall: true, eastWall: false,
+                block: new RectInt(-AreaWidth + 4, 10, 3, 2), player: null, addNpcs: root => {
+                    AddWanderer(root, villager, new Vector2Int(-12, 7), new RectInt(-16, 4, 9, 6));
                 });
 
             AssetDatabase.SaveAssets();
@@ -182,8 +190,8 @@ namespace Game {
             if (world.tileProperties == null) {
                 return "TEST_WorldData has no tile property table";
             }
-            if (world.areas.Count != 2) {
-                return $"TEST_WorldData has {world.areas.Count} areas instead of 2";
+            if (world.areas.Count != 3) {
+                return $"TEST_WorldData has {world.areas.Count} areas instead of 3";
             }
             return null;
         }

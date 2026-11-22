@@ -38,14 +38,17 @@ Turns frame time into ticks: 60 per second, at most 4 per frame. Time beyond 4 t
 
 ## `WorldView`
 
-A plain class that owns one `SpriteRenderer` per entity, under the root's transform.
+A plain class that gives each visible entity a `SpriteRenderer` from a pool, under the root's transform.
 
-- `Tick(ctx)`, once per tick: creates a sprite for any new entity, sets each sprite from its facing, and destroys the sprites of entities that no longer exist.
-- `Render(ctx, alpha)`, once per frame: positions each sprite at its blended position plus half a tile.
-- `Dispose()`: destroys the sprites and placeholder textures.
+An entity is visible while `IsEntityInActiveArea(id)` is true: either end of its current step is in an active area, which for an idle entity is its own tile. Checking both ends keeps a sprite on screen for the whole of a step across the edge of an active area, in either direction.
 
-Every entity gets a `PlaceholderSprites` sprite for now: a white square spanning one tile, with a grey outline and a bar on the side it faces, tinted by the **Placeholder Color** on its definition (orange by default). Sprites draw on the Entity On Ground sorting layer, above the ground and doodad tilemaps. They aren't pooled yet, and they don't yet hide in inactive areas.
+- `Tick(ctx)`, once per tick: gives each visible entity without a sprite one from the pool, with its definition's tint, and sets each sprite from its facing. Then it returns the sprites of entities that were despawned or are no longer visible. A returned sprite's object is turned off and stays under the root.
+- `Render(ctx, alpha)`, once per frame: positions each shown sprite at its blended position plus half a tile.
+- `Dispose()`: destroys every sprite, shown or pooled, and the placeholder textures.
 
+The pool is an `LPE.ObjectPool<SpriteRenderer>`, with no prewarming and no cap. `visibleCount` and `pooledCount` report how many sprites are in use and waiting. In the Editor, a sprite's object is renamed `Entity <id>` each time it's reused.
+
+Every entity gets a `PlaceholderSprites` sprite for now: a white square spanning one tile, with a grey outline and a bar on the side it faces, tinted by the **Placeholder Color** on its definition (orange by default). Sprites draw on the Entity On Ground sorting layer, above the ground and doodad tilemaps.
 ## Camera
 
 `ICameraController` positions are in world units, where tile (x, y) spans x to x + 1.

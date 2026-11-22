@@ -114,26 +114,5 @@ namespace GridWorld.Tests {
             Assert.IsFalse(test.Exists(first));
             Assert.AreEqual(1, test.world.entityIds.liveCount);
         }
-
-        [Test]
-        public void WorldView_Despawned_SpriteIsDestroyed() {
-            var parent = new GameObject("View");
-            var view = new WorldView(parent.transform);
-            var render = test.world.GetContext<RenderContext>();
-            try {
-                var id = test.Spawn(Vector2Int.zero, Direction4.down);
-                view.Tick(render);
-                Assert.AreEqual(1, parent.transform.childCount);
-
-                test.Despawn(id);
-                view.Tick(render);
-
-                Assert.AreEqual(0, parent.transform.childCount);
-            }
-            finally {
-                view.Dispose();
-                UnityEngine.Object.DestroyImmediate(parent);
-            }
-        }
     }
 }

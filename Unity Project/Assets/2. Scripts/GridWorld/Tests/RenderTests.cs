@@ -11,6 +11,8 @@ namespace GridWorld.Tests {
         [SetUp]
         public void SetUp() {
             test = new TestWorld();
+            // WorldView only draws entities in active areas.
+            test.SetAreaActive(true);
             render = test.world.GetContext<RenderContext>();
         }
 

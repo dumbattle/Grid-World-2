@@ -81,7 +81,7 @@ The root registers `PlayerSpawnFeatureType`, `NpcFeatureType`, and `SpawnZoneFea
 - An active area deactivates only when it doesn't touch the current area and no longer overlaps the view plus the deactivate margin.
 - If the target is outside every area, only the margins apply.
 
-The view size and margins are on `WorldSettingsSO`: 15×11 tiles, 4 tiles to activate, and 8 to deactivate. The deactivate margin is never less than the activate margin. In the test world, A and B touch, so both are active from the start and never go inactive.
+The view size and margins are on `WorldSettingsSO`: 15×11 tiles, 4 tiles to activate, and 8 to deactivate. The deactivate margin is never less than the activate margin. The test world's areas run C, A, B from west to east. Starting in A, all three are active. Walking into C deactivates B once it's beyond the margin, and walking back into A activates it again.
 
 In a row of areas A, B, C, entering C deactivates A once it's beyond the margin, and going back into B loads it again. A is a whole area away, so this costs a load but nothing pops into view.
 

@@ -4,7 +4,7 @@ Orientation map for the project. Keep it short and current; add one line per sys
 
 ## Status
 
-The first slice is done: a player walks and runs across two touching areas, with baked tile data, walls, and area scenes streaming in and out. Placed NPCs spin, wander, or patrol, and spawn zones keep mobs alive while their area is active. **Grid World → Test → Create Test World** builds the test world; open `TEST_Main` and press Play. The active milestone is NPCs: slice 1 (placed NPCs with AI) and slice 2 (spawn zones, despawning) are done, and slice 3 (sprites only in active areas, and pooling) is next. Remaining design questions and unbuilt work are in [open decisions](open-decisions.md).
+The first slice is done: a player walks and runs across two touching areas, with baked tile data, walls, and area scenes streaming in and out. Placed NPCs spin, wander, or patrol, and spawn zones keep mobs alive while their area is active. **Grid World → Test → Create Test World** builds the test world; open `TEST_Main` and press Play. Entities have pooled sprites only while they're in an active area. The NPC milestone's three slices are done: placed NPCs with AI, spawn zones with despawning, and sprites streaming with their areas. Remaining design questions and unbuilt work are in [open decisions](open-decisions.md).
 
 ## Systems
 
@@ -23,7 +23,7 @@ Design rules are in [architecture.md](../.claude/rules/architecture.md). The doc
 | Spawn zones | [npcs.md](npcs.md#spawn-zones) | `SpawnZoneBehaviour`, `SpawnAIBehaviour`, `SpawnZoneData`, `SpawnZoneFeatureType<TData>`, `SpawnZone`, `SpawnSystem`, `SpawnContext` |
 | Player input | [tiles-and-movement.md](tiles-and-movement.md#player-input) | `PlayerInputSystem`, `PlayerInput`, `PlayerControlState` |
 | Root and tick loop | [root-view-camera.md](root-view-camera.md#worldrootbehaviour) | `WorldRootBehaviour`, `TickClock`, `TestWorldRootBehaviour` (Game) |
-| Rendering | [root-view-camera.md](root-view-camera.md#worldview) | `WorldView`, `RenderContext`, `PlaceholderSprites` |
+| Rendering | [root-view-camera.md](root-view-camera.md#worldview) | `WorldView`, `RenderContext`, `RenderFunctions`, `PlaceholderSprites` |
 | Camera | [root-view-camera.md](root-view-camera.md#camera) | `ICameraController`, `FollowCameraController`, `CameraView` |
 | Authoring and bake | [authoring-areas.md](authoring-areas.md) | `AreaBehaviour`, `LogicLayerBehaviour`, `TilePropertyTableSO`, `AreaDataSO`, `WorldDataSO`, `AreaBaker` |
 | New Area window | [authoring-areas.md](authoring-areas.md#making-an-area-scene) | `NewAreaWindow`, `NewAreaCreator`, `NewAreaRules` |
