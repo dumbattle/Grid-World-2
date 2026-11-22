@@ -15,14 +15,16 @@ The framework's default root, and the only holder of `WorldInstance`. A game tha
 | `moveAction` | `Player/Move` from `InputSystem_Actions` |
 | `runAction` | `Player/Sprint` |
 
-**Start:** logs an error and stops if the world data or its settings are missing. Otherwise it seeds the world's random generator from the settings, loads the world with `PlayerSpawnFeatureType` and `NpcFeatureType` registered, sets a `FollowCameraController` on the player, creates the view, camera view, and scene loader, runs area activation once, and ticks the view once so sprites exist on the first frame.
+**Start:** logs an error and stops if the world data or its settings are missing. Otherwise it seeds the world's random generator and sets the view size from the settings, loads the world with `PlayerSpawnFeatureType`, `NpcFeatureType`, and `SpawnZoneFeatureType<SpawnZoneData>` registered, sets a `FollowCameraController` on the player, creates the view, camera view, and scene loader, runs area activation once, and ticks the view once so sprites exist on the first frame.
 
 **Each frame:**
 
-1. Store input on `world.input`.
-2. For each whole tick from `TickClock`: run the phases, update active areas, and tick the view.
+1. Store input on `world.input`, in `StoreInput()`.
+2. For each whole tick from `TickClock`: run the phases in `TickWorld()`, update active areas, and tick the view.
 3. Update the scene loader.
 4. Render sprites, then the camera, using the clock's `alpha`.
+
+A game can subclass the root instead of writing its own. `world` is protected, and `OnEnable`, `StoreInput`, and `TickWorld` are virtual. `Game/TestWorldRootBehaviour` is the example: it adds a debug key that despawns the entity the player faces.
 
 ## `TickClock`
 
@@ -38,11 +40,11 @@ Turns frame time into ticks: 60 per second, at most 4 per frame. Time beyond 4 t
 
 A plain class that owns one `SpriteRenderer` per entity, under the root's transform.
 
-- `Tick(ctx)`, once per tick: creates a sprite for any new entity, and sets each sprite from its facing.
+- `Tick(ctx)`, once per tick: creates a sprite for any new entity, sets each sprite from its facing, and destroys the sprites of entities that no longer exist.
 - `Render(ctx, alpha)`, once per frame: positions each sprite at its blended position plus half a tile.
 - `Dispose()`: destroys the sprites and placeholder textures.
 
-Every entity gets a `PlaceholderSprites` sprite for now: a white square spanning one tile, with a grey outline and a bar on the side it faces, tinted by the **Placeholder Color** on its definition (orange by default). Sprites draw on the Entity On Ground sorting layer, above the ground and doodad tilemaps. They're never removed, and they don't yet hide in inactive areas.
+Every entity gets a `PlaceholderSprites` sprite for now: a white square spanning one tile, with a grey outline and a bar on the side it faces, tinted by the **Placeholder Color** on its definition (orange by default). Sprites draw on the Entity On Ground sorting layer, above the ground and doodad tilemaps. They aren't pooled yet, and they don't yet hide in inactive areas.
 
 ## Camera
 
@@ -52,5 +54,7 @@ Every entity gets a `PlaceholderSprites` sprite for now: a white square spanning
 - `GetViewPosition(ctx, alpha)`, once per frame: the point the camera centres on.
 
 `FollowCameraController(entity)` targets the centre of the entity's tile, and views its blended position.
+
+`IsTileInView(tile, marginTiles)`, under ReadCamera, says whether any part of a tile is inside the view (`WorldInstance.viewTiles`, centred on the controller's target) plus an optional margin. It returns false with no controller. Spawn zones use it to keep new mobs off screen.
 
 `CameraView` sets the camera to orthographic, with a height of the view's tile height (11), and in `Render` moves it to the controller's view position, keeping its z. It does nothing if there's no controller.

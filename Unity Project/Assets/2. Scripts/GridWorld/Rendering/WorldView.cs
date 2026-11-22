@@ -5,8 +5,9 @@ using UnityEngine;
 
 namespace GridWorld {
     /// <summary>
-    /// Draws entities from state. <see cref="Tick"/> runs once per tick and creates sprites and sets
-    /// their facing. <see cref="Render"/> runs once per frame and only positions them.
+    /// Draws entities from state. <see cref="Tick"/> runs once per tick: it creates sprites for new
+    /// entities, destroys those of despawned ones, and sets their facing. <see cref="Render"/> runs
+    /// once per frame and only positions them.
     /// </summary>
     public class WorldView : IDisposable {
         static readonly Vector2 tileCentre = new Vector2(0.5f, 0.5f);
@@ -15,6 +16,7 @@ namespace GridWorld {
         PlaceholderSprites placeholders = new PlaceholderSprites();
         Dictionary<EntityID, SpriteRenderer> id2sprite = new Dictionary<EntityID, SpriteRenderer>();
         List<EntityID> entities = new List<EntityID>();
+        List<EntityID> removed = new List<EntityID>();
 
         public WorldView(Transform parent) {
             this.parent = parent;
@@ -33,6 +35,8 @@ namespace GridWorld {
                 }
                 sprite.sprite = placeholders.Get(ctx.GetFacing(id));
             }
+
+            RemoveDespawned(ctx);
         }
 
         public void Render(RenderContext ctx, float alpha) {
@@ -50,6 +54,24 @@ namespace GridWorld {
             }
             id2sprite.Clear();
             placeholders.Dispose();
+        }
+
+        void RemoveDespawned(RenderContext ctx) {
+            removed.Clear();
+            foreach (var pair in id2sprite) {
+                if (!ctx.EntityExists(pair.Key)) {
+                    removed.Add(pair.Key);
+                }
+            }
+
+            for (int i = 0; i < removed.Count; i++) {
+                var id = removed[i];
+                var sprite = id2sprite[id];
+                if (sprite != null) {
+                    UnityObjects.Destroy(sprite.gameObject);
+                }
+                id2sprite.Remove(id);
+            }
         }
 
         SpriteRenderer CreateSprite(EntityID id) {

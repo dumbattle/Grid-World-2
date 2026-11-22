@@ -35,6 +35,25 @@ namespace GridWorld.Tests {
             world.GetContext<WorldSetupContext>().AddAI(id, ai);
         }
 
+        public SpawnZone AddSpawnZone(SpawnZone zone) {
+            world.GetContext<WorldSetupContext>().AddSpawnZone(zone);
+            return zone;
+        }
+
+        public void Despawn(EntityID id) {
+            world.GetContext<SpawnContext>().Despawn(id);
+        }
+
+        public bool Exists(EntityID id) {
+            return world.entityIds.Exists(id);
+        }
+
+        /// <summary>The camera follows <paramref name="id"/> with a view of <paramref name="viewTiles"/>.</summary>
+        public void FollowWithCamera(EntityID id, Vector2Int viewTiles) {
+            world.GetContext<WorldSetupContext>().SetViewSize(viewTiles);
+            world.cameraController = new FollowCameraController(id);
+        }
+
         public void SetAreaActive(bool active) {
             world.GetContext<AreaActivationContext>().SetAreaActive(0, active);
         }

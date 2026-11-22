@@ -10,7 +10,9 @@ Owns all overworld state as public fields. Only the root holds it.
 
 | Field | What it is | Written by |
 |---|---|---|
-| `entityIds`, `components` | Entity IDs and component stores (`tile`, `facing`, `definition`, `step`, `ai`) | Startup, movement |
+| `entityIds`, `components` | Entity IDs and component stores (`tile`, `facing`, `definition`, `step`, `ai`) | Startup, spawn phase, movement |
+| `spawnZones` | Every `SpawnZone`, in the order they were added | Startup |
+| `viewTiles` | The view size in tiles, from the world settings (15×11 by default) | Startup |
 | `random` | A `System.Random`, seeded at startup from the world settings | Startup, decision phase |
 | `player` | The player's `EntityID` | Startup |
 | `tiles`, `occupancy` | Tile data lookup and `tile2entity` | Startup, movement |
@@ -28,6 +30,7 @@ A system gets a context from `world.GetContext<T>()`, which creates it once and 
 |---|---|---|
 | `WorldSetupContext` | SetupWorld, ReadEntities | World startup and feature types |
 | `DecisionPhaseContext` | ReadEntities, RequestMove, PlayerControl | `PlayerInputSystem` |
+| `SpawnContext` | ReadTiles, ReadEntities, ReadAreas, ReadCamera, UseRandom, SpawnEntities, DespawnEntities | `SpawnSystem` and every `SpawnZone` |
 | `AIContext` | ReadTiles, ReadEntities, ReadAreas, RequestMove, UseRandom | `AISystem` and every `EntityAI` |
 | `MovementPhaseContext` | ReadTiles, ReadEntities, ResolveMovement | `MovementSystem` |
 | `AreaActivationContext` | ReadAreas, UpdateAreas | `AreaActivationSystem` |
@@ -44,6 +47,21 @@ public static Vector2Int GetTile<T>(this T ctx, EntityID id)
 
 To add an operation, write a function like this. To give a system new access, add an `IPerm_*` marker (one file each in `Permissions/`) and list it on that system's context. Only functions touch `ctx.data`; systems never cast a context to `IWorldFunctionContext`.
 
+## Spawning and despawning
+
+Entities are created through `EntityLifecycle`, behind two sets of functions with the same names: `SpawnEntity` and `AddAI` under SetupWorld for startup, and under SpawnEntities for runtime. `AddAI` throws if the entity already has one.
+
+`Despawn(id)`, under DespawnEntities, removes an entity completely:
+
+- It releases the entity's tile. Mid-step, that's the target tile, since the old one was released when the step began.
+- It removes the entity from every component store, and drops any pending move request.
+- Its `EntityID` is never reused. `EntityExists(id)`, under ReadEntities, returns false from then on.
+- It throws if the entity doesn't exist, or is the player.
+
+Every store derives from `EntityComponentStore`, and the manager keeps a list of them for this. The framework's stores are added in its constructor. A game adds its own with `components.AddStore(store)` when it creates them, so despawning cleans them up too. Adding a store twice throws.
+
+`EntityIDManager.count` is the number of IDs ever created, and `liveCount` the number that still exist.
+
 ## Startup
 
 `WorldStartup.Load(ctx, worldData, catalogue)`, called by the root:
@@ -52,7 +70,7 @@ To add an operation, write a function like this. To give a system new access, ad
 2. Every area's tiles are added, with `AddArea(id, tiles)`, which also registers the area in `areas`.
 3. Every feature record is passed to the `WorldFeatureType` registered for its data type. A null record (its class is missing) or an unregistered type throws, naming the area.
 
-The root registers `PlayerSpawnFeatureType` before loading. It spawns the player and throws on a second spawn.
+The root registers `PlayerSpawnFeatureType`, `NpcFeatureType`, and `SpawnZoneFeatureType<SpawnZoneData>` before loading. The player spawn throws on a second spawn. NPCs and spawn zones are described in [NPCs and AI](npcs.md).
 
 ## Area activation
 
@@ -63,7 +81,7 @@ The root registers `PlayerSpawnFeatureType` before loading. It spawns the player
 - An active area deactivates only when it doesn't touch the current area and no longer overlaps the view plus the deactivate margin.
 - If the target is outside every area, only the margins apply.
 
-The view size and margins are on `WorldSettingsSO`: 15×11 tiles, 4 tiles to activate, and 8 to deactivate. The deactivate margin is never less than the activate margin. In the test world, A and B touch, so both are active from the start.
+The view size and margins are on `WorldSettingsSO`: 15×11 tiles, 4 tiles to activate, and 8 to deactivate. The deactivate margin is never less than the activate margin. In the test world, A and B touch, so both are active from the start and never go inactive.
 
 In a row of areas A, B, C, entering C deactivates A once it's beyond the margin, and going back into B loads it again. A is a whole area away, so this costs a load but nothing pops into view.
 

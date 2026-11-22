@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &125207135
+--- !u!1 &573278440
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,77 +127,10 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 125207136}
-  - component: {fileID: 125207138}
-  - component: {fileID: 125207137}
-  m_Layer: 0
-  m_Name: TEST_Wanderer
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &125207136
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 125207135}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 38.5, y: 12.5, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1082902846}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &125207137
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 125207135}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2c0764b6d55f7e944ba72357e20c24b1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: GridWorld::GridWorld.WanderAIBehaviour
-  pauseWhenAreaInactive: 1
-  region:
-    x: 36
-    y: 11
-    width: 8
-    height: 3
-  minWaitTicks: 30
-  maxWaitTicks: 120
---- !u!114 &125207138
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 125207135}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2a31d4299bfbef0448848c093d0102bc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: GridWorld::GridWorld.NpcBehaviour
-  definition: {fileID: 11400000, guid: 605b28d3caf974444ba76054690db636, type: 2}
-  facing: 2
---- !u!1 &807997664
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 807997665}
-  - component: {fileID: 807997668}
-  - component: {fileID: 807997667}
-  - component: {fileID: 807997666}
+  - component: {fileID: 573278441}
+  - component: {fileID: 573278444}
+  - component: {fileID: 573278443}
+  - component: {fileID: 573278442}
   m_Layer: 0
   m_Name: TEST_Ground
   m_TagString: Untagged
@@ -205,41 +138,41 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &807997665
+--- !u!4 &573278441
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 807997664}
+  m_GameObject: {fileID: 573278440}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1082902846}
+  m_Father: {fileID: 2043071205}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &807997666
+--- !u!114 &573278442
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 807997664}
+  m_GameObject: {fileID: 573278440}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1b62e50ec3617fe4aacaa81e9efdd0ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: GridWorld::GridWorld.LogicLayerBehaviour
---- !u!483693784 &807997667
+--- !u!483693784 &573278443
 TilemapRenderer:
   serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 807997664}
+  m_GameObject: {fileID: 573278440}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -288,13 +221,13 @@ TilemapRenderer:
   m_SortOrder: 0
   m_Mode: 0
   m_DetectChunkCullingBounds: 0
---- !u!1839735485 &807997668
+--- !u!1839735485 &573278444
 Tilemap:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 807997664}
+  m_GameObject: {fileID: 573278440}
   m_Enabled: 1
   m_Tiles:
   - first: {x: 24, y: 0, z: 0}
@@ -4200,7 +4133,7 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
---- !u!1 &1082902843
+--- !u!1 &1151686153
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4208,67 +4141,66 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1082902846}
-  - component: {fileID: 1082902845}
-  - component: {fileID: 1082902844}
+  - component: {fileID: 1151686154}
+  - component: {fileID: 1151686156}
+  - component: {fileID: 1151686155}
   m_Layer: 0
-  m_Name: TEST_Area b
+  m_Name: TEST_Wanderer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1082902844
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1082902843}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 052c339880bf86d438102a42e175f417, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: GridWorld::GridWorld.AreaBehaviour
-  id: TEST_b
-  areaData: {fileID: 11400000, guid: 0b2a26226c9d7ea459e82833e39adde5, type: 2}
-  worldData: {fileID: 11400000, guid: 4018f2fad1a312a418e616a4b72337fe, type: 2}
-  tileBounds:
-    x: 24
-    y: 0
-    width: 24
-    height: 16
---- !u!156049354 &1082902845
-Grid:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1082902843}
-  m_Enabled: 1
-  m_CellSize: {x: 1, y: 1, z: 1}
-  m_CellGap: {x: 0, y: 0, z: 0}
-  m_CellLayout: 0
-  m_CellSwizzle: 0
---- !u!4 &1082902846
+--- !u!4 &1151686154
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1082902843}
+  m_GameObject: {fileID: 1151686153}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 38.5, y: 12.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 807997665}
-  - {fileID: 2095015338}
-  - {fileID: 125207136}
-  m_Father: {fileID: 0}
+  m_Children: []
+  m_Father: {fileID: 2043071205}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2095015337
+--- !u!114 &1151686155
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1151686153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c0764b6d55f7e944ba72357e20c24b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GridWorld::GridWorld.WanderAIBehaviour
+  pauseWhenAreaInactive: 1
+  region:
+    x: 36
+    y: 11
+    width: 8
+    height: 3
+  minWaitTicks: 30
+  maxWaitTicks: 120
+--- !u!114 &1151686156
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1151686153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a31d4299bfbef0448848c093d0102bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GridWorld::GridWorld.NpcBehaviour
+  definition: {fileID: 11400000, guid: 605b28d3caf974444ba76054690db636, type: 2}
+  facing: 2
+--- !u!1 &1679458952
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4276,9 +4208,77 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2095015338}
-  - component: {fileID: 2095015340}
-  - component: {fileID: 2095015339}
+  - component: {fileID: 1679458953}
+  - component: {fileID: 1679458955}
+  - component: {fileID: 1679458954}
+  m_Layer: 0
+  m_Name: TEST_Spawn Zone
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1679458953
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1679458952}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 43.5, y: 5.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2043071205}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1679458954
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1679458952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae0f9c7363acb224298af5d05dae1c2d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GridWorld::GridWorld.SpawnWanderAIBehaviour
+  pauseWhenAreaInactive: 1
+  minWaitTicks: 30
+  maxWaitTicks: 120
+--- !u!114 &1679458955
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1679458952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd53e323e1e44c247a476a0bcb8c34e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GridWorld::GridWorld.SpawnZoneBehaviour
+  region:
+    x: 41
+    y: 1
+    width: 5
+    height: 9
+  definition: {fileID: 11400000, guid: d7a4b4d456c4239419625d2e609f901f, type: 2}
+  maxCount: 4
+  respawnDelayTicks: 180
+--- !u!1 &1836441214
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1836441215}
+  - component: {fileID: 1836441217}
+  - component: {fileID: 1836441216}
   m_Layer: 0
   m_Name: TEST_Patroller (Loop)
   m_TagString: Untagged
@@ -4286,28 +4286,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &2095015338
+--- !u!4 &1836441215
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2095015337}
+  m_GameObject: {fileID: 1836441214}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 28.5, y: 4.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1082902846}
+  m_Father: {fileID: 2043071205}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2095015339
+--- !u!114 &1836441216
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2095015337}
+  m_GameObject: {fileID: 1836441214}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 04a4874aa1a4123409d9e3409fcbf497, type: 3}
@@ -4328,13 +4328,13 @@ MonoBehaviour:
     facing: 2
     waitTicks: 30
   mode: 0
---- !u!114 &2095015340
+--- !u!114 &1836441217
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2095015337}
+  m_GameObject: {fileID: 1836441214}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2a31d4299bfbef0448848c093d0102bc, type: 3}
@@ -4342,8 +4342,77 @@ MonoBehaviour:
   m_EditorClassIdentifier: GridWorld::GridWorld.NpcBehaviour
   definition: {fileID: 11400000, guid: b109d1517785140438f59c15a4adb8dd, type: 2}
   facing: 2
+--- !u!1 &2043071202
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2043071205}
+  - component: {fileID: 2043071204}
+  - component: {fileID: 2043071203}
+  m_Layer: 0
+  m_Name: TEST_Area b
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2043071203
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2043071202}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 052c339880bf86d438102a42e175f417, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GridWorld::GridWorld.AreaBehaviour
+  id: TEST_b
+  areaData: {fileID: 11400000, guid: 0b2a26226c9d7ea459e82833e39adde5, type: 2}
+  worldData: {fileID: 11400000, guid: 4018f2fad1a312a418e616a4b72337fe, type: 2}
+  tileBounds:
+    x: 24
+    y: 0
+    width: 24
+    height: 16
+--- !u!156049354 &2043071204
+Grid:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2043071202}
+  m_Enabled: 1
+  m_CellSize: {x: 1, y: 1, z: 1}
+  m_CellGap: {x: 0, y: 0, z: 0}
+  m_CellLayout: 0
+  m_CellSwizzle: 0
+--- !u!4 &2043071205
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2043071202}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 573278441}
+  - {fileID: 1836441215}
+  - {fileID: 1151686154}
+  - {fileID: 1679458953}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 1082902846}
+  - {fileID: 2043071205}

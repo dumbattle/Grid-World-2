@@ -17,7 +17,8 @@ namespace GridWorld {
         [SerializeField] InputActionReference moveAction;
         [SerializeField] InputActionReference runAction;
 
-        WorldInstance world;
+        // Protected so a test or game root that extends this one stays the trusted holder.
+        protected WorldInstance world;
         PhaseExecutionManager phases = new PhaseExecutionManager();
         TickClock clock = new TickClock();
         RenderContext render;
@@ -27,7 +28,7 @@ namespace GridWorld {
         WorldView view;
         CameraView cameraView;
 
-        void OnEnable() {
+        protected virtual void OnEnable() {
             EnableAction(moveAction);
             EnableAction(runAction);
         }
@@ -42,9 +43,11 @@ namespace GridWorld {
             var catalogue = new WorldFeatureCatalogue();
             catalogue.Register(new PlayerSpawnFeatureType());
             catalogue.Register(new NpcFeatureType());
+            catalogue.Register(new SpawnZoneFeatureType<SpawnZoneData>());
 
             var setup = instance.GetContext<WorldSetupContext>();
             setup.SeedRandom(worldData.settings.seed);
+            setup.SetViewSize(worldData.settings.viewTiles);
             WorldStartup.Load(setup, worldData, catalogue);
 
             if (instance.player.IsValid()) {
@@ -73,7 +76,7 @@ namespace GridWorld {
 
             int ticks = clock.Advance(Time.deltaTime);
             for (int i = 0; i < ticks; i++) {
-                phases.Tick(world);
+                TickWorld();
                 UpdateActiveAreas();
                 view.Tick(render);
             }
@@ -87,7 +90,13 @@ namespace GridWorld {
             view?.Dispose();
         }
 
-        void StoreInput() {
+        /// <summary>Runs the phases for one tick.</summary>
+        protected virtual void TickWorld() {
+            phases.Tick(world);
+        }
+
+        /// <summary>Once per frame, before any ticks: copies Unity input into world state.</summary>
+        protected virtual void StoreInput() {
             var input = world.input;
             var move = moveAction != null ? moveAction.action.ReadValue<Vector2>() : Vector2.zero;
 

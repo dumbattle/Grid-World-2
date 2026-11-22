@@ -53,22 +53,26 @@ namespace Game {
             var groundB = CreateTile("TEST_GroundB", new Color32(164, 168, 80, 255), new Color32(146, 150, 68, 255));
             var wall = CreateTile("TEST_Wall", new Color32(70, 66, 80, 255), new Color32(110, 104, 122, 255));
 
-            var table = CreateAsset<TilePropertyTableSO>("TEST_TilePropertyTable");
-            table.SetEntry(groundA, TileBits.EnterAll);
-            table.SetEntry(groundB, TileBits.EnterAll);
-            table.SetEntry(wall, 0);
-            EditorUtility.SetDirty(table);
+            // Each asset is configured before CreateAsset writes it. Edits made after creating an
+            // asset at a path that held one before were sometimes lost when the next scene opened.
+            var table = CreateAsset<TilePropertyTableSO>("TEST_TilePropertyTable", asset => {
+                asset.SetEntry(groundA, TileBits.EnterAll);
+                asset.SetEntry(groundB, TileBits.EnterAll);
+                asset.SetEntry(wall, 0);
+            });
 
             var settings = CreateAsset<WorldSettingsSO>("TEST_WorldSettings");
             CreateAsset<EntityDefinitionSO>("TEST_Player");
             CreateDefinition("TEST_Villager", new Color32(88, 148, 232, 255), 16);
             CreateDefinition("TEST_Guard", new Color32(168, 96, 216, 255), 20);
+            CreateDefinition("TEST_Slime", new Color32(220, 72, 120, 255), 24);
 
-            var world = CreateAsset<WorldDataSO>("TEST_WorldData");
-            var worldProperties = new SerializedObject(world);
-            worldProperties.FindProperty("worldSettings").objectReferenceValue = settings;
-            worldProperties.FindProperty("tilePropertyTable").objectReferenceValue = table;
-            worldProperties.ApplyModifiedPropertiesWithoutUndo();
+            var world = CreateAsset<WorldDataSO>("TEST_WorldData", asset => {
+                var properties = new SerializedObject(asset);
+                properties.FindProperty("worldSettings").objectReferenceValue = settings;
+                properties.FindProperty("tilePropertyTable").objectReferenceValue = table;
+                properties.ApplyModifiedPropertiesWithoutUndo();
+            });
 
             CreateAsset<AreaDataSO>("TEST_AreaA");
             CreateAsset<AreaDataSO>("TEST_AreaB");
@@ -84,6 +88,7 @@ namespace Game {
             var player = Load<EntityDefinitionSO>(DataFolder, "TEST_Player");
             var villager = Load<EntityDefinitionSO>(DataFolder, "TEST_Villager");
             var guard = Load<EntityDefinitionSO>(DataFolder, "TEST_Guard");
+            var slime = Load<EntityDefinitionSO>(DataFolder, "TEST_Slime");
             var dataA = Load<AreaDataSO>(DataFolder, "TEST_AreaA");
             var dataB = Load<AreaDataSO>(DataFolder, "TEST_AreaB");
             var groundTileA = Load<TileBase>(TilesFolder, "TEST_GroundA");
@@ -110,9 +115,16 @@ namespace Game {
                         new PatrolPointSettings(new Vector2Int(AreaWidth + 16, 7), Direction4.Enum.none, 0),
                         new PatrolPointSettings(new Vector2Int(AreaWidth + 4, 7), Direction4.Enum.down, 30));
                     AddWanderer(root, villager, new Vector2Int(AreaWidth + 14, 12), new RectInt(AreaWidth + 12, 11, 8, 3));
+                    AddSpawnZone(root, slime, new RectInt(AreaWidth + 17, 1, 5, 9), maxCount: 4, respawnDelayTicks: 180);
                 });
 
             AssetDatabase.SaveAssets();
+
+            var problem = FindWorldDataProblem();
+            if (problem != null) {
+                Debug.LogError($"Grid World: the test world wasn't created correctly: {problem}. See the errors above, then run Create Test World again.");
+                return;
+            }
             Debug.Log("Grid World: created the test world.");
         }
 
@@ -142,18 +154,38 @@ namespace Game {
             }
         }
 
-        static T CreateAsset<T>(string name) where T : ScriptableObject {
+        static T CreateAsset<T>(string name, System.Action<T> configure = null) where T : ScriptableObject {
             var asset = ScriptableObject.CreateInstance<T>();
+            configure?.Invoke(asset);
             AssetDatabase.CreateAsset(asset, $"{DataFolder}/{name}.asset");
             return asset;
         }
 
         static void CreateDefinition(string name, Color32 color, int walkTicks) {
-            var definition = CreateAsset<EntityDefinitionSO>(name);
-            var properties = new SerializedObject(definition);
-            properties.FindProperty("placeholderColor").colorValue = color;
-            properties.FindProperty("walkTicksPerTile").intValue = walkTicks;
-            properties.ApplyModifiedPropertiesWithoutUndo();
+            CreateAsset<EntityDefinitionSO>(name, definition => {
+                var properties = new SerializedObject(definition);
+                properties.FindProperty("placeholderColor").colorValue = color;
+                properties.FindProperty("walkTicksPerTile").intValue = walkTicks;
+                properties.ApplyModifiedPropertiesWithoutUndo();
+            });
+        }
+
+        // Checks the saved world data, so a run that lost its edits can't pass as a success.
+        static string FindWorldDataProblem() {
+            var world = Load<WorldDataSO>(DataFolder, "TEST_WorldData");
+            if (world == null) {
+                return "TEST_WorldData is missing";
+            }
+            if (world.settings == null) {
+                return "TEST_WorldData has no world settings";
+            }
+            if (world.tileProperties == null) {
+                return "TEST_WorldData has no tile property table";
+            }
+            if (world.areas.Count != 2) {
+                return $"TEST_WorldData has {world.areas.Count} areas instead of 2";
+            }
+            return null;
         }
 
         static GameObject AddNpc(Transform root, string name, EntityDefinitionSO definition, Vector2Int tile) {
@@ -190,6 +222,22 @@ namespace Game {
             }
             properties.FindProperty("mode").enumValueIndex = (int)mode;
             properties.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        static void AddSpawnZone(Transform root, EntityDefinitionSO definition, RectInt region, int maxCount, int respawnDelayTicks) {
+            var zoneObject = new GameObject("TEST_Spawn Zone");
+            zoneObject.transform.SetParent(root, false);
+            zoneObject.transform.position = new Vector3(region.center.x, region.center.y);
+
+            var zone = zoneObject.AddComponent<SpawnZoneBehaviour>();
+            var properties = new SerializedObject(zone);
+            properties.FindProperty("region").rectIntValue = region;
+            properties.FindProperty("definition").objectReferenceValue = definition;
+            properties.FindProperty("maxCount").intValue = maxCount;
+            properties.FindProperty("respawnDelayTicks").intValue = respawnDelayTicks;
+            properties.ApplyModifiedPropertiesWithoutUndo();
+
+            zoneObject.AddComponent<SpawnWanderAIBehaviour>();
         }
 
         static Tile CreateTile(string name, Color32 fill, Color32 edge) {
@@ -242,12 +290,13 @@ namespace Game {
             camera.backgroundColor = new Color32(24, 24, 32, 255);
 
             var rootObject = new GameObject("TEST_World Root");
-            var root = rootObject.AddComponent<WorldRootBehaviour>();
+            var root = rootObject.AddComponent<TestWorldRootBehaviour>();
             var rootProperties = new SerializedObject(root);
             rootProperties.FindProperty("worldData").objectReferenceValue = world;
             rootProperties.FindProperty("viewCamera").objectReferenceValue = camera;
             rootProperties.FindProperty("moveAction").objectReferenceValue = FindAction("Move");
             rootProperties.FindProperty("runAction").objectReferenceValue = FindAction("Sprint");
+            rootProperties.FindProperty("despawnAction").objectReferenceValue = FindAction("Attack");
             rootProperties.ApplyModifiedPropertiesWithoutUndo();
 
             EditorSceneManager.SaveScene(scene, path);

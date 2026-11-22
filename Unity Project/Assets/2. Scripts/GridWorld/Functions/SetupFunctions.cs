@@ -16,28 +16,7 @@ namespace GridWorld {
         /// <summary>Creates an idle entity that occupies <paramref name="tile"/>.</summary>
         public static EntityID SpawnEntity<T>(this T ctx, EntityDefinitionSO definition, Vector2Int tile, Direction4 facing)
                     where T : IWorldFunctionContext, IPerm_SetupWorld {
-            if (definition == null) {
-                throw new ArgumentNullException(nameof(definition));
-            }
-            if (facing == null) {
-                throw new ArgumentNullException(nameof(facing));
-            }
-
-            var data = ctx.data;
-            var existing = data.occupancy.Get(tile);
-            if (existing.IsValid()) {
-                throw new InvalidOperationException($"Can't spawn {definition.name} at {tile}: {existing} is already there.");
-            }
-
-            var id = data.entityIds.Create();
-            var components = data.components;
-
-            components.Register(components.tile, id, tile);
-            components.Register(components.facing, id, facing);
-            components.Register(components.definition, id, definition);
-            components.Register(components.step, id, Step.Idle(tile));
-            data.occupancy.Claim(tile, id);
-            return id;
+            return EntityLifecycle.Spawn(ctx.data, definition, tile, facing);
         }
 
         public static void SetPlayer<T>(this T ctx, EntityID id)
@@ -47,19 +26,28 @@ namespace GridWorld {
 
         public static void AddAI<T>(this T ctx, EntityID id, EntityAI ai)
                     where T : IWorldFunctionContext, IPerm_SetupWorld {
-            if (ai == null) {
-                throw new ArgumentNullException(nameof(ai));
+            EntityLifecycle.AddAI(ctx.data, id, ai);
+        }
+
+        public static void AddSpawnZone<T>(this T ctx, SpawnZone zone)
+                    where T : IWorldFunctionContext, IPerm_SetupWorld {
+            if (zone == null) {
+                throw new ArgumentNullException(nameof(zone));
             }
-            var components = ctx.data.components;
-            if (components.ai.Has(id)) {
-                throw new InvalidOperationException($"{id} already has an AI. An entity can have only one.");
-            }
-            components.Register(components.ai, id, ai);
+            ctx.data.spawnZones.Add(zone);
         }
 
         public static void SeedRandom<T>(this T ctx, int seed)
                     where T : IWorldFunctionContext, IPerm_SetupWorld {
             ctx.data.random = new System.Random(seed);
+        }
+
+        public static void SetViewSize<T>(this T ctx, Vector2Int viewTiles)
+                    where T : IWorldFunctionContext, IPerm_SetupWorld {
+            if (viewTiles.x <= 0 || viewTiles.y <= 0) {
+                throw new ArgumentOutOfRangeException(nameof(viewTiles), $"The view needs a positive size, not {viewTiles}.");
+            }
+            ctx.data.viewTiles = viewTiles;
         }
     }
 }

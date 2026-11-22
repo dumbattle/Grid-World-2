@@ -8,6 +8,12 @@ namespace GridWorld {
             return ctx.data.player;
         }
 
+        /// <summary>False once the entity has been despawned.</summary>
+        public static bool EntityExists<T>(this T ctx, EntityID id)
+                    where T : IWorldFunctionContext, IPerm_ReadEntities {
+            return ctx.data.entityIds.Exists(id);
+        }
+
         public static Vector2Int GetTile<T>(this T ctx, EntityID id)
                     where T : IWorldFunctionContext, IPerm_ReadEntities {
             return ctx.data.components.tile.Get(id);

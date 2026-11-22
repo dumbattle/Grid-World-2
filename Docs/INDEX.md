@@ -4,7 +4,7 @@ Orientation map for the project. Keep it short and current; add one line per sys
 
 ## Status
 
-The first slice is done: a player walks and runs across two touching areas, with baked tile data, walls, and area scenes streaming in and out. Placed NPCs spin, wander, or patrol. **Grid World → Test → Create Test World** builds the test world; open `TEST_Main` and press Play. The active milestone is NPCs: slice 1 (placed NPCs with AI) is done, and runtime spawning for mobs and streaming sprites are next. Remaining design questions and unbuilt work are in [open decisions](open-decisions.md).
+The first slice is done: a player walks and runs across two touching areas, with baked tile data, walls, and area scenes streaming in and out. Placed NPCs spin, wander, or patrol, and spawn zones keep mobs alive while their area is active. **Grid World → Test → Create Test World** builds the test world; open `TEST_Main` and press Play. The active milestone is NPCs: slice 1 (placed NPCs with AI) and slice 2 (spawn zones, despawning) are done, and slice 3 (sprites only in active areas, and pooling) is next. Remaining design questions and unbuilt work are in [open decisions](open-decisions.md).
 
 ## Systems
 
@@ -14,13 +14,15 @@ Design rules are in [architecture.md](../.claude/rules/architecture.md). The doc
 |---|---|---|
 | World state and contexts | [world-and-areas.md](world-and-areas.md#worldinstance) | `WorldInstance`, `WorldFunctionContext`, the `IPerm_*` markers |
 | Entities | [world-and-areas.md](world-and-areas.md#worldinstance) | `EntityIDManager`, `EntityComponent<T>`, `EntityComponentManager`, `EntityDefinitionSO` |
+| Spawning and despawning | [world-and-areas.md](world-and-areas.md#spawning-and-despawning) | `EntityLifecycle`, `EntityComponentStore`, `SpawnFunctions` |
 | Startup | [world-and-areas.md](world-and-areas.md#startup) | `WorldStartup`, `WorldValidation` |
 | Areas and streaming | [world-and-areas.md](world-and-areas.md#area-activation) | `WorldAreas`, `AreaActivationSystem`, `AreaSceneLoader` |
 | Tile data | [tiles-and-movement.md](tiles-and-movement.md#tile-data) | `TileBits`, `AreaTiles`, `WorldTiles`, `TileOccupancy` |
 | Movement and phases | [tiles-and-movement.md](tiles-and-movement.md#a-tick) | `PhaseExecutionManager`, `MovementSystem`, `Step`, `MoveRequest` |
 | NPCs and AI | [npcs.md](npcs.md) | `NpcBehaviour`, `NpcAddonBehaviour`, `NpcFeatureType`, `EntityAI`, `AISystem`, `SpinAI`, `WanderAI`, `PatrolAI` |
+| Spawn zones | [npcs.md](npcs.md#spawn-zones) | `SpawnZoneBehaviour`, `SpawnAIBehaviour`, `SpawnZoneData`, `SpawnZoneFeatureType<TData>`, `SpawnZone`, `SpawnSystem`, `SpawnContext` |
 | Player input | [tiles-and-movement.md](tiles-and-movement.md#player-input) | `PlayerInputSystem`, `PlayerInput`, `PlayerControlState` |
-| Root and tick loop | [root-view-camera.md](root-view-camera.md#worldrootbehaviour) | `WorldRootBehaviour`, `TickClock` |
+| Root and tick loop | [root-view-camera.md](root-view-camera.md#worldrootbehaviour) | `WorldRootBehaviour`, `TickClock`, `TestWorldRootBehaviour` (Game) |
 | Rendering | [root-view-camera.md](root-view-camera.md#worldview) | `WorldView`, `RenderContext`, `PlaceholderSprites` |
 | Camera | [root-view-camera.md](root-view-camera.md#camera) | `ICameraController`, `FollowCameraController`, `CameraView` |
 | Authoring and bake | [authoring-areas.md](authoring-areas.md) | `AreaBehaviour`, `LogicLayerBehaviour`, `TilePropertyTableSO`, `AreaDataSO`, `WorldDataSO`, `AreaBaker` |

@@ -215,7 +215,7 @@ Every area bakes with a world offset of 0 until doors give interiors their own.
 3. A `WorldFeatureType<TData>` whose `Register(ctx, area, data)` turns the record into world state, converting tiles with `area.ToWorldTile`.
 4. Register an instance in the root's `WorldFeatureCatalogue` before startup.
 
-`PlayerSpawnData`, `PlayerSpawnBehaviour`, and `PlayerSpawnFeatureType` are the example. NPCs are a feature type too, with add-on components of their own: see [NPCs and AI](npcs.md).
+`PlayerSpawnData`, `PlayerSpawnBehaviour`, and `PlayerSpawnFeatureType` are the example. NPCs and spawn zones are feature types too, with add-on components of their own: see [NPCs and AI](npcs.md).
 
 ## The test world
 
@@ -223,11 +223,14 @@ Every area bakes with a world offset of 0 until doors give interiors their own.
 
 - Three 16 px placeholder tiles: `TEST_GroundA`, `TEST_GroundB`, and `TEST_Wall`.
 - `TEST_TilePropertyTable`, `TEST_WorldSettings`, `TEST_WorldData`, and `TEST_AreaA` and `TEST_AreaB` data.
-- Definitions: `TEST_Player` (orange), `TEST_Villager` (blue), and `TEST_Guard` (purple, walking at 20 ticks a tile).
-- `TEST_Main`: the camera and a `TEST_World Root`.
+- Definitions: `TEST_Player` (orange), `TEST_Villager` (blue), `TEST_Guard` (purple, walking at 20 ticks a tile), and `TEST_Slime` (pink, walking at 24).
+- `TEST_Main`: the camera and a `TEST_World Root`, which is a `TestWorldRootBehaviour`. Pressing `Player/Attack` (Enter or left click) despawns the entity the player faces and logs it.
 - `TEST_Area_a`, area `TEST_a` (0,0 to 24,16), and `TEST_Area_b`, area `TEST_b` (24,0 to 48,16), with walls on the outer edges and one block each. The player spawns in `TEST_a` at (5, 5), facing down.
 - NPCs:
   - In `TEST_a`, a spinning villager at (3,10), a wandering villager at (15,4) in the region (12,2) to (18,6), and a guard walking back and forth on row 12 between x = 12 and 20, facing outward and waiting a second at each end.
   - In `TEST_b`, a guard looping the rectangle from (28,4) to (40,7), waiting half a second at two corners, and a wandering villager at (38,12) in the region (36,11) to (43,13).
+- In `TEST_b`, a spawn zone from (41,1) to (45,9) keeping up to 4 wandering slimes, one every 3 seconds. A and B always touch, so the zone never goes inactive in play.
+
+Each asset gets its settings before it's first written, because values set after `CreateAsset` were sometimes lost when an asset was recreated at the same path. At the end, the tool checks that `TEST_WorldData` has its settings, its tile table, and both areas, and logs an error instead of the success message if not.
 
 Open `TEST_Main` and press Play. Area sizes are constants in `CreateTestWorld`, to make a large-area test easy.

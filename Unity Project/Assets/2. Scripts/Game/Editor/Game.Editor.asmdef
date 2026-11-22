@@ -3,6 +3,7 @@
     "rootNamespace": "Game",
     "references": [
         "LPE_ASM",
+        "Game",
         "GridWorld",
         "GridWorld.Editor",
         "Unity.InputSystem"

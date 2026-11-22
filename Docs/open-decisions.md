@@ -33,9 +33,9 @@ Settled design is in [architecture.md](../.claude/rules/architecture.md).
 
 Settled in the rules, but not in the code after the first slice.
 
-- **Features:** runtime spawning and despawning (for mobs, with spawn zones), the `absent` and `scripted` markers, `returnToRoute`, cutscenes and the cutscene phase, props, ledges, doors and interiors, pathfinding, saving, dialogue, the interact button, and game extension.
+- **Features:** the `absent` and `scripted` markers, `returnToRoute`, cutscenes and the cutscene phase, props, ledges, doors and interiors, pathfinding, saving, dialogue, the interact button, and game extension.
 - **Hooks:** `failedMoves`, `stepsCompleted`, and `interactAttempts`.
-- **Rendering:** removing sprites and hiding them in inactive areas, sprite pooling, four-direction animation, bottom pivots for entity sprites (they sort by Y from a centre pivot for now), and pixel snapping.
+- **Rendering:** hiding sprites in inactive areas, sprite pooling, four-direction animation, bottom pivots for entity sprites (they sort by Y from a centre pivot for now), and pixel snapping.
 - **World data:** world offsets for interiors (every area bakes at 0), the override tilemap, and the "Go to area" window.
 - **Input:** buffered button presses, and pausing.
 - **Camera:** the look-at controller, camera effects, and cutscene camera locks.
@@ -44,6 +44,7 @@ Settled in the rules, but not in the code after the first slice.
 
 - **Bake All and the pre-build bake** haven't been run. Unity may refuse to open scenes during a build.
 - **Bake on save** has only run in batch mode, through Create Test World.
+- **Inactive spawn zones in play:** covered by EditMode tests only, because the test world's two areas always touch. Adding a third area, planned for slice 3, makes it testable.
 - **Large area stress test:** area sizes are constants in `CreateTestWorld`, so it's easy to try.
 
 ## Editor tasks

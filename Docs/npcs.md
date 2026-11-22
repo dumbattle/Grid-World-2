@@ -1,8 +1,8 @@
 # NPCs and AI
 
-How NPCs are placed, baked, and moved by their AI. The design rules are in [architecture.md](../.claude/rules/architecture.md#npc-ai).
+How NPCs are placed, baked, and moved by their AI, and how spawn zones keep mobs alive. The design rules are in [architecture.md](../.claude/rules/architecture.md#npc-ai).
 
-Code: `GridWorld/NPCs/` (authoring and baked records) and `GridWorld/AI/` (runtime AI).
+Code: `GridWorld/NPCs/` (authoring and baked records), `GridWorld/AI/` (runtime AI), and `GridWorld/Spawning/` (spawn zones).
 
 ## Placing an NPC
 
@@ -64,3 +64,46 @@ Randomness comes from `WorldInstance.random`, a `System.Random` seeded at startu
 3. An `NpcAIBehaviour` subclass whose `Bake(baker, localTile)` checks its settings and returns the record.
 
 Other add-ons, such as dialogue later, derive from `NpcAddonBehaviour` and `NpcAddonData` instead, and register their own components in `Register`. `SpinAIBehaviour`, `SpinAIData`, and `SpinAI` are the simplest example.
+
+## Spawn zones
+
+A spawn zone keeps up to a set number of mobs alive inside a rectangle while its area is active. Mobs are spawned at runtime, not baked, and anything can remove them with `Despawn`.
+
+### Placing a zone
+
+1. Add an object to an area scene and give it a `SpawnZoneBehaviour`: a region in area-local tiles, an entity definition, **Max Count** (3), and **Respawn Delay Ticks** (300). The region starts as 5×5 tiles around the object, and draws as an orange rectangle.
+2. Optionally, add one mob AI profile to the same object: `SpawnWanderAIBehaviour` or `SpawnSpinAIBehaviour`. Mobs with none stand still. Each has min and max waits and **Pause When Area Inactive**, as for NPCs. Wandering mobs wander inside the zone's region.
+3. Save the scene to bake it.
+
+| Problem | Result |
+|---|---|
+| Empty region, no definition, max count below 1, or a negative delay | Bake error, no record |
+| More than one mob AI profile | Bake error, no record |
+| Wait max below min | Bake error, no record |
+| Region not inside the area's bounds | Throws at startup, naming the area |
+| No definition, or the AI's class went missing after the bake | Throws at startup, naming the area |
+
+### Runtime
+
+The bake writes a `SpawnZoneData` record. At startup, `SpawnZoneFeatureType<SpawnZoneData>` checks it and calls its `CreateZone(area)`, which builds a `SpawnZone` with its region in world tiles. Zones live in `WorldInstance.spawnZones`.
+
+`SpawnSystem` runs first in each tick, in its own spawn phase, and calls `Tick` on each zone in order with a `SpawnContext`. A zone's tick:
+
+1. Forgets mobs that no longer exist, whatever removed them, and restarts the delay for each.
+2. Stops if the zone is inactive. By default that's when the area holding the region's corner is inactive, so the delay doesn't count down while you're away.
+3. Counts the delay down, and once it reaches 0 with fewer than **Max Count** mobs, spawns one and restarts the delay.
+
+Zones start empty, so a zone with a 180-tick delay fills one mob every 3 seconds. A spawn picks a random tile in the region with no entity on it that can be entered from some direction, preferring tiles outside the view so mobs don't appear on screen. If every free tile is in view, it uses one anyway, and if none is free it tries again next tick. Each mob gets a random facing and its own new AI. Randomness comes from `WorldInstance.random`, so the same seed gives the same spawns.
+
+### Extending zones
+
+Each step is a protected virtual method on `SpawnZone`: `IsActive`, `ShouldSpawn`, `TrySpawn`, `TryChooseTile`, `CanSpawnOn`, `ChooseDefinition`, `ChooseFacing`, `CreateAI`, `OnSpawned`, and `OnRemoved`. `Tick` itself is virtual too. Call the base `OnSpawned` when overriding it, because it tracks the mob.
+
+To use a subclass:
+
+1. Subclass `SpawnZone` and override the steps you need.
+2. Subclass `SpawnZoneData` with any extra settings, overriding `CreateZone(area)` to return your zone. `ToWorldRegion(area)` converts the region.
+3. Subclass `SpawnZoneBehaviour`, overriding `Validate(baker)` and `CreateRecord(ai)` to bake your data. Its settings are readable through protected getters.
+4. Register a `SpawnZoneFeatureType<YourData>` in the root's catalogue.
+
+A new mob AI profile is a `SpawnAIData` record whose `Create(zoneRegion)` builds the `EntityAI`, plus a `SpawnAIBehaviour` whose `Bake(baker)` returns it. `SpawnSpinAIData` and `SpawnSpinAIBehaviour` are the simplest example.

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using LPE;
+using UnityEngine;
 
 namespace GridWorld {
     /// <summary>
@@ -28,6 +29,11 @@ namespace GridWorld {
 
         // Set by the root. Cutscenes will swap it.
         public ICameraController cameraController;
+        // Startup sets it from the world settings.
+        public Vector2Int viewTiles = new Vector2Int(15, 11);
+
+        // Spawn zones, in bake order. Each owns the list of mobs it spawned.
+        public readonly List<SpawnZone> spawnZones = new List<SpawnZone>();
 
         // Owned by the decision phase
         public readonly PlayerControlState playerControl = new PlayerControlState();

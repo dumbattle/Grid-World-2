@@ -7,13 +7,17 @@ namespace GridWorld {
     /// Stores one component type, keyed by entity. Components are added only through
     /// <see cref="EntityComponentManager.Register{T}"/>, so <see cref="Set"/> can't create one.
     /// </summary>
-    public class EntityComponent<T> {
+    public class EntityComponent<T> : EntityComponentStore {
         Dictionary<EntityID, T> id2value = new Dictionary<EntityID, T>();
 
         public int count => id2value.Count;
 
         internal void Add(EntityID id, T value) {
             id2value.Add(id, value);
+        }
+
+        internal override void Remove(EntityID id) {
+            id2value.Remove(id);
         }
 
         public bool Has(EntityID id) {
