@@ -19,7 +19,7 @@ Design rules are in [architecture.md](../.claude/rules/architecture.md). The doc
 | Areas and streaming | [world-and-areas.md](world-and-areas.md#area-activation) | `WorldAreas`, `AreaActivationSystem`, `AreaSceneLoader` |
 | Tile data | [tiles-and-movement.md](tiles-and-movement.md#tile-data) | `TileBits`, `AreaTiles`, `WorldTiles`, `TileOccupancy` |
 | Movement and phases | [tiles-and-movement.md](tiles-and-movement.md#a-tick) | `PhaseExecutionManager`, `MovementSystem`, `Step`, `MoveRequest` |
-| NPCs and AI | [npcs.md](npcs.md) | `NpcBehaviour`, `NpcAddonBehaviour`, `NpcFeatureType`, `EntityAI`, `AISystem`, `SpinAI`, `WanderAI`, `PatrolAI` |
+| NPCs and AI | [npcs.md](npcs.md) | `NpcBehaviour`, `NpcAddonBehaviour`, `NpcFeatureType`, `EntityAI`, `AISystem`, `SpinAI`, `WanderAI`, `PatrolAI`, `TileSpace`, `TileSpaces`, `RegionSpaceInspector` |
 | Spawn zones | [npcs.md](npcs.md#spawn-zones) | `SpawnZoneBehaviour`, `SpawnAIBehaviour`, `SpawnZoneData`, `SpawnZoneFeatureType<TData>`, `SpawnZone`, `SpawnSystem`, `SpawnContext` |
 | Player input | [tiles-and-movement.md](tiles-and-movement.md#player-input) | `PlayerInputSystem`, `PlayerInput`, `PlayerControlState` |
 | Root and tick loop | [root-view-camera.md](root-view-camera.md#worldrootbehaviour) | `WorldRootBehaviour`, `TickClock`, `TestWorldRootBehaviour` (Game) |

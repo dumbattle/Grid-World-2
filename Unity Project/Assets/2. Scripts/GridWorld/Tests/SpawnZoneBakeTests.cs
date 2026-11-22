@@ -25,11 +25,13 @@ namespace GridWorld.Tests {
             assets.Dispose();
         }
 
-        GameObject ZoneObject(RectInt region, EntityDefinitionSO zoneDefinition) {
+        GameObject ZoneObject(RectInt region, EntityDefinitionSO zoneDefinition, TileSpace space = TileSpace.Area, Vector2Int tile = default) {
             var zoneObject = new GameObject("Zone");
             zoneObject.transform.SetParent(gridObject.transform, false);
+            zoneObject.transform.position = new Vector3(tile.x + 0.5f, tile.y + 0.5f);
 
             var properties = new SerializedObject(zoneObject.AddComponent<SpawnZoneBehaviour>());
+            properties.FindProperty("regionSpace").enumValueIndex = (int)space;
             properties.FindProperty("region").rectIntValue = region;
             properties.FindProperty("definition").objectReferenceValue = zoneDefinition;
             properties.ApplyModifiedPropertiesWithoutUndo();
@@ -65,6 +67,18 @@ namespace GridWorld.Tests {
             var zone = world.spawnZones[0];
             Assert.AreEqual(new RectInt(21, 2, 3, 4), zone.region);
             Assert.IsInstanceOf<SpawnWanderAIData>(zone.ai);
+        }
+
+        [Test]
+        public void Bake_RelativeRegion_LoadsInWorldTilesFromTheZoneObject() {
+            ZoneObject(new RectInt(-1, -1, 3, 3), definition, TileSpace.Relative, new Vector2Int(3, 4));
+            var records = Bake();
+            var area = assets.Area("meadow", new RectInt(0, 0, 10, 10), new Vector2Int(20, 0), TileBits.EnterAll, records.ToArray());
+
+            var world = Load(area);
+
+            // Area region (2,3) 3x3, plus the area's offset of (20,0).
+            Assert.AreEqual(new RectInt(22, 3, 3, 3), world.spawnZones[0].region);
         }
 
         [Test]

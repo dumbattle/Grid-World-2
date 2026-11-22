@@ -15,13 +15,25 @@ Every profile has **Pause When Area Inactive**, on by default. Waits are in tick
 | Profile | Settings | Behaviour |
 |---|---|---|
 | Spin | Min and max wait | Stays on its tile, and turns to a random new direction after each wait |
-| Wander | Region, in area-local tiles, plus min and max wait | After each wait, steps once onto a random free tile it can enter inside the region. With none free, it waits again. The region starts as 5×5 tiles around the NPC when the component is added |
-| Patrol | Points (tile, facing, wait), and Loop or Ping Pong | Walks to each point in turn. On arrival it turns to the point's facing, if set, then waits. Loop goes from the last point back to the first; Ping Pong walks the route in reverse |
+| Wander | Region Space, region, and min and max wait | After each wait, steps once onto a random free tile it can enter inside the region. With none free, it waits again |
+| Patrol | Points (tile offset, facing, wait), and Loop or Ping Pong | Walks to each point in turn. On arrival it turns to the point's facing, if set, then waits. Loop goes from the last point back to the first; Ping Pong walks the route in reverse |
+
+### Relative and area tiles
+
+Moving an NPC should usually move its route or region with it, so AI tiles can be offsets from the NPC's tile:
+
+- **Patrol points are always offsets.** (0,0) is the NPC's own tile, and (0,3) is 3 tiles above it. Moving the NPC moves the whole route.
+- **A wander region has a Region Space dropdown.**
+  - **Relative to NPC** stores the region as an offset, so it moves with the NPC. New components start this way, with a 5×5 region around the NPC.
+  - **Area tiles** stores area-local tiles, so the region stays put and you can move the NPC's start tile inside it. Components saved before the setting existed load this way.
+  - Changing the dropdown converts the numbers so the region stays where it is in the scene. Undo works, and so does changing several objects at once.
+
+The bake converts everything to area-local tiles, so the baked data and runtime don't depend on the space. The Inspector and gizmos take the NPC's tile from its position rounded down, which matches the bake for an area grid at the origin with one-unit cells.
 
 Patrol details:
 
 - Consecutive points must share a row or column, including last to first for Loop. Two points on one tile turn the NPC in place.
-- The NPC starts heading for point 0, so it must share a row or column with it.
+- The NPC starts heading for point 0, so it must share a row or column with it: one of point 0's offset values must be 0.
 - A blocked step retries every tick until the way is clear.
 - An NPC out of line with its next point, which can only happen at runtime, stands still and logs one warning. There's no `returnToRoute` yet, because it needs pathfinding.
 
@@ -29,7 +41,7 @@ The NPC and its profile draw gizmos: a cyan square with a facing line, the wande
 
 ## Bake
 
-`NpcBehaviour.Bake` writes one `NpcData` record: definition, local tile, facing, and a `[SerializeReference]` list of add-on records. Each `NpcAddonBehaviour` on the object adds its own record through `Bake(baker, localTile)`, which returns null after logging an error.
+`NpcBehaviour.Bake` writes one `NpcData` record: definition, local tile, facing, and a `[SerializeReference]` list of add-on records. Each `NpcAddonBehaviour` on the object adds its own record through `Bake(baker, localTile)`, which returns null after logging an error. Wander and patrol convert their tiles to area-local tiles from `localTile` before checking them. Errors show the area-local values, plus the relative values you set where that helps.
 
 | Problem | Result |
 |---|---|
@@ -71,7 +83,9 @@ A spawn zone keeps up to a set number of mobs alive inside a rectangle while its
 
 ### Placing a zone
 
-1. Add an object to an area scene and give it a `SpawnZoneBehaviour`: a region in area-local tiles, an entity definition, **Max Count** (3), and **Respawn Delay Ticks** (300). The region starts as 5×5 tiles around the object, and draws as an orange rectangle.
+1. Add an object to an area scene and give it a `SpawnZoneBehaviour`: a Region Space, a region, an entity definition, **Max Count** (3), and **Respawn Delay Ticks** (300). The region draws as an orange rectangle.
+   - Region Space works like a wander region's, but **Relative to zone** measures from the zone object's tile. New zones start relative, with a 5×5 region around the object.
+   - With **Area tiles**, the region stays put when you move the object.
 2. Optionally, add one mob AI profile to the same object: `SpawnWanderAIBehaviour` or `SpawnSpinAIBehaviour`. Mobs with none stand still. Each has min and max waits and **Pause When Area Inactive**, as for NPCs. Wandering mobs wander inside the zone's region.
 3. Save the scene to bake it.
 
@@ -103,7 +117,7 @@ To use a subclass:
 
 1. Subclass `SpawnZone` and override the steps you need.
 2. Subclass `SpawnZoneData` with any extra settings, overriding `CreateZone(area)` to return your zone. `ToWorldRegion(area)` converts the region.
-3. Subclass `SpawnZoneBehaviour`, overriding `Validate(baker)` and `CreateRecord(ai)` to bake your data. Its settings are readable through protected getters.
+3. Subclass `SpawnZoneBehaviour`, overriding `Validate(baker)` and `CreateRecord(localRegion, ai)` to bake your data. `CreateRecord` receives the region already converted to area-local tiles. Its settings are readable through protected getters, including `authoredRegion` and `regionTileSpace` for the region as set in the Inspector.
 4. Register a `SpawnZoneFeatureType<YourData>` in the root's catalogue.
 
 A new mob AI profile is a `SpawnAIData` record whose `Create(zoneRegion)` builds the `EntityAI`, plus a `SpawnAIBehaviour` whose `Bake(baker)` returns it. `SpawnSpinAIData` and `SpawnSpinAIBehaviour` are the simplest example.

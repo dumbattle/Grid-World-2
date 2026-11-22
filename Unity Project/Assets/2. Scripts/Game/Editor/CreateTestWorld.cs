@@ -216,22 +216,27 @@ namespace Game {
         static void AddWanderer(Transform root, EntityDefinitionSO definition, Vector2Int tile, RectInt region) {
             var wander = AddNpc(root, "TEST_Wanderer", definition, tile).AddComponent<WanderAIBehaviour>();
             var properties = new SerializedObject(wander);
+            properties.FindProperty("regionSpace").enumValueIndex = (int)TileSpace.Area;
             properties.FindProperty("region").rectIntValue = region;
             properties.ApplyModifiedPropertiesWithoutUndo();
         }
 
+        // Points are given in area-local tiles for readability. The NPC starts on the first, and the
+        // component stores them as offsets from it.
         static void AddPatroller(Transform root, EntityDefinitionSO definition, PatrolMode mode, params PatrolPointSettings[] points) {
-            var patrol = AddNpc(root, $"TEST_Patroller ({mode})", definition, points[0].localTile).AddComponent<PatrolAIBehaviour>();
+            var start = points[0].localTile;
+            var patrol = AddNpc(root, $"TEST_Patroller ({mode})", definition, start).AddComponent<PatrolAIBehaviour>();
             var properties = new SerializedObject(patrol);
             var array = properties.FindProperty("points");
             array.arraySize = points.Length;
             for (int i = 0; i < points.Length; i++) {
-                array.GetArrayElementAtIndex(i).boxedValue = points[i];
+                array.GetArrayElementAtIndex(i).boxedValue = points[i].Offset(-start);
             }
             properties.FindProperty("mode").enumValueIndex = (int)mode;
             properties.ApplyModifiedPropertiesWithoutUndo();
         }
 
+        // The region is given in area-local tiles, and stored relative to the zone object.
         static void AddSpawnZone(Transform root, EntityDefinitionSO definition, RectInt region, int maxCount, int respawnDelayTicks) {
             var zoneObject = new GameObject("TEST_Spawn Zone");
             zoneObject.transform.SetParent(root, false);
@@ -239,7 +244,8 @@ namespace Game {
 
             var zone = zoneObject.AddComponent<SpawnZoneBehaviour>();
             var properties = new SerializedObject(zone);
-            properties.FindProperty("region").rectIntValue = region;
+            properties.FindProperty("regionSpace").enumValueIndex = (int)TileSpace.Relative;
+            properties.FindProperty("region").rectIntValue = TileSpaces.Convert(region, TileSpace.Area, TileSpace.Relative, TileSpaces.TileOf(zoneObject.transform));
             properties.FindProperty("definition").objectReferenceValue = definition;
             properties.FindProperty("maxCount").intValue = maxCount;
             properties.FindProperty("respawnDelayTicks").intValue = respawnDelayTicks;

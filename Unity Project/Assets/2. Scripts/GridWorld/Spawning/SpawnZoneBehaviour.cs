@@ -8,7 +8,9 @@ namespace GridWorld {
     /// <see cref="SpawnZoneData"/> subclass.
     /// </summary>
     public class SpawnZoneBehaviour : WorldFeatureBehaviour {
-        [Tooltip("The tiles mobs spawn on and stay within, in area-local tiles. It must be inside the area.")]
+        [Tooltip("Relative to zone moves the region with this object. Area tiles keeps it in place.")]
+        [SerializeField] TileSpace regionSpace = TileSpace.Area;
+        [Tooltip("The tiles mobs spawn on and stay within. It must be inside the area.")]
         [SerializeField] RectInt region;
         [Tooltip("What each mob is.")]
         [SerializeField] EntityDefinitionSO definition;
@@ -17,7 +19,9 @@ namespace GridWorld {
         [Tooltip("Ticks between spawns, and after a mob is removed. The game runs 60 ticks a second.")]
         [SerializeField, Min(0)] int respawnDelayTicks = 300;
 
-        protected RectInt localRegion => region;
+        /// <summary>The region as set in the Inspector, in <see cref="regionTileSpace"/>.</summary>
+        protected RectInt authoredRegion => region;
+        protected TileSpace regionTileSpace => regionSpace;
         protected EntityDefinitionSO mobDefinition => definition;
         protected int maxMobs => maxCount;
         protected int respawnDelay => respawnDelayTicks;
@@ -41,7 +45,8 @@ namespace GridWorld {
                 }
             }
 
-            baker.Add(CreateRecord(ai));
+            var localRegion = TileSpaces.ToArea(region, regionSpace, baker.ToLocalTile(transform.position));
+            baker.Add(CreateRecord(localRegion, ai));
         }
 
         /// <summary>Logs an error with the baker and returns false if the settings are invalid.</summary>
@@ -65,20 +70,22 @@ namespace GridWorld {
             return true;
         }
 
+        /// <param name="localRegion">The region in area-local tiles.</param>
         /// <param name="ai">Null when the zone has no mob AI profile.</param>
-        protected virtual SpawnZoneData CreateRecord(SpawnAIData ai) {
-            return new SpawnZoneData(region, definition, maxCount, respawnDelayTicks, ai);
+        protected virtual SpawnZoneData CreateRecord(RectInt localRegion, SpawnAIData ai) {
+            return new SpawnZoneData(localRegion, definition, maxCount, respawnDelayTicks, ai);
         }
 
-        // Starts the region as 5x5 tiles around the object.
+        // New zones start with a relative 5x5 region around the object.
         void Reset() {
-            var tile = new Vector2Int(Mathf.FloorToInt(transform.position.x), Mathf.FloorToInt(transform.position.y));
-            region = new RectInt(tile - new Vector2Int(2, 2), new Vector2Int(5, 5));
+            regionSpace = TileSpace.Relative;
+            region = new RectInt(-2, -2, 5, 5);
         }
 
         void OnDrawGizmos() {
             Gizmos.color = new Color(1f, 0.55f, 0.2f);
-            Gizmos.DrawWireCube((Vector2)region.position + (Vector2)region.size / 2f, (Vector2)region.size);
+            var shown = TileSpaces.ToArea(region, regionSpace, TileSpaces.TileOf(transform));
+            Gizmos.DrawWireCube((Vector2)shown.position + (Vector2)shown.size / 2f, (Vector2)shown.size);
         }
     }
 }

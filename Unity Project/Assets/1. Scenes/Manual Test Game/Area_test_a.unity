@@ -5489,6 +5489,74 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!1 &2013485012
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2013485015}
+  - component: {fileID: 2013485014}
+  - component: {fileID: 2013485013}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2013485013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2013485012}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c0764b6d55f7e944ba72357e20c24b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GridWorld::GridWorld.WanderAIBehaviour
+  pauseWhenAreaInactive: 1
+  regionSpace: 1
+  region:
+    x: -1
+    y: -3
+    width: 5
+    height: 5
+  minWaitTicks: 30
+  maxWaitTicks: 120
+--- !u!114 &2013485014
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2013485012}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a31d4299bfbef0448848c093d0102bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GridWorld::GridWorld.NpcBehaviour
+  definition: {fileID: 11400000, guid: 8c73d218020e90541926af825f687e3c, type: 2}
+  facing: 1
+--- !u!4 &2013485015
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2013485012}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 9.13, y: 5.74, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2068500704
 GameObject:
   m_ObjectHideFlags: 0
@@ -9761,4 +9829,5 @@ Sprite:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 2013485015}
   - {fileID: 70399141}

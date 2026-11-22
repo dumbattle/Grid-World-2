@@ -53,9 +53,44 @@ namespace GridWorld.Tests {
             return records;
         }
 
-        static void SetRegion(WanderAIBehaviour wander, RectInt region) {
+        static void SetRegion(WanderAIBehaviour wander, RectInt region, TileSpace space = TileSpace.Area) {
             var properties = new SerializedObject(wander);
+            properties.FindProperty("regionSpace").enumValueIndex = (int)space;
             properties.FindProperty("region").rectIntValue = region;
+            properties.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        static void Run(WorldInstance world, int ticks) {
+            var phases = new PhaseExecutionManager();
+            world.GetContext<AreaActivationContext>().SetAreaActive(0, true);
+            for (int i = 0; i < ticks; i++) {
+                phases.Tick(world);
+            }
+        }
+
+        // Wanders for a while, checking the NPC never leaves the region and moves at least once.
+        static void AssertStaysIn(WorldInstance world, Vector2Int start, RectInt region) {
+            var id = world.occupancy.Get(start);
+            var phases = new PhaseExecutionManager();
+            world.GetContext<AreaActivationContext>().SetAreaActive(0, true);
+            bool moved = false;
+            for (int i = 0; i < 2000; i++) {
+                phases.Tick(world);
+                var tile = world.components.tile.Get(id);
+                Assert.IsTrue(region.Contains(tile), $"Left {region} at {tile}.");
+                moved |= tile != start;
+            }
+            Assert.IsTrue(moved);
+        }
+
+        // Points are offsets from the NPC.
+        static void SetPoints(PatrolAIBehaviour patrol, params Vector2Int[] offsets) {
+            var properties = new SerializedObject(patrol);
+            var points = properties.FindProperty("points");
+            points.arraySize = offsets.Length;
+            for (int i = 0; i < offsets.Length; i++) {
+                points.GetArrayElementAtIndex(i).boxedValue = new PatrolPointSettings(offsets[i], Direction4.Enum.none, 0);
+            }
             properties.ApplyModifiedPropertiesWithoutUndo();
         }
 
@@ -130,16 +165,68 @@ namespace GridWorld.Tests {
 
         [Test]
         public void Bake_NpcOutOfLineWithFirstPatrolPoint_LogsErrorAndAddsNothing() {
-            var patrol = Npc(new Vector2Int(1, 1)).AddComponent<PatrolAIBehaviour>();
-            var properties = new SerializedObject(patrol);
-            var points = properties.FindProperty("points");
-            points.arraySize = 2;
-            points.GetArrayElementAtIndex(0).boxedValue = new PatrolPointSettings(new Vector2Int(0, 0), Direction4.Enum.none, 0);
-            points.GetArrayElementAtIndex(1).boxedValue = new PatrolPointSettings(new Vector2Int(3, 0), Direction4.Enum.none, 0);
-            properties.ApplyModifiedPropertiesWithoutUndo();
+            SetPoints(Npc(new Vector2Int(1, 1)).AddComponent<PatrolAIBehaviour>(), new Vector2Int(1, 1), new Vector2Int(4, 1));
 
             LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("first patrol point"));
             CollectionAssert.IsEmpty(Bake());
+        }
+
+        [Test]
+        public void Bake_RelativeWanderRegion_BakesInAreaTiles() {
+            SetRegion(Npc(new Vector2Int(5, 6)).AddComponent<WanderAIBehaviour>(), new RectInt(-1, -2, 3, 4), TileSpace.Relative);
+            var area = assets.Area("meadow", new RectInt(0, 0, 10, 10), new Vector2Int(20, 0), TileBits.EnterAll, Bake().ToArray());
+
+            var world = Load(area);
+
+            // Area region (4,4) 3x4, plus the area's offset of (20,0).
+            AssertStaysIn(world, new Vector2Int(25, 6), new RectInt(24, 4, 3, 4));
+        }
+
+        [Test]
+        public void Bake_RelativeWanderRegionNotHoldingTheNpc_LogsError() {
+            SetRegion(Npc(new Vector2Int(5, 6)).AddComponent<WanderAIBehaviour>(), new RectInt(1, 0, 2, 2), TileSpace.Relative);
+
+            LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("relative to the NPC"));
+            CollectionAssert.IsEmpty(Bake());
+        }
+
+        [Test]
+        public void Bake_AreaWanderRegion_BakesUnchanged() {
+            SetRegion(Npc(new Vector2Int(5, 6)).AddComponent<WanderAIBehaviour>(), new RectInt(4, 5, 3, 3));
+            var area = assets.Area("meadow", new RectInt(0, 0, 10, 10), Vector2Int.zero, TileBits.EnterAll, Bake().ToArray());
+
+            var world = Load(area);
+
+            AssertStaysIn(world, new Vector2Int(5, 6), new RectInt(4, 5, 3, 3));
+        }
+
+        [Test]
+        public void Bake_RelativePatrolPoints_WalksTheRouteFromTheNpc() {
+            var npc = Npc(new Vector2Int(2, 3));
+            SetPoints(npc.AddComponent<PatrolAIBehaviour>(), Vector2Int.zero, new Vector2Int(2, 0));
+            var area = assets.Area("meadow", new RectInt(0, 0, 10, 10), new Vector2Int(20, 0), TileBits.EnterAll, Bake().ToArray());
+            var world = Load(area);
+            var id = world.occupancy.Get(new Vector2Int(22, 3));
+            Assert.IsTrue(id.IsValid());
+
+            // Point 1 is two tiles right of the NPC's world tile, (22,3).
+            bool reached = false;
+            for (int i = 0; i < 100 && !reached; i++) {
+                Run(world, 1);
+                reached = world.components.tile.Get(id) == new Vector2Int(24, 3);
+            }
+            Assert.IsTrue(reached);
+        }
+
+        [Test]
+        public void Convert_ToRelativeAndBack_ReturnsTheSameRegion() {
+            var region = new RectInt(4, -3, 5, 2);
+            var origin = new Vector2Int(7, 1);
+
+            var relative = TileSpaces.Convert(region, TileSpace.Area, TileSpace.Relative, origin);
+
+            Assert.AreEqual(new RectInt(-3, -4, 5, 2), relative);
+            Assert.AreEqual(region, TileSpaces.Convert(relative, TileSpace.Relative, TileSpace.Area, origin));
         }
     }
 }

@@ -34,6 +34,7 @@ Settled design is in [architecture.md](../.claude/rules/architecture.md).
 Settled in the rules, but not in the code after the first slice.
 
 - **Features:** the `absent` and `scripted` markers, `returnToRoute`, cutscenes and the cutscene phase, props, ledges, doors and interiors, pathfinding, saving, dialogue, the interact button, and game extension.
+- **Authoring:** an Inspector button on `PatrolAIBehaviour` that changes where the NPC starts in its cycle, by rotating the points and moving the NPC onto the new first point.
 - **Hooks:** `failedMoves`, `stepsCompleted`, and `interactAttempts`.
 - **Rendering:** four-direction animation, bottom pivots for entity sprites (they sort by Y from a centre pivot for now), and pixel snapping.
 - **World data:** world offsets for interiors (every area bakes at 0), the override tilemap, and the "Go to area" window.
