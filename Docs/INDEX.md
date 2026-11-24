@@ -4,7 +4,7 @@ Orientation map for the project. Keep it short and current; add one line per sys
 
 ## Status
 
-The first slice is done: a player walks and runs across two touching areas, with baked tile data, walls, and area scenes streaming in and out. Placed NPCs spin, wander, or patrol, and spawn zones keep mobs alive while their area is active. **Grid World → Test → Create Test World** builds the test world; open `TEST_Main` and press Play. Entities have pooled sprites only while they're in an active area. The NPC milestone's three slices are done: placed NPCs with AI, spawn zones with despawning, and sprites streaming with their areas. Remaining design questions and unbuilt work are in [open decisions](open-decisions.md).
+The first slice is done: a player walks and runs across two touching areas, with baked tile data, walls, and area scenes streaming in and out. Placed NPCs spin, wander, or patrol, and spawn zones keep mobs alive while their area is active. **Grid World → Test → Create Test World** builds the test world; open `TEST_Main` and press Play. Entities have pooled sprites only while they're in an active area. The NPC milestone's three slices are done: placed NPCs with AI, spawn zones with despawning, and sprites streaming with their areas. NPCs, spawn zones, and the player spawn have world-unique IDs, checked in the Inspector, the Scene view, the bake, and at startup, and fixed in **Grid World → Fix Feature IDs**. Remaining design questions and unbuilt work are in [open decisions](open-decisions.md).
 
 ## Systems
 
@@ -30,6 +30,7 @@ Design rules are in [architecture.md](../.claude/rules/architecture.md). The doc
 | Delete Area | [authoring-areas.md](authoring-areas.md#deleting-an-area) | `AreaDeleter` |
 | Area specs and previews | [authoring-areas.md](authoring-areas.md#drafting-areas-from-specs) | `MapSpecParser`, `MapSpecChecks`, `MapSpecBuilder`, `MapSpecDiff`, `MapSpecApplier`, `AreaPreviewExporter`, `Tools/mapread.py` |
 | World features | [authoring-areas.md](authoring-areas.md#adding-a-world-feature-type) | `WorldFeatureBehaviour`, `WorldFeatureType<TData>`, `WorldFeatureCatalogue`, `PlayerSpawnBehaviour` |
+| Feature IDs | [authoring-areas.md](authoring-areas.md#feature-ids) | `FeatureIds`, `IdentifiedFeatureBehaviour`, `IdentifiedFeatureData`, `FeatureIdChecks`, `FeatureIdIndex`, `FeatureIdWindow` |
 | Test world | [authoring-areas.md](authoring-areas.md#the-test-world) | `CreateTestWorld` |
 
 ## Related

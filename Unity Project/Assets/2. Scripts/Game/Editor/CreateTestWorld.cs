@@ -105,25 +105,25 @@ namespace Game {
             // Walls on the outer edges only, so the areas join along their shared borders.
             CreateAreaScene("TEST_a", "a", boundsA, dataA, world, groundTileA, wallTile, westWall: false, eastWall: false,
                 block: new RectInt(8, 6, 3, 3), player: player, addNpcs: root => {
-                    AddSpinner(root, villager, new Vector2Int(3, 10));
-                    AddWanderer(root, villager, new Vector2Int(15, 4), new RectInt(12, 2, 7, 5));
-                    AddPatroller(root, guard, PatrolMode.PingPong,
+                    AddSpinner(root, "TEST_a_spinner", villager, new Vector2Int(3, 10));
+                    AddWanderer(root, "TEST_a_wanderer", villager, new Vector2Int(15, 4), new RectInt(12, 2, 7, 5));
+                    AddPatroller(root, "TEST_a_patroller", guard, PatrolMode.PingPong,
                         new PatrolPointSettings(new Vector2Int(12, 12), Direction4.Enum.left, 60),
                         new PatrolPointSettings(new Vector2Int(20, 12), Direction4.Enum.right, 60));
                 });
             CreateAreaScene("TEST_b", "b", boundsB, dataB, world, groundTileB, wallTile, westWall: false, eastWall: true,
                 block: new RectInt(AreaWidth + 8, 9, 4, 2), player: null, addNpcs: root => {
-                    AddPatroller(root, guard, PatrolMode.Loop,
+                    AddPatroller(root, "TEST_b_patroller", guard, PatrolMode.Loop,
                         new PatrolPointSettings(new Vector2Int(AreaWidth + 4, 4), Direction4.Enum.none, 0),
                         new PatrolPointSettings(new Vector2Int(AreaWidth + 16, 4), Direction4.Enum.up, 30),
                         new PatrolPointSettings(new Vector2Int(AreaWidth + 16, 7), Direction4.Enum.none, 0),
                         new PatrolPointSettings(new Vector2Int(AreaWidth + 4, 7), Direction4.Enum.down, 30));
-                    AddWanderer(root, villager, new Vector2Int(AreaWidth + 14, 12), new RectInt(AreaWidth + 12, 11, 8, 3));
-                    AddSpawnZone(root, slime, new RectInt(AreaWidth + 17, 1, 5, 9), maxCount: 4, respawnDelayTicks: 180);
+                    AddWanderer(root, "TEST_b_wanderer", villager, new Vector2Int(AreaWidth + 14, 12), new RectInt(AreaWidth + 12, 11, 8, 3));
+                    AddSpawnZone(root, "TEST_b_slime_zone", slime, new RectInt(AreaWidth + 17, 1, 5, 9), maxCount: 4, respawnDelayTicks: 180);
                 });
             CreateAreaScene("TEST_c", "c", boundsC, dataC, world, groundTileB, wallTile, westWall: true, eastWall: false,
                 block: new RectInt(-AreaWidth + 4, 10, 3, 2), player: null, addNpcs: root => {
-                    AddWanderer(root, villager, new Vector2Int(-12, 7), new RectInt(-16, 4, 9, 6));
+                    AddWanderer(root, "TEST_c_wanderer", villager, new Vector2Int(-12, 7), new RectInt(-16, 4, 9, 6));
                 });
 
             AssetDatabase.SaveAssets();
@@ -196,25 +196,26 @@ namespace Game {
             return null;
         }
 
-        static GameObject AddNpc(Transform root, string name, EntityDefinitionSO definition, Vector2Int tile) {
+        static GameObject AddNpc(Transform root, string name, string id, EntityDefinitionSO definition, Vector2Int tile) {
             var npcObject = new GameObject(name);
             npcObject.transform.SetParent(root, false);
             npcObject.transform.position = new Vector3(tile.x + 0.5f, tile.y + 0.5f);
 
             var npc = npcObject.AddComponent<NpcBehaviour>();
             var properties = new SerializedObject(npc);
+            properties.FindProperty("id").stringValue = id;
             properties.FindProperty("definition").objectReferenceValue = definition;
             properties.FindProperty("facing").intValue = (int)Direction4.Enum.down;
             properties.ApplyModifiedPropertiesWithoutUndo();
             return npcObject;
         }
 
-        static void AddSpinner(Transform root, EntityDefinitionSO definition, Vector2Int tile) {
-            AddNpc(root, "TEST_Spinner", definition, tile).AddComponent<SpinAIBehaviour>();
+        static void AddSpinner(Transform root, string id, EntityDefinitionSO definition, Vector2Int tile) {
+            AddNpc(root, "TEST_Spinner", id, definition, tile).AddComponent<SpinAIBehaviour>();
         }
 
-        static void AddWanderer(Transform root, EntityDefinitionSO definition, Vector2Int tile, RectInt region) {
-            var wander = AddNpc(root, "TEST_Wanderer", definition, tile).AddComponent<WanderAIBehaviour>();
+        static void AddWanderer(Transform root, string id, EntityDefinitionSO definition, Vector2Int tile, RectInt region) {
+            var wander = AddNpc(root, "TEST_Wanderer", id, definition, tile).AddComponent<WanderAIBehaviour>();
             var properties = new SerializedObject(wander);
             properties.FindProperty("regionSpace").enumValueIndex = (int)TileSpace.Area;
             properties.FindProperty("region").rectIntValue = region;
@@ -223,9 +224,9 @@ namespace Game {
 
         // Points are given in area-local tiles for readability. The NPC starts on the first, and the
         // component stores them as offsets from it.
-        static void AddPatroller(Transform root, EntityDefinitionSO definition, PatrolMode mode, params PatrolPointSettings[] points) {
+        static void AddPatroller(Transform root, string id, EntityDefinitionSO definition, PatrolMode mode, params PatrolPointSettings[] points) {
             var start = points[0].localTile;
-            var patrol = AddNpc(root, $"TEST_Patroller ({mode})", definition, start).AddComponent<PatrolAIBehaviour>();
+            var patrol = AddNpc(root, $"TEST_Patroller ({mode})", id, definition, start).AddComponent<PatrolAIBehaviour>();
             var properties = new SerializedObject(patrol);
             var array = properties.FindProperty("points");
             array.arraySize = points.Length;
@@ -237,13 +238,14 @@ namespace Game {
         }
 
         // The region is given in area-local tiles, and stored relative to the zone object.
-        static void AddSpawnZone(Transform root, EntityDefinitionSO definition, RectInt region, int maxCount, int respawnDelayTicks) {
+        static void AddSpawnZone(Transform root, string id, EntityDefinitionSO definition, RectInt region, int maxCount, int respawnDelayTicks) {
             var zoneObject = new GameObject("TEST_Spawn Zone");
             zoneObject.transform.SetParent(root, false);
             zoneObject.transform.position = new Vector3(region.center.x, region.center.y);
 
             var zone = zoneObject.AddComponent<SpawnZoneBehaviour>();
             var properties = new SerializedObject(zone);
+            properties.FindProperty("id").stringValue = id;
             properties.FindProperty("regionSpace").enumValueIndex = (int)TileSpace.Relative;
             properties.FindProperty("region").rectIntValue = TileSpaces.Convert(region, TileSpace.Area, TileSpace.Relative, TileSpaces.TileOf(zoneObject.transform));
             properties.FindProperty("definition").objectReferenceValue = definition;
@@ -367,6 +369,7 @@ namespace Game {
 
                 var spawn = spawnObject.AddComponent<PlayerSpawnBehaviour>();
                 var spawnProperties = new SerializedObject(spawn);
+                spawnProperties.FindProperty("id").stringValue = "TEST_player_spawn";
                 spawnProperties.FindProperty("definition").objectReferenceValue = player;
                 spawnProperties.FindProperty("facing").intValue = (int)Direction4.Enum.down;
                 spawnProperties.ApplyModifiedPropertiesWithoutUndo();

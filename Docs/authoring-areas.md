@@ -194,7 +194,7 @@ It:
 - Writes one `ushort` per tile in the bounds, from the topmost logic layer's tile. An unpainted tile is 0, so it's blocked.
 - Calls `Bake` on every `WorldFeatureBehaviour` in the scene, and stores their records in the area data.
 - Adds the area to the world data's list, and the scene to the build's scene list.
-- Checks the whole world for duplicate IDs and overlaps.
+- Checks the whole world for duplicate area IDs, overlaps, and duplicate feature IDs.
 
 | Problem | Result |
 |---|---|
@@ -205,8 +205,48 @@ It:
 | A tile missing from the table | Warning naming the tile; it bakes as blocked |
 | Duplicate area IDs or overlapping areas | Error naming both areas |
 | A feature's own problem, such as a spawn with no definition | Error from the feature |
+| A feature with no ID | Warning naming it; it still bakes |
+| Two features in the scene with the same ID, or an ID with characters that aren't allowed | Error naming them, no bake |
+| A feature ID also used in another area | Error naming both areas |
 
 Every area bakes with a world offset of 0 until doors give interiors their own.
+
+## Feature IDs
+
+NPCs, spawn zones, and the player spawn each have an **ID** field. Saves, cutscenes, and feature edits will find a feature by it, so moving, renaming, or regrouping its object doesn't lose it.
+
+- An ID is unique across the whole world, not just its area, and comparisons ignore case, so `Guard_1` and `guard_1` clash.
+- It uses only ASCII letters, digits, `_` and `-`.
+- Nothing names features automatically. New components start with no ID, and so do components saved before IDs existed.
+
+Problems are reported everywhere you'd look:
+
+| Where | No ID | Duplicate or bad ID |
+|---|---|---|
+| Inspector | Yellow box | Red box naming the other feature and its area |
+| Scene view | Red square and "(no ID)" label | Red square and label. Every other feature shows its ID in white |
+| Bake | Warning | Error. A clash inside the area stops it baking; a clash with another area is logged |
+| Startup | Nothing | Throws, naming both areas |
+
+The checks cover the open scenes and the baked data of every other area in the same world, so a clash with an area whose scene is closed still shows. Ctrl+D and copy-paste copy the ID, so duplicating a feature always makes a clash to fix.
+
+### Fixing IDs
+
+**Grid World → Fix Feature IDs**, or the button in either Inspector box, opens a window with two tabs. Every change is an Undo step, and the window never saves a scene.
+
+**Problems** steps through clashes, then bad formats, then missing IDs, with **Prev** and **Next**.
+
+- **A clash** shows every feature sharing the ID. Choose the one that **Keeps** the ID, then edit the others' **New ID** fields, which start as the shared ID. Each is checked against the kept ID, the group's other new IDs, and every other feature. **Apply** renames them all in one Undo step. A feature whose scene isn't open has an **Open Scene** button; it can keep the ID without opening.
+- **A missing or bad ID** shows the one feature, selected and framed in the Scene view. Type an ID, then press **Set ID** or Enter.
+
+**All Features** lists every feature in the open scenes, with its status, ID, kind, name, area, and tile.
+
+- Click a row to select and frame it, and use the Up and Down arrows to walk through them.
+- Double-click an ID to edit it in place. Enter sets it, and Escape cancels.
+- Filter with the search box, which matches IDs and names, and **Problems only**. Sort by area, kind, ID, or name.
+- **Show unopened areas** adds the baked features of areas whose scenes are closed, greyed out with an **Open Scene** button.
+
+Code: `Features/FeatureIds`, `IdentifiedFeatureBehaviour`, `IdentifiedFeatureData`, and `Editor/FeatureIdChecks`, `FeatureIdIndex`, `FeatureIdInspector`, `FeatureIdGizmos`, `FeatureIdWindow`.
 
 ## Adding a world feature type
 
@@ -214,6 +254,8 @@ Every area bakes with a world offset of 0 until doors give interiors their own.
 2. A `WorldFeatureBehaviour` whose `Bake(baker)` calls `baker.Add(data)`. Use `baker.ToLocalTile(position)` for tiles and `baker.LogError` for problems.
 3. A `WorldFeatureType<TData>` whose `Register(ctx, area, data)` turns the record into world state, converting tiles with `area.ToWorldTile`.
 4. Register an instance in the root's `WorldFeatureCatalogue` before startup.
+
+For a feature that needs an ID, derive from `IdentifiedFeatureBehaviour` and `IdentifiedFeatureData` instead, and return the record from `BakeRecord(baker)` rather than calling `baker.Add`. The base bake copies the ID onto the record, and the ID checks cover the new feature automatically.
 
 `PlayerSpawnData`, `PlayerSpawnBehaviour`, and `PlayerSpawnFeatureType` are the example. NPCs and spawn zones are feature types too, with add-on components of their own: see [NPCs and AI](npcs.md).
 
@@ -231,6 +273,7 @@ Every area bakes with a world offset of 0 until doors give interiors their own.
   - In `TEST_b`, a guard looping the rectangle from (28,4) to (40,7), waiting half a second at two corners, and a wandering villager at (38,12) in the region (36,11) to (43,13).
   - In `TEST_c`, a wandering villager at (-12,7) in the region (-16,4) to (-8,9).
 - In `TEST_b`, a spawn zone from (41,1) to (45,9) keeping up to 4 wandering slimes, one every 3 seconds. It stops while you're in `TEST_c`.
+- Every feature has an ID: `TEST_player_spawn`, `TEST_a_spinner`, `TEST_a_wanderer`, `TEST_a_patroller`, `TEST_b_patroller`, `TEST_b_wanderer`, `TEST_b_slime_zone`, and `TEST_c_wanderer`.
 
 Each asset gets its settings before it's first written, because values set after `CreateAsset` were sometimes lost when an asset was recreated at the same path. At the end, the tool checks that `TEST_WorldData` has its settings, its tile table, and all three areas, and logs an error instead of the success message if not.
 

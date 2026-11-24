@@ -7,18 +7,18 @@ namespace GridWorld {
     /// An NPC placed in an area scene. Add an AI profile, such as <see cref="WanderAIBehaviour"/>, on
     /// the same object to make it move. With none, it stands still.
     /// </summary>
-    public class NpcBehaviour : WorldFeatureBehaviour {
+    public class NpcBehaviour : IdentifiedFeatureBehaviour {
         [SerializeField] EntityDefinitionSO definition;
         [SerializeField] Direction4.Enum facing = Direction4.Enum.down;
 
-        public override void Bake(WorldFeatureBaker baker) {
+        protected override IdentifiedFeatureData BakeRecord(WorldFeatureBaker baker) {
             if (definition == null) {
                 baker.LogError(this, $"NPC '{name}' has no entity definition.");
-                return;
+                return null;
             }
             if (facing == Direction4.Enum.none) {
                 baker.LogError(this, $"NPC '{name}' has no facing direction.");
-                return;
+                return null;
             }
 
             var addonBehaviours = GetComponents<NpcAddonBehaviour>();
@@ -30,7 +30,7 @@ namespace GridWorld {
             }
             if (aiCount > 1) {
                 baker.LogError(this, $"NPC '{name}' has {aiCount} AI profiles. An NPC can have only one.");
-                return;
+                return null;
             }
 
             var tile = baker.ToLocalTile(transform.position);
@@ -38,12 +38,12 @@ namespace GridWorld {
             foreach (var addon in addonBehaviours) {
                 var record = addon.Bake(baker, tile);
                 if (record == null) {
-                    return;
+                    return null;
                 }
                 addons.Add(record);
             }
 
-            baker.Add(new NpcData(definition, tile, facing, addons));
+            return new NpcData(definition, tile, facing, addons);
         }
 
         void OnDrawGizmos() {

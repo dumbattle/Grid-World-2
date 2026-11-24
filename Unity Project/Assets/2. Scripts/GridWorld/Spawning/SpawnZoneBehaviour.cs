@@ -7,7 +7,7 @@ namespace GridWorld {
     /// <see cref="Validate"/> and <see cref="CreateRecord"/>, and bake its own
     /// <see cref="SpawnZoneData"/> subclass.
     /// </summary>
-    public class SpawnZoneBehaviour : WorldFeatureBehaviour {
+    public class SpawnZoneBehaviour : IdentifiedFeatureBehaviour {
         [Tooltip("Relative to zone moves the region with this object. Area tiles keeps it in place.")]
         [SerializeField] TileSpace regionSpace = TileSpace.Area;
         [Tooltip("The tiles mobs spawn on and stay within. It must be inside the area.")]
@@ -26,27 +26,27 @@ namespace GridWorld {
         protected int maxMobs => maxCount;
         protected int respawnDelay => respawnDelayTicks;
 
-        public override void Bake(WorldFeatureBaker baker) {
+        protected override IdentifiedFeatureData BakeRecord(WorldFeatureBaker baker) {
             if (!Validate(baker)) {
-                return;
+                return null;
             }
 
             var aiBehaviours = GetComponents<SpawnAIBehaviour>();
             if (aiBehaviours.Length > 1) {
                 baker.LogError(this, $"Spawn zone '{name}' has {aiBehaviours.Length} mob AI profiles. A zone can have only one.");
-                return;
+                return null;
             }
 
             SpawnAIData ai = null;
             if (aiBehaviours.Length == 1) {
                 ai = aiBehaviours[0].Bake(baker);
                 if (ai == null) {
-                    return;
+                    return null;
                 }
             }
 
             var localRegion = TileSpaces.ToArea(region, regionSpace, baker.ToLocalTile(transform.position));
-            baker.Add(CreateRecord(localRegion, ai));
+            return CreateRecord(localRegion, ai);
         }
 
         /// <summary>Logs an error with the baker and returns false if the settings are invalid.</summary>

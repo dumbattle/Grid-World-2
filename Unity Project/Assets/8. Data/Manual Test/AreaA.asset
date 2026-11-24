@@ -22,31 +22,75 @@ MonoBehaviour:
   worldOffset: {x: 0, y: 0}
   tiles: 0f000f000f000f000f000f000f000f000f000f000f000f000f000f000f00000000000f000f000f000f000f000f000f000f000f000f000f00000000000f000f000f000f000f000f000f000f000f00000000000f000f000f00000000000f000f000f000f000f000f00000000000f000f000f000f000f000f000f000f000f000f000f000f0000000000000000000f000f000f00000000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f00000000000f00000000000f000f00000000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f00000000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f00000000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f00000000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f0000000000000000000f000f0000000000000000000f000f000f000f000f000f000f000f000f000f000f00000000000000000000000000000000000f0000000000000000000f000f000f000f000f000f000f000f000f000f000f000000000000000000000000000000000000000000000000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f0000000000000000000f000f000f000f000f000f000f000f000f000f000f000f00000000000f000f000f000f000f000f000f000f000f000f000f000f000f000f00000000000f000f000f000f000f000f00000000000f000f000f000f000f000f000f000f000f00000000000f000f00
   features:
-  - rid: 6223929002462543992
-  - rid: 6223929002462543993
+  - rid: 6223929071251226694
+  - rid: 6223929071251226695
+  - rid: 6223929071251226696
+  - rid: 6223929071251226697
   references:
     version: 2
     RefIds:
-    - rid: 6223929002462543992
+    - rid: 6223929071251226694
       type: {class: NpcData, ns: GridWorld, asm: GridWorld}
       data:
+        featureId: Test-A_A
         entityDefinition: {fileID: 11400000, guid: 8c73d218020e90541926af825f687e3c, type: 2}
         localTile: {x: 9, y: 5}
         facingDirection: 1
         addonRecords:
-        - rid: 6223929002462543994
-    - rid: 6223929002462543993
+        - rid: 6223929071251226698
+    - rid: 6223929071251226695
+      type: {class: NpcData, ns: GridWorld, asm: GridWorld}
+      data:
+        featureId: Test-A_B
+        entityDefinition: {fileID: 11400000, guid: 8c73d218020e90541926af825f687e3c, type: 2}
+        localTile: {x: 9, y: 6}
+        facingDirection: 1
+        addonRecords:
+        - rid: 6223929071251226699
+    - rid: 6223929071251226696
+      type: {class: NpcData, ns: GridWorld, asm: GridWorld}
+      data:
+        featureId: Test-A_C
+        entityDefinition: {fileID: 11400000, guid: 8c73d218020e90541926af825f687e3c, type: 2}
+        localTile: {x: 8, y: 5}
+        facingDirection: 1
+        addonRecords:
+        - rid: 6223929071251226700
+    - rid: 6223929071251226697
       type: {class: PlayerSpawnData, ns: GridWorld, asm: GridWorld}
       data:
+        featureId: PLAYER_SPAWN
         entityDefinition: {fileID: 11400000, guid: 5c520c9ec9d9bfe419456b9d48643841, type: 2}
         localTile: {x: 5, y: 5}
         facingDirection: 2
-    - rid: 6223929002462543994
+    - rid: 6223929071251226698
       type: {class: WanderAIData, ns: GridWorld, asm: GridWorld}
       data:
         pauseWhenAreaInactive: 1
         localRegion:
           x: 8
+          y: 2
+          width: 5
+          height: 5
+        minWait: 30
+        maxWait: 120
+    - rid: 6223929071251226699
+      type: {class: WanderAIData, ns: GridWorld, asm: GridWorld}
+      data:
+        pauseWhenAreaInactive: 1
+        localRegion:
+          x: 8
+          y: 3
+          width: 5
+          height: 5
+        minWait: 30
+        maxWait: 120
+    - rid: 6223929071251226700
+      type: {class: WanderAIData, ns: GridWorld, asm: GridWorld}
+      data:
+        pauseWhenAreaInactive: 1
+        localRegion:
+          x: 7
           y: 2
           width: 5
           height: 5

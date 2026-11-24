@@ -5,6 +5,7 @@ namespace GridWorld {
     [CanEditMultipleObjects]
     public class SpawnZoneBehaviourEditor : Editor {
         public override void OnInspectorGUI() {
+            FeatureIdInspector.DrawMessages(targets);
             RegionSpaceInspector.Draw(serializedObject, "regionSpace", "region", "Relative to zone");
         }
     }

@@ -8,7 +8,7 @@ namespace GridWorld {
     /// <see cref="SpawnZoneFeatureType{TData}"/> for the subclass.
     /// </summary>
     [Serializable]
-    public class SpawnZoneData : WorldFeatureData {
+    public class SpawnZoneData : IdentifiedFeatureData {
         [SerializeField] RectInt localRegion;
         [SerializeField] EntityDefinitionSO entityDefinition;
         [SerializeField] int maxMobs;

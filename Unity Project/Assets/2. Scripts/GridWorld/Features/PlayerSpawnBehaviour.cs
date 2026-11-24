@@ -5,20 +5,20 @@ namespace GridWorld {
     /// <summary>
     /// Where the player starts. A world needs exactly one.
     /// </summary>
-    public class PlayerSpawnBehaviour : WorldFeatureBehaviour {
+    public class PlayerSpawnBehaviour : IdentifiedFeatureBehaviour {
         [SerializeField] EntityDefinitionSO definition;
         [SerializeField] Direction4.Enum facing = Direction4.Enum.down;
 
-        public override void Bake(WorldFeatureBaker baker) {
+        protected override IdentifiedFeatureData BakeRecord(WorldFeatureBaker baker) {
             if (definition == null) {
                 baker.LogError(this, $"Player spawn '{name}' has no entity definition.");
-                return;
+                return null;
             }
             if (facing == Direction4.Enum.none) {
                 baker.LogError(this, $"Player spawn '{name}' has no facing direction.");
-                return;
+                return null;
             }
-            baker.Add(new PlayerSpawnData(definition, baker.ToLocalTile(transform.position), facing));
+            return new PlayerSpawnData(definition, baker.ToLocalTile(transform.position), facing);
         }
 
         void OnDrawGizmos() {

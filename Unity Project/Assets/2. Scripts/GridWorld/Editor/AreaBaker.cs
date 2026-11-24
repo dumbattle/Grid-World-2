@@ -53,6 +53,10 @@ namespace GridWorld {
                 return false;
             }
 
+            if (!CheckFeatureIds(scene, area.areaId)) {
+                return false;
+            }
+
             var tiles = BakeTiles(area, label);
             var records = new List<WorldFeatureData>();
             var baker = new WorldFeatureBaker(area.areaId, area.grid, records);
@@ -124,6 +128,21 @@ namespace GridWorld {
                 EditorSceneManager.CloseScene(scene, true);
             }
             return succeeded;
+        }
+
+        // Logs every ID problem in the scene. Returns false if any is an error.
+        static bool CheckFeatureIds(Scene scene, string areaId) {
+            bool valid = true;
+            foreach (var problem in FeatureIdChecks.Find(FeatureIdChecks.InScene(scene))) {
+                if (problem.isError) {
+                    Debug.LogError($"Area '{areaId}' wasn't baked: {problem.message}", problem.feature);
+                    valid = false;
+                }
+                else {
+                    Debug.LogWarning($"Area '{areaId}': {problem.message}", problem.feature);
+                }
+            }
+            return valid;
         }
 
         static ushort[] BakeTiles(AreaBehaviour area, string label) {

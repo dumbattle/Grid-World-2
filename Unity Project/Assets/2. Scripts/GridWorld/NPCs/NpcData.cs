@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace GridWorld {
     [Serializable]
-    public sealed class NpcData : WorldFeatureData {
+    public sealed class NpcData : IdentifiedFeatureData {
         [SerializeField] EntityDefinitionSO entityDefinition;
         [SerializeField] Vector2Int localTile;
         [SerializeField] Direction4.Enum facingDirection;

@@ -6,7 +6,7 @@ Code: `GridWorld/NPCs/` (authoring and baked records), `GridWorld/AI/` (runtime 
 
 ## Placing an NPC
 
-1. Add an object to an area scene, on the tile where the NPC starts, and give it an `NpcBehaviour` with an entity definition and a facing.
+1. Add an object to an area scene, on the tile where the NPC starts, and give it an `NpcBehaviour` with an ID, an entity definition, and a facing. See [Feature IDs](authoring-areas.md#feature-ids).
 2. Optionally, add one AI profile to the same object: `SpinAIBehaviour`, `WanderAIBehaviour`, or `PatrolAIBehaviour`. An NPC with none stands still.
 3. Save the scene to bake it.
 
@@ -41,7 +41,7 @@ The NPC and its profile draw gizmos: a cyan square with a facing line, the wande
 
 ## Bake
 
-`NpcBehaviour.Bake` writes one `NpcData` record: definition, local tile, facing, and a `[SerializeReference]` list of add-on records. Each `NpcAddonBehaviour` on the object adds its own record through `Bake(baker, localTile)`, which returns null after logging an error. Wander and patrol convert their tiles to area-local tiles from `localTile` before checking them. Errors show the area-local values, plus the relative values you set where that helps.
+`NpcBehaviour.BakeRecord` returns one `NpcData` record: ID, definition, local tile, facing, and a `[SerializeReference]` list of add-on records. Each `NpcAddonBehaviour` on the object adds its own record through `Bake(baker, localTile)`, which returns null after logging an error. Wander and patrol convert their tiles to area-local tiles from `localTile` before checking them. Errors show the area-local values, plus the relative values you set where that helps.
 
 | Problem | Result |
 |---|---|
@@ -83,7 +83,7 @@ A spawn zone keeps up to a set number of mobs alive inside a rectangle while its
 
 ### Placing a zone
 
-1. Add an object to an area scene and give it a `SpawnZoneBehaviour`: a Region Space, a region, an entity definition, **Max Count** (3), and **Respawn Delay Ticks** (300). The region draws as an orange rectangle.
+1. Add an object to an area scene and give it a `SpawnZoneBehaviour`: an ID, a Region Space, a region, an entity definition, **Max Count** (3), and **Respawn Delay Ticks** (300). The region draws as an orange rectangle.
    - Region Space works like a wander region's, but **Relative to zone** measures from the zone object's tile. New zones start relative, with a 5×5 region around the object.
    - With **Area tiles**, the region stays put when you move the object.
 2. Optionally, add one mob AI profile to the same object: `SpawnWanderAIBehaviour` or `SpawnSpinAIBehaviour`. Mobs with none stand still. Each has min and max waits and **Pause When Area Inactive**, as for NPCs. Wandering mobs wander inside the zone's region.
@@ -117,7 +117,7 @@ To use a subclass:
 
 1. Subclass `SpawnZone` and override the steps you need.
 2. Subclass `SpawnZoneData` with any extra settings, overriding `CreateZone(area)` to return your zone. `ToWorldRegion(area)` converts the region.
-3. Subclass `SpawnZoneBehaviour`, overriding `Validate(baker)` and `CreateRecord(localRegion, ai)` to bake your data. `CreateRecord` receives the region already converted to area-local tiles. Its settings are readable through protected getters, including `authoredRegion` and `regionTileSpace` for the region as set in the Inspector.
+3. Subclass `SpawnZoneBehaviour`, overriding `Validate(baker)` and `CreateRecord(localRegion, ai)` to bake your data. The base bake copies the zone's ID onto the record. `CreateRecord` receives the region already converted to area-local tiles. Its settings are readable through protected getters, including `authoredRegion` and `regionTileSpace` for the region as set in the Inspector.
 4. Register a `SpawnZoneFeatureType<YourData>` in the root's catalogue.
 
 A new mob AI profile is a `SpawnAIData` record whose `Create(zoneRegion)` builds the `EntityAI`, plus a `SpawnAIBehaviour` whose `Bake(baker)` returns it. `SpawnSpinAIData` and `SpawnSpinAIBehaviour` are the simplest example.

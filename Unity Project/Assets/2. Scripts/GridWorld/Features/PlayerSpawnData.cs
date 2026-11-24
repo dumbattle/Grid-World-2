@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace GridWorld {
     [Serializable]
-    public sealed class PlayerSpawnData : WorldFeatureData {
+    public sealed class PlayerSpawnData : IdentifiedFeatureData {
         [SerializeField] EntityDefinitionSO entityDefinition;
         [SerializeField] Vector2Int localTile;
         [SerializeField] Direction4.Enum facingDirection;

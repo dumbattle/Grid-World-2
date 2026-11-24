@@ -90,6 +90,7 @@ The goal is a base that other games can be built on, so these rules favor a clea
 - All baked entities are created in `WorldInstance` when the game starts. Marker objects don't take part at runtime.
 - When an area loads, pooled sprites are created for the entities currently in it, wherever they've walked to.
 - `EntityID` is a runtime handle. It's never reused and never saved. Saves and cutscenes refer to baked entities by stable ID.
+- Feature IDs belong to features, such as NPCs, spawn zones, the player spawn, and later props and triggers, not only entities. They're unique across the world, compared ignoring case, use only letters, digits, `_` and `-`, and are typed by hand, never generated.
 
 ### Absent entities
 
