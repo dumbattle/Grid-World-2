@@ -30,7 +30,7 @@ Design rules are in [architecture.md](../.claude/rules/architecture.md). The doc
 | Delete Area | [authoring-areas.md](authoring-areas.md#deleting-an-area) | `AreaDeleter` |
 | Area specs and previews | [authoring-areas.md](authoring-areas.md#drafting-areas-from-specs) | `MapSpecParser`, `MapSpecChecks`, `MapSpecBuilder`, `MapSpecDiff`, `MapSpecApplier`, `AreaPreviewExporter`, `Tools/mapread.py` |
 | World features | [authoring-areas.md](authoring-areas.md#adding-a-world-feature-type) | `WorldFeatureBehaviour`, `WorldFeatureType<TData>`, `WorldFeatureCatalogue`, `PlayerSpawnBehaviour` |
-| Feature IDs | [authoring-areas.md](authoring-areas.md#feature-ids) | `FeatureIds`, `IdentifiedFeatureBehaviour`, `IdentifiedFeatureData`, `FeatureIdChecks`, `FeatureIdIndex`, `FeatureIdWindow` |
+| Feature IDs | [authoring-areas.md](authoring-areas.md#feature-ids) | `FeatureIds`, `IdentifiedFeatureBehaviour`, `IdentifiedFeatureData`, `FeatureIdChecks`, `FeatureIdIndex`, `FeatureIdWindow`, `mapread.py features` |
 | Test world | [authoring-areas.md](authoring-areas.md#the-test-world) | `CreateTestWorld` |
 
 ## Related

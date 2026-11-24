@@ -8,6 +8,7 @@ writes files, and only under Maps/.
     py Tools/mapread.py edges --bounds X Y W H [--depth N] [--legend NAME]
     py Tools/mapread.py tiles <folder under Assets>
     py Tools/mapread.py spec <id> [--legend NAME] [--write-legend] [--region X Y W H]
+    py Tools/mapread.py features <id>
 
 Grids print top row first (highest y), matching map specs. '.' is an empty cell.
 """
@@ -712,6 +713,545 @@ def cmd_spec(args):
             print("  " + warning)
 
 
+# ---------- Features ----------
+
+SCRIPTS = os.path.join(ASSETS, "2. Scripts")
+GRID_CLASS = "156049354"
+PREFAB_INSTANCE_CLASS = "1001"
+SCENE_ROOTS_CLASS = "1660057539"
+IDENTIFIED_BASE = "IdentifiedFeatureBehaviour"
+FEATURE_ID_FORMAT = re.compile(r"^[A-Za-z0-9_-]+$")
+VECTOR_TYPES = {"Vector2Int", "Vector3Int", "Vector2", "Vector3"}
+RECT_TYPES = {"RectInt", "Rect"}
+# Fields every MonoBehaviour has, which aren't the component's own settings.
+UNITY_FIELDS = {"m_ObjectHideFlags", "m_CorrespondingSourceObject", "m_PrefabInstance", "m_PrefabAsset",
+                "m_GameObject", "m_Enabled", "m_EditorHideFlags", "m_Script", "m_Name", "m_EditorClassIdentifier"}
+
+
+class CsType:
+    def __init__(self, name, kind, base):
+        self.name = name
+        self.kind = kind  # "class", "struct" or "enum"
+        self.base = base
+        self.fields = {}  # serialized field name -> declared type
+        self.values = []  # enum member names, indexed by value
+
+
+_cs_types = None
+
+
+def strip_code(text):
+    """C# source without comments, strings or char literals, so braces and semicolons can be counted."""
+    text = re.sub(r"//[^\n]*|/\*.*?\*/", "", text, flags=re.S)
+    text = re.sub(r'@"(?:[^"]|"")*"|\$?"(?:\\.|[^"\\\n])*"', '""', text)
+    return re.sub(r"'(?:\\.|[^'\\\n])'", "''", text)
+
+
+def matching_brace(text, start):
+    depth = 0
+    for i in range(start, len(text)):
+        if text[i] == "{":
+            depth += 1
+        elif text[i] == "}":
+            depth -= 1
+            if depth == 0:
+                return i
+    return len(text)
+
+
+def body_statements(text, start):
+    """The statements directly inside the braces opening at text[start], split at ';', '{' and '}'."""
+    depth, current, statements = 0, [], []
+    for i in range(start, len(text)):
+        c = text[i]
+        if c == "{":
+            depth += 1
+            if depth == 2:
+                statements.append("".join(current))
+                current = []
+        elif c == "}":
+            depth -= 1
+            if depth == 0:
+                break
+        elif depth == 1:
+            if c == ";":
+                statements.append("".join(current))
+                current = []
+            else:
+                current.append(c)
+    return statements
+
+
+def parse_field(statement):
+    """(type, name) of a serialized field declaration, or None for anything else."""
+    # Attributes start with a name, unlike an array type's '[]'.
+    without_attributes = re.sub(r"\[\s*[A-Za-z][^\]]*\]", " ", statement)
+    if "NonSerialized" in statement or "(" in without_attributes or "=>" in without_attributes:
+        return None
+    words = without_attributes.split("=", 1)[0].split()
+    if "static" in words or "const" in words or "readonly" in words:
+        return None
+    serialized = "SerializeField" in statement or "public" in words
+    words = [w for w in words if w not in ("public", "private", "protected", "internal", "new", "volatile")]
+    if not serialized or len(words) != 2:
+        return None
+    return words[0], words[1]
+
+
+def cs_types():
+    """Every class, struct and enum declared under 2. Scripts, by name and by 'Outer.Name'."""
+    global _cs_types
+    if _cs_types is not None:
+        return _cs_types
+    _cs_types = {}
+    declaration = re.compile(r"\b(class|struct|enum)\s+(\w+)(?:<[^>{]*>)?\s*(?::\s*([\w.<>, ]+?))?\s*(?:where\b[^{]*)?\{")
+    for folder, _, files in os.walk(SCRIPTS):
+        for name in files:
+            if not name.endswith(".cs"):
+                continue
+            with open(os.path.join(folder, name), encoding="utf-8", errors="replace") as f:
+                text = strip_code(f.read())
+            enclosing = []  # (closing brace offset, name) of the types around the current position
+            for match in declaration.finditer(text):
+                kind, type_name, bases = match.groups()
+                brace = match.end() - 1
+                enclosing = [t for t in enclosing if t[0] > brace]
+                outer = enclosing[-1][1] if enclosing else None
+                base = None
+                if bases and kind != "enum":
+                    base = re.sub(r"<.*", "", bases.split(",")[0].strip()).split(".")[-1]
+                cs_type = CsType(type_name, kind, base)
+                end = matching_brace(text, brace)
+                enclosing.append((end, type_name))
+
+                if kind == "enum":
+                    value = -1
+                    for item in text[brace + 1:end].split(","):
+                        item_name, _, explicit = item.strip().partition("=")
+                        if not item_name.strip():
+                            continue
+                        explicit = explicit.strip()
+                        value = int(explicit) if re.match(r"^-?\d+$", explicit) else value + 1
+                        while len(cs_type.values) <= value:
+                            cs_type.values.append(None)
+                        cs_type.values[value] = item_name.strip()
+                else:
+                    for statement in body_statements(text, brace):
+                        parsed = parse_field(statement)
+                        if parsed:
+                            cs_type.fields[parsed[1]] = parsed[0]
+
+                _cs_types.setdefault(type_name, cs_type)
+                if outer:
+                    _cs_types[outer + "." + type_name] = cs_type
+    return _cs_types
+
+
+def field_types(class_name):
+    """Serialized field name -> declared type, for a class and its bases."""
+    chain = []
+    cs_type = cs_types().get(class_name)
+    while cs_type and cs_type.kind != "enum" and len(chain) < 20:
+        chain.append(cs_type)
+        cs_type = cs_types().get(cs_type.base) if cs_type.base else None
+    result = {}
+    for cs_type in reversed(chain):
+        result.update(cs_type.fields)
+    return result
+
+
+def derives_from(class_name, base_name):
+    cs_type = cs_types().get(class_name)
+    for _ in range(20):
+        if not cs_type or not cs_type.base:
+            return False
+        if cs_type.base == base_name:
+            return True
+        cs_type = cs_types().get(cs_type.base)
+    return False
+
+
+# Unity YAML: 'key: value', indented blocks, and '- ' list items at their key's own indent.
+
+def indent_of(line):
+    return len(line) - len(line.lstrip(" "))
+
+
+def parse_scalar(text):
+    if text == "[]":
+        return []
+    if text.startswith("{") and text.endswith("}"):
+        return {k: v.strip() for k, v in re.findall(r"(\w+): ([^,}]*)", text)}
+    return text
+
+
+def parse_mapping(lines, i, indent):
+    result = {}
+    while i < len(lines):
+        line = lines[i]
+        if indent_of(line) != indent or line.lstrip().startswith("- "):
+            break
+        key, _, rest = line.strip().partition(":")
+        rest = rest.strip()
+        i += 1
+        if rest:
+            result[key] = parse_scalar(rest)
+        elif i < len(lines) and indent_of(lines[i]) == indent and lines[i].lstrip().startswith("- "):
+            result[key], i = parse_list(lines, i, indent)
+        elif i < len(lines) and indent_of(lines[i]) > indent:
+            result[key], i = parse_mapping(lines, i, indent_of(lines[i]))
+        else:
+            result[key] = ""
+    return result, i
+
+
+def parse_list(lines, i, indent):
+    items = []
+    while i < len(lines) and indent_of(lines[i]) == indent and lines[i].lstrip().startswith("- "):
+        first = lines[i].lstrip()[2:]
+        i += 1
+        if re.match(r"^\w+:( |$)", first):
+            block = [" " * (indent + 2) + first]
+            while i < len(lines) and indent_of(lines[i]) > indent:
+                block.append(lines[i])
+                i += 1
+            items.append(parse_mapping(block, 0, indent + 2)[0])
+        else:
+            items.append(parse_scalar(first))
+    return items, i
+
+
+def parse_doc(body):
+    """A scene document's fields, skipping its '--- !u!' header and type name lines."""
+    lines = [line for line in body.split("\n")[2:] if line.strip()]
+    return parse_mapping(lines, 0, 2)[0]
+
+
+def file_id(value):
+    return value.get("fileID") if isinstance(value, dict) else None
+
+
+class SceneObject:
+    def __init__(self, object_id, body):
+        self.object_id = object_id
+        self.name = field(body, "m_Name") or ""
+        self.active = field(body, "m_IsActive") != "0"
+        self.components = re.findall(r"- component: \{fileID: (-?\d+)\}", body)
+        self.transform = None
+
+
+class Scene:
+    """The GameObjects, transforms and MonoBehaviours of a scene file."""
+
+    def __init__(self, path):
+        text = read(path)
+        starts = [(m.start(), m.group(1), m.group(2)) for m in DOC_HEADER.finditer(text)]
+        self.objects = {}
+        self.transforms = {}
+        self.behaviours = {}
+        self.grid_cell_sizes = []
+        self.prefab_instances = 0
+        self.roots = []
+        for n, (start, cls, doc_id) in enumerate(starts):
+            end = starts[n + 1][0] if n + 1 < len(starts) else len(text)
+            body = text[start:end]
+            if cls == PREFAB_INSTANCE_CLASS:
+                self.prefab_instances += 1
+            elif cls == GAMEOBJECT_CLASS:
+                self.objects[doc_id] = SceneObject(doc_id, body)
+            elif cls == TRANSFORM_CLASS:
+                self.transforms[doc_id] = parse_doc(body)
+            elif cls == MONOBEHAVIOUR_CLASS:
+                self.behaviours[doc_id] = parse_doc(body)
+            elif cls == GRID_CLASS:
+                self.grid_cell_sizes.append(parse_doc(body).get("m_CellSize"))
+            elif cls == SCENE_ROOTS_CLASS:
+                self.roots = re.findall(r"- \{fileID: (-?\d+)\}", body)
+        for transform_id, transform in self.transforms.items():
+            owner = self.objects.get(file_id(transform.get("m_GameObject")))
+            if owner:
+                owner.transform = transform_id
+
+    def owner(self, transform_id):
+        return self.objects.get(file_id(self.transforms[transform_id].get("m_GameObject")))
+
+    def parent(self, transform_id):
+        return file_id(self.transforms[transform_id].get("m_Father"))
+
+    def chain(self, obj):
+        """The object's transform and its ancestors' transforms, innermost first."""
+        result = []
+        transform_id = obj.transform
+        while transform_id in self.transforms and len(result) < 1000:
+            result.append(transform_id)
+            transform_id = self.parent(transform_id)
+        return result
+
+    def hierarchy(self):
+        """GameObjects depth first, in hierarchy order."""
+        order = []
+
+        def visit(transform_id):
+            if transform_id not in self.transforms:
+                return
+            obj = self.owner(transform_id)
+            if obj:
+                order.append(obj)
+            for child in self.transforms[transform_id].get("m_Children", []):
+                visit(file_id(child))
+
+        roots = self.roots or [t for t in self.transforms if self.parent(t) == "0"]
+        for root in roots:
+            visit(root)
+        return order
+
+    def path_of(self, obj):
+        return "/".join(reversed([self.owner(t).name for t in self.chain(obj) if self.owner(t)]))
+
+    def active_in_hierarchy(self, obj):
+        return all(self.owner(t) is None or self.owner(t).active for t in self.chain(obj))
+
+    def world_position(self, obj):
+        """The world position, applying each parent's position, rotation and scale."""
+        position = (0.0, 0.0, 0.0)
+        for transform_id in self.chain(obj):
+            transform = self.transforms[transform_id]
+            local = vector(transform.get("m_LocalPosition"))
+            scale = vector(transform.get("m_LocalScale"), 1.0)
+            rotation = transform.get("m_LocalRotation")
+            rotation = rotation if isinstance(rotation, dict) else {}
+            q = tuple(float(rotation.get(k, d)) for k, d in (("x", 0), ("y", 0), ("z", 0), ("w", 1)))
+            scaled = tuple(p * s for p, s in zip(position, scale))
+            position = tuple(a + b for a, b in zip(rotate(q, scaled), local))
+        return position
+
+
+def vector(value, default=0.0):
+    value = value if isinstance(value, dict) else {}
+    return tuple(float(value.get(k, default)) for k in ("x", "y", "z"))
+
+
+def rotate(q, v):
+    """v rotated by the quaternion q, as v + 2w(u x v) + 2u x (u x v), where u is q's vector part."""
+    x, y, z, w = q
+    vx, vy, vz = v
+    cx, cy, cz = y * vz - z * vy, z * vx - x * vz, x * vy - y * vx
+    ccx, ccy, ccz = y * cz - z * cy, z * cx - x * cz, x * cy - y * cx
+    return (vx + 2 * (w * cx + ccx), vy + 2 * (w * cy + ccy), vz + 2 * (w * cz + ccz))
+
+
+def script_class(behaviour):
+    """A MonoBehaviour's class name, and whether its script is in 2. Scripts."""
+    guid = (behaviour.get("m_Script") or {}).get("guid", "")
+    path = guid_to_path().get(guid, "")
+    identifier = behaviour.get("m_EditorClassIdentifier") or ""
+    name = identifier.split("::")[-1].split(".")[-1] if identifier else os.path.splitext(os.path.basename(path))[0]
+    return name, path.startswith("Assets/2. Scripts/")
+
+
+def kind_name(class_name):
+    """'NPC' for NpcBehaviour and 'Spawn Zone' for SpawnZoneBehaviour, matching the Editor."""
+    name = re.sub(r"(Behaviour|Data)$", "", class_name)
+    name = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", " ", name)
+    return "NPC" if name == "Npc" else name
+
+
+class Feature:
+    def __init__(self, scene, obj, behaviour_id, class_name):
+        self.scene = scene
+        self.obj = obj
+        self.behaviour_id = behaviour_id
+        self.class_name = class_name
+        self.id = unquote(scene.behaviours[behaviour_id].get("id") or "")
+
+
+def scene_features(scene):
+    """The identified features in a scene, in hierarchy order, including inactive ones like the bake."""
+    features = []
+    for obj in scene.hierarchy():
+        for component in obj.components:
+            behaviour = scene.behaviours.get(component)
+            if behaviour is None:
+                continue
+            class_name, ours = script_class(behaviour)
+            if ours and derives_from(class_name, IDENTIFIED_BASE):
+                features.append(Feature(scene, obj, component, class_name))
+    return features
+
+
+def unquote(text):
+    if len(text) >= 2 and text[0] == text[-1] and text[0] in "'\"":
+        return text[1:-1]
+    return text
+
+
+def quote(text):
+    text = unquote(text)
+    return f'"{text}"' if text == "" or " " in text or '"' in text else text
+
+
+def reference_text(value):
+    if value.get("fileID") == "0":
+        return "none"
+    guid = value.get("guid")
+    if not guid:
+        return f"scene object {value.get('fileID')}"
+    path = guid_to_path().get(guid)
+    return quote(path) if path else f"missing {guid}"
+
+
+def format_value(value, type_name, path, out):
+    """Appends (path, text) for a serialized value, using SerializedProperty paths such as points[1].tile."""
+    type_name = (type_name or "").replace("global::", "")
+    list_type = re.match(r"^List<(.+)>$", type_name)
+    element = type_name[:-2] if type_name.endswith("[]") else list_type.group(1) if list_type else None
+
+    if isinstance(value, list) or element is not None:
+        items = value if isinstance(value, list) else []
+        out.append((path + ".size", str(len(items))))
+        for i, item in enumerate(items):
+            format_value(item, element, f"{path}[{i}]", out)
+        return
+
+    short_type = type_name.split(".")[-1]
+    cs_type = cs_types().get(type_name) or cs_types().get(short_type)
+    if isinstance(value, dict):
+        if "fileID" in value:
+            out.append((path, reference_text(value)))
+        elif short_type in RECT_TYPES or set(value) == {"x", "y", "width", "height"}:
+            out.append((path, " ".join(value.get(k, "0") for k in ("x", "y", "width", "height"))))
+        elif short_type in VECTOR_TYPES or (value and set(value) <= {"x", "y", "z", "w"}):
+            out.append((path, " ".join(value[k] for k in ("x", "y", "z", "w") if k in value)))
+        else:
+            nested = field_types(cs_type.name) if cs_type and cs_type.kind != "enum" else {}
+            for key, item in value.items():
+                format_value(item, nested.get(key), f"{path}.{key}", out)
+        return
+
+    if cs_type and cs_type.kind == "enum" and re.match(r"^-?\d+$", value):
+        index = int(value)
+        name = cs_type.values[index] if 0 <= index < len(cs_type.values) else None
+        out.append((path, name or value))
+    elif short_type == "bool":
+        out.append((path, {"1": "true", "0": "false"}.get(value, value)))
+    elif short_type == "string":
+        out.append((path, quote(value)))
+    else:
+        out.append((path, value))
+
+
+def component_lines(behaviour, class_name):
+    out = []
+    types = field_types(class_name)
+    for key, value in behaviour.items():
+        if key not in UNITY_FIELDS:
+            format_value(value, types.get(key), key, out)
+    # A field added after the scene was last saved isn't in the file until Unity saves it again.
+    for key in types:
+        if key not in behaviour:
+            out.append((key, "(not saved yet, so its default)"))
+    return out
+
+
+def area_tile_notes(class_name, lines, tile):
+    """Area tiles for values stored as offsets from the feature's tile, keyed by path."""
+    relative = dict(lines).get("regionSpace") == "Relative"
+    notes = {}
+    for path, text in lines:
+        numbers = text.split()
+        if not numbers or not all(re.match(r"^-?\d+$", n) for n in numbers):
+            continue
+        is_region = path == "region" and relative and len(numbers) == 4
+        is_patrol = class_name == "PatrolAIBehaviour" and re.match(r"^points\[\d+\]\.tile$", path) and len(numbers) == 2
+        if is_region or is_patrol:
+            x, y = int(numbers[0]) + tile[0], int(numbers[1]) + tile[1]
+            notes[path] = f"area {x} {y}" + (f" {numbers[2]} {numbers[3]}" if is_region else "")
+    return notes
+
+
+def other_areas_features(area):
+    """(area, Feature) for the other areas in every world that holds this one."""
+    result = []
+    seen = {area.path}
+    for _, areas in worlds():
+        if not any(a.path == area.path for a in areas):
+            continue
+        for other in areas:
+            if other.path in seen or not other.scene:
+                continue
+            seen.add(other.path)
+            try:
+                scene = Scene(other.scene)
+            except OSError:
+                continue
+            result += [(other, f) for f in scene_features(scene)]
+    return result
+
+
+def feature_tile(scene, feature):
+    # Rounded first, so a rotated parent's float error doesn't drop 10 to 9.9999999 and floor to 9.
+    position = scene.world_position(feature.obj)
+    return math.floor(round(position[0], 4)), math.floor(round(position[1], 4))
+
+
+def cmd_features(args):
+    area = find_area(args.id)
+    scene = Scene(area.scene)
+    features = scene_features(scene)
+    print(f"Area {area.id}: scene {area.scene}")
+    print("Tiles are area-local, as in the scene. The field names are the paths that 'set' edits use.")
+    if any(vector(size, 1.0)[:2] != (1.0, 1.0) for size in scene.grid_cell_sizes):
+        print("Warning: a grid's cells aren't 1x1, so these tiles may not match the bake.")
+    if scene.prefab_instances:
+        print(f"Warning: {scene.prefab_instances} prefab instances aren't read, so features inside them aren't listed.")
+    print()
+
+    others = other_areas_features(area)
+    with_problems = 0
+    for feature in features:
+        tile = feature_tile(scene, feature)
+        flags = []
+        if not feature.id:
+            flags.append("no ID")
+        elif not FEATURE_ID_FORMAT.match(feature.id):
+            flags.append("bad ID: use only letters, digits, '_' and '-'")
+        else:
+            flags += [f"duplicate ID, also on '{scene.path_of(f.obj)}'" for f in features if f is not feature and f.id.lower() == feature.id.lower()]
+            flags += [f"duplicate ID, also in area '{a.id}'" for a, f in others if f.id.lower() == feature.id.lower()]
+        if flags:
+            with_problems += 1
+        if not scene.active_in_hierarchy(feature.obj):
+            flags.append("inactive, but still baked")
+
+        print(f"{kind_name(feature.class_name)}  {feature.id or '(no ID)'}")
+        print(f"  object  {quote(scene.path_of(feature.obj))}")
+        print(f"  tile    {tile[0]} {tile[1]}")
+        for flag in flags:
+            print(f"  !       {flag}")
+
+        # The feature's own component first, then the object's other project components in order.
+        components = [feature.behaviour_id] + [c for c in feature.obj.components if c != feature.behaviour_id]
+        for component in components:
+            behaviour = scene.behaviours.get(component)
+            if behaviour is None:
+                continue
+            class_name, ours = script_class(behaviour)
+            if not ours:
+                continue
+            print(f"  {class_name}{'  (disabled)' if behaviour.get('m_Enabled') == '0' else ''}")
+            lines = component_lines(behaviour, class_name)
+            if component == feature.behaviour_id:
+                lines = [(path, text) for path, text in lines if path != "id"]
+            notes = area_tile_notes(class_name, lines, tile)
+            width = max((len(path) for path, _ in lines), default=0)
+            for path, text in lines:
+                note = f"   ({notes[path]})" if path in notes else ""
+                print(f"    {path:<{width}}  {text}{note}")
+        print()
+
+    print(f"{len(features)} features" + (f", {with_problems} with ID problems" if with_problems else ""))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -736,8 +1276,12 @@ def main():
     spec.add_argument("--write-legend", action="store_true", help="add new tiles to --legend itself")
     spec.add_argument("--region", type=int, nargs=4, metavar=("X", "Y", "W", "H"))
 
+    features = commands.add_parser("features", help="an area's identified features and their components' fields")
+    features.add_argument("id")
+
     args = parser.parse_args()
-    {"overview": cmd_overview, "area": cmd_area, "edges": cmd_edges, "tiles": cmd_tiles, "spec": cmd_spec}[args.command](args)
+    handlers = {"overview": cmd_overview, "area": cmd_area, "edges": cmd_edges, "tiles": cmd_tiles, "spec": cmd_spec, "features": cmd_features}
+    handlers[args.command](args)
 
 
 if __name__ == "__main__":

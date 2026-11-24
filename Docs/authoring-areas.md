@@ -161,6 +161,7 @@ Unchanged cells keep their logic, so hand-painted logic elsewhere is never touch
 | `edges --bounds X Y W H [--depth N] [--legend NAME]` | The strips of neighbouring areas along proposed bounds, three tiles deep by default, and any overlap |
 | `tiles <folder>` | Tile assets in a folder, with their type and path |
 | `spec <id> [--legend NAME] [--write-legend] [--region X Y W H]` | Writes an area's spec, and a legend if needed. See [Exporting specs](#exporting-specs) |
+| `features <id>` | An area's identified features, with their tiles, components, and fields. See [Reading features](#reading-features) |
 
 Grids use the legend's symbols where it has them, and made-up letters with a key for other tiles. The reader assumes tilemaps sit at the area's origin, and skips tiles placed through prefabs.
 
@@ -246,7 +247,33 @@ The checks cover the open scenes and the baked data of every other area in the s
 - Filter with the search box, which matches IDs and names, and **Problems only**. Sort by area, kind, ID, or name.
 - **Show unopened areas** adds the baked features of areas whose scenes are closed, greyed out with an **Open Scene** button.
 
-Code: `Features/FeatureIds`, `IdentifiedFeatureBehaviour`, `IdentifiedFeatureData`, and `Editor/FeatureIdChecks`, `FeatureIdIndex`, `FeatureIdInspector`, `FeatureIdGizmos`, `FeatureIdWindow`.
+### Reading features
+
+`py Tools/mapread.py features <id>` lists an area's identified features in hierarchy order, including inactive ones, as the bake does:
+
+```
+NPC  Test-A_B
+  object  "GameObject (1)"
+  tile    9 6
+  NpcBehaviour
+    definition  "Assets/5. Scriptable Objects/test.asset"
+    facing      right
+  WanderAIBehaviour
+    pauseWhenAreaInactive  true
+    regionSpace            Relative
+    region                 -1 -3 5 5   (area 8 3 5 5)
+    minWaitTicks           30
+    maxWaitTicks           120
+```
+
+- **Tile:** area-local, the floor of the object's world position, worked out through its parents' position, rotation, and scale. This matches the bake for a grid with 1x1 cells.
+- **Components:** the feature's own component first, then every other component on the object whose script is in `2. Scripts`. Each field is printed under its SerializedProperty path, such as `points[1].tile` or `points.size`.
+- **Values:** enums print by name, read from the C# source. Asset references print as paths, `none`, or `missing <guid>`. Vectors and rects print as plain numbers. Fields stored relative to the feature, a relative wander or zone region and patrol points, also show their area tiles in brackets. A field the scene was saved without shows as "(not saved yet, so its default)".
+- **Flags**, on lines starting with `!`: a missing ID, a bad format, a clash in the area or with another area in the same world, and an inactive object. Disabled components are marked too.
+
+Any component deriving from `IdentifiedFeatureBehaviour` is listed, so new feature types need no change to the reader. It skips prefab instances and warns when a scene has any.
+
+Code: `Features/FeatureIds`, `IdentifiedFeatureBehaviour`, `IdentifiedFeatureData`, and `Editor/FeatureIdChecks`, `FeatureIdIndex`, `FeatureIdInspector`, `FeatureIdGizmos`, `FeatureIdWindow`. The reader is in `Tools/mapread.py`.
 
 ## Adding a world feature type
 
