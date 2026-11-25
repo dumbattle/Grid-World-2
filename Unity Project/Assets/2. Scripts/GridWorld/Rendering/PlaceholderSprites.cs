@@ -5,7 +5,7 @@ using UnityEngine;
 namespace GridWorld {
     /// <summary>
     /// Generated sprites for entities with no visual: a square filling one tile, with a dark bar on
-    /// the side it faces. Destroy with <see cref="Dispose"/>.
+    /// the side it faces. The pivot is at the bottom centre. Destroy with <see cref="Dispose"/>.
     /// </summary>
     public class PlaceholderSprites : IDisposable {
         // Only the placeholder's own resolution. It always spans one tile.
@@ -69,7 +69,8 @@ namespace GridWorld {
 
             int index = (int)(Direction4.Enum)facing;
             textures[index] = texture;
-            sprites[index] = Sprite.Create(texture, new Rect(0, 0, Pixels, Pixels), new Vector2(0.5f, 0.5f), Pixels);
+            // Bottom pivot, like real entity art, so it sorts by its feet.
+            sprites[index] = Sprite.Create(texture, new Rect(0, 0, Pixels, Pixels), new Vector2(0.5f, 0f), Pixels);
             sprites[index].name = $"Placeholder {facing}";
         }
 

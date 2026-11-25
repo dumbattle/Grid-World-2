@@ -22,14 +22,14 @@ MonoBehaviour:
   worldOffset: {x: 0, y: 0}
   tiles: 0f000f000f000f000f000f000f000f000f000f000f000f000f000f000f00000000000f000f000f000f000f000f000f000f000f000f000f00000000000f000f000f000f000f000f000f000f000f00000000000f000f000f00000000000f000f000f000f000f000f00000000000f000f000f000f000f000f000f000f000f000f000f000f0000000000000000000f000f000f00000000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f00000000000f00000000000f000f00000000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f00000000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f00000000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f00000000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f0000000000000000000f000f0000000000000000000f000f000f000f000f000f000f000f000f000f000f00000000000000000000000000000000000f0000000000000000000f000f000f000f000f000f000f000f000f000f000f000000000000000000000000000000000000000000000000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f0000000000000000000f000f000f000f000f000f000f000f000f000f000f000f00000000000f000f000f000f000f000f000f000f000f000f000f000f000f000f00000000000f000f000f000f000f000f00000000000f000f000f000f000f000f000f000f000f00000000000f000f00
   features:
-  - rid: 6223929071251226694
-  - rid: 6223929071251226695
-  - rid: 6223929071251226696
-  - rid: 6223929071251226697
+  - rid: 6223929071251226708
+  - rid: 6223929071251226709
+  - rid: 6223929071251226710
+  - rid: 6223929071251226711
   references:
     version: 2
     RefIds:
-    - rid: 6223929071251226694
+    - rid: 6223929071251226708
       type: {class: NpcData, ns: GridWorld, asm: GridWorld}
       data:
         featureId: Test-A_A
@@ -37,17 +37,17 @@ MonoBehaviour:
         localTile: {x: 9, y: 5}
         facingDirection: 1
         addonRecords:
-        - rid: 6223929071251226698
-    - rid: 6223929071251226695
+        - rid: 6223929071251226712
+    - rid: 6223929071251226709
       type: {class: NpcData, ns: GridWorld, asm: GridWorld}
       data:
         featureId: Test-A_B
         entityDefinition: {fileID: 11400000, guid: 8c73d218020e90541926af825f687e3c, type: 2}
-        localTile: {x: 9, y: 6}
-        facingDirection: 1
+        localTile: {x: 9, y: 7}
+        facingDirection: 0
         addonRecords:
-        - rid: 6223929071251226699
-    - rid: 6223929071251226696
+        - rid: 6223929071251226713
+    - rid: 6223929071251226710
       type: {class: NpcData, ns: GridWorld, asm: GridWorld}
       data:
         featureId: Test-A_C
@@ -55,15 +55,15 @@ MonoBehaviour:
         localTile: {x: 8, y: 5}
         facingDirection: 1
         addonRecords:
-        - rid: 6223929071251226700
-    - rid: 6223929071251226697
+        - rid: 6223929071251226714
+    - rid: 6223929071251226711
       type: {class: PlayerSpawnData, ns: GridWorld, asm: GridWorld}
       data:
         featureId: PLAYER_SPAWN
         entityDefinition: {fileID: 11400000, guid: 5c520c9ec9d9bfe419456b9d48643841, type: 2}
         localTile: {x: 5, y: 5}
         facingDirection: 2
-    - rid: 6223929071251226698
+    - rid: 6223929071251226712
       type: {class: WanderAIData, ns: GridWorld, asm: GridWorld}
       data:
         pauseWhenAreaInactive: 1
@@ -74,18 +74,18 @@ MonoBehaviour:
           height: 5
         minWait: 30
         maxWait: 120
-    - rid: 6223929071251226699
+    - rid: 6223929071251226713
       type: {class: WanderAIData, ns: GridWorld, asm: GridWorld}
       data:
         pauseWhenAreaInactive: 1
         localRegion:
           x: 8
-          y: 3
+          y: 4
           width: 5
           height: 5
         minWait: 30
-        maxWait: 120
-    - rid: 6223929071251226700
+        maxWait: 60
+    - rid: 6223929071251226714
       type: {class: WanderAIData, ns: GridWorld, asm: GridWorld}
       data:
         pauseWhenAreaInactive: 1

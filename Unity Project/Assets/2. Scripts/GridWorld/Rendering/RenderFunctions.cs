@@ -26,6 +26,16 @@ namespace GridWorld {
             return ctx.IsInActiveArea(components.tile.Get(id));
         }
 
+        /// <summary>The entity's current step, or an idle step on its tile if it has none.</summary>
+        public static Step GetStep<T>(this T ctx, EntityID id)
+                    where T : IWorldFunctionContext, IPerm_ReadEntities {
+            var components = ctx.data.components;
+            if (components.step.TryGet(id, out var step)) {
+                return step;
+            }
+            return Step.Idle(components.tile.Get(id));
+        }
+
         /// <summary>
         /// The entity's position in tiles, blended between the last two ticks. The tile's lower-left
         /// corner is at its coordinate, so add half a tile for its centre.

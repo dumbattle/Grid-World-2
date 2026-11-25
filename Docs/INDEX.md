@@ -4,7 +4,7 @@ Orientation map for the project. Keep it short and current; add one line per sys
 
 ## Status
 
-The first slice is done: a player walks and runs across two touching areas, with baked tile data, walls, and area scenes streaming in and out. Placed NPCs spin, wander, or patrol, and spawn zones keep mobs alive while their area is active. **Grid World → Test → Create Test World** builds the test world; open `TEST_Main` and press Play. Entities have pooled sprites only while they're in an active area. The NPC milestone's three slices are done: placed NPCs with AI, spawn zones with despawning, and sprites streaming with their areas. NPCs, spawn zones, and the player spawn have world-unique IDs, checked in the Inspector, the Scene view, the bake, and at startup, and fixed in **Grid World → Fix Feature IDs**. Remaining design questions and unbuilt work are in [open decisions](open-decisions.md).
+The first slice is done: a player walks and runs across two touching areas, with baked tile data, walls, and area scenes streaming in and out. Placed NPCs spin, wander, or patrol, and spawn zones keep mobs alive while their area is active. **Grid World → Test → Create Test World** builds the test world; open `TEST_Main` and press Play. Entities have pooled sprites only while they're in an active area, and play idle and walk animations in four directions when their definition has an animation set. The NPC milestone's three slices are done: placed NPCs with AI, spawn zones with despawning, and sprites streaming with their areas. NPCs, spawn zones, and the player spawn have world-unique IDs, checked in the Inspector, the Scene view, the bake, and at startup, and fixed in **Grid World → Fix Feature IDs**. Remaining design questions and unbuilt work are in [open decisions](open-decisions.md).
 
 ## Systems
 
@@ -24,6 +24,7 @@ Design rules are in [architecture.md](../.claude/rules/architecture.md). The doc
 | Player input | [tiles-and-movement.md](tiles-and-movement.md#player-input) | `PlayerInputSystem`, `PlayerInput`, `PlayerControlState` |
 | Root and tick loop | [root-view-camera.md](root-view-camera.md#worldrootbehaviour) | `WorldRootBehaviour`, `TickClock`, `TestWorldRootBehaviour` (Game) |
 | Rendering | [root-view-camera.md](root-view-camera.md#worldview) | `WorldView`, `RenderContext`, `RenderFunctions`, `PlaceholderSprites` |
+| Entity animation | [root-view-camera.md](root-view-camera.md#animation) | `EntityAnimationSO`, `DirectionalClips`, `SpriteClip`, `EntityAnimationRules`, `EntityAnimationSheet` |
 | Camera | [root-view-camera.md](root-view-camera.md#camera) | `ICameraController`, `FollowCameraController`, `CameraView` |
 | Authoring and bake | [authoring-areas.md](authoring-areas.md) | `AreaBehaviour`, `LogicLayerBehaviour`, `TilePropertyTableSO`, `AreaDataSO`, `WorldDataSO`, `AreaBaker` |
 | New Area window | [authoring-areas.md](authoring-areas.md#making-an-area-scene) | `NewAreaWindow`, `NewAreaCreator`, `NewAreaRules` |

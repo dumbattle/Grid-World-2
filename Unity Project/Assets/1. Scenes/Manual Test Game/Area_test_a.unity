@@ -5163,7 +5163,7 @@ MonoBehaviour:
     width: 5
     height: 5
   minWaitTicks: 30
-  maxWaitTicks: 120
+  maxWaitTicks: 60
 --- !u!114 &1565775373
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5178,7 +5178,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: GridWorld::GridWorld.NpcBehaviour
   id: Test-A_B
   definition: {fileID: 11400000, guid: 8c73d218020e90541926af825f687e3c, type: 2}
-  facing: 1
+  facing: 0
 --- !u!4 &1565775374
 Transform:
   m_ObjectHideFlags: 0
@@ -5188,7 +5188,7 @@ Transform:
   m_GameObject: {fileID: 1565775371}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 9.432, y: 6.375, z: 0}
+  m_LocalPosition: {x: 9.5, y: 7.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

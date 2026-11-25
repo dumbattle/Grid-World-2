@@ -36,7 +36,7 @@ Settled in the rules, but not in the code after the first slice.
 - **Features:** the `absent` and `scripted` markers, `returnToRoute`, cutscenes and the cutscene phase, props, ledges, doors and interiors, pathfinding, saving, dialogue, the interact button, and game extension.
 - **Authoring:** an Inspector button on `PatrolAIBehaviour` that changes where the NPC starts in its cycle, by rotating the points and moving the NPC onto the new first point.
 - **Hooks:** `failedMoves`, `stepsCompleted`, and `interactAttempts`.
-- **Rendering:** four-direction animation, bottom pivots for entity sprites (they sort by Y from a centre pivot for now), and pixel snapping.
+- **Rendering:** pixel snapping, a separate run clip (running plays the walk at double speed), the step visual style asset, and footstep sounds from the `step` frame tag. A turn mid-chain restarts the walk cycle; keeping the frame needs a start frame on LPE's `AnimationPlayer.Set`.
 - **World data:** world offsets for interiors (every area bakes at 0), the override tilemap, and the "Go to area" window.
 - **Input:** buffered button presses, and pausing.
 - **Camera:** the look-at controller, camera effects, and cutscene camera locks.
