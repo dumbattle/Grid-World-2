@@ -28,15 +28,15 @@ A system gets a context from `world.GetContext<T>()`, which creates it once and 
 
 | Context | Permissions | Used by |
 |---|---|---|
-| `WorldSetupContext` | SetupWorld, ReadEntities, ReadTiles | World startup and feature types |
+| `WorldSetupContext` | SetupWorld, ReadEntities, ReadTiles, SpawnEntities | World startup and feature types |
 | `DecisionPhaseContext` | ReadEntities, RequestMove, PlayerControl | `PlayerInputSystem` |
-| `SpawnContext` | ReadTiles, ReadEntities, ReadAreas, ReadCamera, UseRandom, SpawnEntities, DespawnEntities | `SpawnSystem` and every `SpawnZone` |
-| `AIContext` | ReadTiles, ReadEntities, ReadAreas, RequestMove, UseRandom | `AISystem` and every `EntityAI` |
-| `MovementPhaseContext` | ReadTiles, ReadEntities, ResolveMovement | `MovementSystem` |
+| `SpawnContext` | ReadTiles, ReadEntities, ReadAreas, ReadCamera, SpawnEntities | `SpawnSystem` and every `SpawnZone` |
+| `AIContext` | ReadTiles, ReadEntities, ReadAreas, RequestMove | `AISystem` and every `EntityAI` |
+| `MovementPhaseContext` | ReadTiles, ReadEntities, ReadDefinitions, ResolveMovement | `MovementSystem` |
 | `AreaActivationContext` | ReadAreas, UpdateAreas | `AreaActivationSystem` |
-| `RenderContext` | ReadEntities, ReadCamera, ReadAreas | `WorldView`, `CameraView`, camera controllers, `AreaSceneLoader` |
+| `RenderContext` | ReadEntities, ReadDefinitions, ReadCamera, ReadAreas | `WorldView`, `CameraView`, camera controllers, `AreaSceneLoader` |
 
-Functions are extension methods in `Functions/` (and next to their system, such as `Areas/AreaFunctions.cs`), constrained on `IWorldFunctionContext` plus one marker:
+Functions are extension methods in `Functions/` (and next to their system, such as `Areas/AreaFunctions.cs`), constrained on `IWorldFunctionContext` plus one marker (or none, for helpers with no gameplay effect such as `RandomRange`). `GetEntityAt` reads occupancy under ReadTiles, since it's a question about a tile, and `GetDefinition` has its own ReadDefinitions so the systems that depend on definition data are explicit:
 
 ```csharp
 public static Vector2Int GetTile<T>(this T ctx, EntityID id)
@@ -49,9 +49,9 @@ To add an operation, write a function like this. To give a system new access, ad
 
 ## Spawning and despawning
 
-Entities are created through `EntityLifecycle`, behind two sets of functions with the same names: `SpawnEntity` and `AddAI` under SetupWorld for startup, and under SpawnEntities for runtime. `AddAI` throws if the entity already has one.
+Entities are created with `SpawnEntity` and `AddAI` in `SpawnFunctions`, under SpawnEntities. `WorldSetupContext` holds that permission too, so startup and runtime spawn the same way. `AddAI` throws if the entity already has one.
 
-`Despawn(id)`, under DespawnEntities, removes an entity completely:
+`Despawn(id)`, under DespawnEntities, removes an entity completely. No framework context holds that permission; a game grants it to its own context, as the test world's `TestDebugContext` does.
 
 - It releases the entity's tile. Mid-step, that's the target tile, since the old one was released when the step began.
 - It removes the entity from every component store, and drops any pending move request.

@@ -14,7 +14,7 @@ Design rules are in [architecture.md](../.claude/rules/architecture.md). The doc
 |---|---|---|
 | World state and contexts | [world-and-areas.md](world-and-areas.md#worldinstance) | `WorldInstance`, `WorldFunctionContext`, the `IPerm_*` markers |
 | Entities | [world-and-areas.md](world-and-areas.md#worldinstance) | `EntityIDManager`, `EntityComponent<T>`, `EntityComponentManager`, `EntityDefinitionSO` |
-| Spawning and despawning | [world-and-areas.md](world-and-areas.md#spawning-and-despawning) | `EntityLifecycle`, `EntityComponentStore`, `SpawnFunctions` |
+| Spawning and despawning | [world-and-areas.md](world-and-areas.md#spawning-and-despawning) | `SpawnFunctions`, `EntityComponentStore` |
 | Startup | [world-and-areas.md](world-and-areas.md#startup) | `WorldStartup`, `WorldValidation` |
 | Areas and streaming | [world-and-areas.md](world-and-areas.md#area-activation) | `WorldAreas`, `AreaActivationSystem`, `AreaSceneLoader` |
 | Tile data | [tiles-and-movement.md](tiles-and-movement.md#tile-data) | `TileBits`, `AreaTiles`, `WorldTiles`, `TileOccupancy` |

@@ -6,5 +6,6 @@ namespace GridWorld {
     public class WorldSetupContext : WorldFunctionContext
                                    , IPerm_SetupWorld
                                    , IPerm_ReadEntities
-                                   , IPerm_ReadTiles { }
+                                   , IPerm_ReadTiles
+                                   , IPerm_SpawnEntities { }
 }

@@ -13,20 +13,9 @@ namespace GridWorld {
             ctx.data.tiles.AddArea(area);
         }
 
-        /// <summary>Creates an idle entity that occupies <paramref name="tile"/>.</summary>
-        public static EntityID SpawnEntity<T>(this T ctx, EntityDefinitionSO definition, Vector2Int tile, Direction4 facing)
-                    where T : IWorldFunctionContext, IPerm_SetupWorld {
-            return EntityLifecycle.Spawn(ctx.data, definition, tile, facing);
-        }
-
         public static void SetPlayer<T>(this T ctx, EntityID id)
                     where T : IWorldFunctionContext, IPerm_SetupWorld {
             ctx.data.player = id;
-        }
-
-        public static void AddAI<T>(this T ctx, EntityID id, EntityAI ai)
-                    where T : IWorldFunctionContext, IPerm_SetupWorld {
-            EntityLifecycle.AddAI(ctx.data, id, ai);
         }
 
         public static void AddSpawnZone<T>(this T ctx, SpawnZone zone)

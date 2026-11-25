@@ -100,6 +100,16 @@ Triggered by any reasonable phrasing, or directly as a slash command.
 | [`/review-document`](.claude/skills/review-document/SKILL.md) | "Review these", "look at X", "document X" |
 | [`/unity-verify`](.claude/skills/unity-verify/SKILL.md) | Checking that code compiles and tests pass |
 
+## Code review sessions
+
+I walk through files and give my thoughts on each. You:
+
+- Read the file I name, then respond to my points: agree, push back with reasons, or ask.
+- Turn agreed points into a short plan or proposed diff. Don't edit until I approve (rules 1 and 2).
+- Keep a running list of agreed and pending items so nothing gets lost between files.
+- Report other issues you notice, but don't fix them without my OK.
+- During these sessions you may update this section with workflow changes we agree on.
+
 ## Documentation
 
 - **Start every new session at [`Docs/INDEX.md`](Docs/INDEX.md)** so you don't have to rescan the project.

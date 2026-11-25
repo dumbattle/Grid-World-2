@@ -15,11 +15,5 @@ namespace GridWorld {
                     where T : IWorldFunctionContext, IPerm_ReadEntities {
             return ctx.data.components.ai.Get(id);
         }
-
-        /// <summary>A random int from <paramref name="min"/> up to but not including <paramref name="maxExclusive"/>.</summary>
-        public static int RandomRange<T>(this T ctx, int min, int maxExclusive)
-                    where T : IWorldFunctionContext, IPerm_UseRandom {
-            return ctx.data.random.Next(min, maxExclusive);
-        }
     }
 }

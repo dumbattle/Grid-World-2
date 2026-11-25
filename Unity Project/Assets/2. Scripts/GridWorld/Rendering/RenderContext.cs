@@ -4,6 +4,7 @@ namespace GridWorld {
     /// </summary>
     public class RenderContext : WorldFunctionContext
                                , IPerm_ReadEntities
+                               , IPerm_ReadDefinitions
                                , IPerm_ReadCamera
                                , IPerm_ReadAreas { }
 }

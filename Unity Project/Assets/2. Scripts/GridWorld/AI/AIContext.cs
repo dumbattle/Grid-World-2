@@ -3,6 +3,5 @@ namespace GridWorld {
                            , IPerm_ReadTiles
                            , IPerm_ReadEntities
                            , IPerm_ReadAreas
-                           , IPerm_RequestMove
-                           , IPerm_UseRandom { }
+                           , IPerm_RequestMove { }
 }

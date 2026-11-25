@@ -7,6 +7,10 @@ namespace GridWorld.Tests {
     /// A world with one open area from (-8,-8) to (7,7) and a default definition: 16 ticks to walk, 8 to run.
     /// </summary>
     class TestWorld : IDisposable {
+        // No framework context can despawn, so tests use their own.
+        class DespawnContext : WorldFunctionContext
+                             , IPerm_DespawnEntities { }
+
         public static readonly RectInt AreaBounds = new RectInt(-8, -8, 16, 16);
 
         public readonly WorldInstance world = new WorldInstance();
@@ -41,7 +45,7 @@ namespace GridWorld.Tests {
         }
 
         public void Despawn(EntityID id) {
-            world.GetContext<SpawnContext>().Despawn(id);
+            world.GetContext<DespawnContext>().Despawn(id);
         }
 
         public bool Exists(EntityID id) {

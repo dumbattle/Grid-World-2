@@ -5,6 +5,18 @@ using UnityEngine;
 
 namespace GridWorld {
     public static class MovementFunctions {
+        /// <summary>
+        /// Replaces any earlier request for this entity this tick. Movement ignores requests from
+        /// entities partway through a step.
+        /// </summary>
+        public static void RequestMove<T>(this T ctx, EntityID id, Direction4 direction, bool turnOnly = false, bool run = false)
+                    where T : IWorldFunctionContext, IPerm_RequestMove {
+            if (direction == null) {
+                throw new ArgumentNullException(nameof(direction));
+            }
+            ctx.data.id2moveRequest[id] = new MoveRequest(direction, turnOnly, run);
+        }
+
         public static MoveRequests GetMoveRequests<T>(this T ctx)
                     where T : IWorldFunctionContext, IPerm_ResolveMovement {
             return new MoveRequests(ctx.data.id2moveRequest);

@@ -41,7 +41,7 @@ namespace GridWorld {
             if (existing.IsValid()) {
                 throw new InvalidOperationException($"{npc} is on a tile that already holds {existing}.");
             }
-            if (!CanEnterFromAnyDirection(ctx, worldTile)) {
+            if (!ctx.CanEnterFromAnyDirection(worldTile)) {
                 Debug.LogWarning($"Grid World: {npc} is on a tile that can't be entered from any direction, so it can never step back onto it.");
             }
 
@@ -51,42 +51,8 @@ namespace GridWorld {
                     // An add-on's class was renamed, moved, or deleted after it was baked.
                     throw new InvalidOperationException($"{npc} has an add-on whose class is missing. Rebake the area.");
                 }
-                if (addon is WanderAIData wander) {
-                    CheckWander(area, wander, npc);
-                }
-                if (addon is PatrolAIData patrol) {
-                    CheckPatrol(ctx, area, patrol, npc);
-                }
+                addon.Validate(ctx, area, npc);
             }
-        }
-
-        static void CheckWander(AreaDataSO area, WanderAIData wander, string npc) {
-            var bounds = area.localBounds;
-            var region = wander.region;
-            bool inside = region.xMin >= bounds.xMin && region.yMin >= bounds.yMin
-                       && region.xMax <= bounds.xMax && region.yMax <= bounds.yMax;
-            if (!inside) {
-                throw new InvalidOperationException($"{npc} has a wander region {region} that goes outside the area's bounds {bounds}.");
-            }
-        }
-
-        static void CheckPatrol(WorldSetupContext ctx, AreaDataSO area, PatrolAIData patrol, string npc) {
-            var bounds = area.localBounds;
-            var points = patrol.patrolPoints;
-            for (int i = 0; i < points.Count; i++) {
-                var tile = points[i].localTile;
-                if (!bounds.Contains(tile)) {
-                    throw new InvalidOperationException($"{npc} has patrol point {i} at {tile}, outside the area's bounds {bounds}.");
-                }
-                if (!CanEnterFromAnyDirection(ctx, area.ToWorldTile(tile))) {
-                    Debug.LogWarning($"Grid World: {npc} has patrol point {i} at {tile}, which can't be entered from any direction.");
-                }
-            }
-        }
-
-        static bool CanEnterFromAnyDirection(WorldSetupContext ctx, Vector2Int tile) {
-            return ctx.CanEnter(tile, Direction4.up) || ctx.CanEnter(tile, Direction4.down)
-                || ctx.CanEnter(tile, Direction4.left) || ctx.CanEnter(tile, Direction4.right);
         }
 
         static string Describe(AreaDataSO area, NpcData data) {

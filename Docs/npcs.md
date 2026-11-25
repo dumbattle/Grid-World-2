@@ -54,7 +54,7 @@ The NPC and its profile draw gizmos: a cyan square with a facing line, the wande
 
 ## Startup
 
-The root registers `NpcFeatureType`. For each record it checks the placement, spawns the entity at the world tile, then calls `Register(ctx, area, id)` on each add-on, in order. The checks run before the spawn, so a failed one leaves nothing half registered. Messages name the area, the NPC's ID if it has one, and its area-local tile.
+The root registers `NpcFeatureType`. For each record it checks the NPC's own placement, calls `Validate(ctx, area, npc)` on each add-on, spawns the entity at the world tile, then calls `Register(ctx, area, id)` on each add-on, in order. The checks run before the spawn, so a failed one leaves nothing half registered. Messages name the area, the NPC's ID if it has one, and its area-local tile.
 
 | Problem | Result |
 |---|---|
@@ -67,7 +67,7 @@ The root registers `NpcFeatureType`. For each record it checks the placement, sp
 | NPC's tile can't be entered from any direction | Warning, and the NPC still spawns |
 | A patrol point can't be entered from any direction | Warning, and the NPC still spawns |
 
-The bake can't catch these, because it doesn't compare features with tile data or with each other. `WanderAIData.region` and `PatrolAIData.patrolPoints` expose the baked tiles for the checks.
+The bake can't catch these, because it doesn't compare features with tile data or with each other. The wander and patrol rows come from `WanderAIData` and `PatrolAIData`, which override `NpcAddonData.Validate`. The default does nothing, and `npc` is the description that starts each message.
 
 AI add-ons derive from `NpcAIData`. Its `Register` calls `CreateAI(area)` for a fresh `EntityAI`, sets `pausesWhenInactive`, and adds it with `AddAI`. Building a new AI per NPC keeps runtime state out of baked data. An entity can have only one AI, and a second `AddAI` throws.
 
@@ -88,11 +88,11 @@ Randomness comes from `WorldInstance.random`, a `System.Random` seeded at startu
 2. A `[Serializable]` record deriving from `NpcAIData`, holding area-local settings, whose `CreateAI(area)` builds the AI with world tiles.
 3. An `NpcAIBehaviour` subclass whose `Bake(baker, localTile)` checks its settings and returns the record.
 
-Other add-ons, such as dialogue later, derive from `NpcAddonBehaviour` and `NpcAddonData` instead, and register their own components in `Register`. `SpinAIBehaviour`, `SpinAIData`, and `SpinAI` are the simplest example.
+Other add-ons, such as dialogue later, derive from `NpcAddonBehaviour` and `NpcAddonData` instead, and register their own components in `Register`. Any add-on that needs startup checks against tile data overrides `Validate`. `SpinAIBehaviour`, `SpinAIData`, and `SpinAI` are the simplest example.
 
 ## Spawn zones
 
-A spawn zone keeps up to a set number of mobs alive inside a rectangle while its area is active. Mobs are spawned at runtime, not baked, and anything can remove them with `Despawn`.
+A spawn zone keeps up to a set number of mobs alive inside a rectangle while its area is active. Mobs are spawned at runtime, not baked, and anything holding DespawnEntities can remove them with `Despawn`. A zone never despawns its own mobs: when its area goes inactive it stops spawning, and its mobs stay where they are, without sprites.
 
 ### Placing a zone
 

@@ -16,6 +16,19 @@ namespace GridWorld {
             this.mode = mode;
         }
 
+        public override void Validate(WorldSetupContext ctx, AreaDataSO area, string npc) {
+            var bounds = area.localBounds;
+            for (int i = 0; i < points.Length; i++) {
+                var tile = points[i].localTile;
+                if (!bounds.Contains(tile)) {
+                    throw new InvalidOperationException($"{npc} has patrol point {i} at {tile}, outside the area's bounds {bounds}.");
+                }
+                if (!ctx.CanEnterFromAnyDirection(area.ToWorldTile(tile))) {
+                    Debug.LogWarning($"Grid World: {npc} has patrol point {i} at {tile}, which can't be entered from any direction.");
+                }
+            }
+        }
+
         protected override EntityAI CreateAI(AreaDataSO area) {
             var worldPoints = new PatrolPoint[points.Length];
             for (int i = 0; i < points.Length; i++) {

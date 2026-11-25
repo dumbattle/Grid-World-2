@@ -123,6 +123,7 @@ The goal is a base that other games can be built on, so these rules favor a clea
 - `WorldInstance` owns all overworld state. Only the trusted root holds it; holding it means full authority.
 - Systems receive contexts, never the instance. Each context is stateless and cached per type, and its `IPerm_*` markers define what it can do.
 - Functions are extension methods constrained on a permission. They read or write state and keep it valid, with no gameplay policy. Systems own the logic.
+- Helpers with no gameplay effect, such as random draws, are constrained only on `IWorldFunctionContext` and need no permission.
 - Never cast a context to `IWorldFunctionContext`.
 - Code outside the tick, such as menus, is plain code and doesn't use contexts.
 
