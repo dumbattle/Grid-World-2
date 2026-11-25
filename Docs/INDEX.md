@@ -35,6 +35,10 @@ Design rules are in [architecture.md](../.claude/rules/architecture.md). The doc
 | Feature edits | [authoring-areas.md](authoring-areas.md#editing-features-from-text) | `FeatureEditParser`, `FeatureEditValues`, `FeatureEditApplier`, `FeatureEditMenu` |
 | Test world | [authoring-areas.md](authoring-areas.md#the-test-world) | `CreateTestWorld` |
 
+## Plans
+
+- [NPC dialogue milestone](plans/npc-dialogue.md): cutscenes, interaction, then dialogue. Proposed, not approved.
+
 ## Related
 
 - [LPE library docs](../Unity%20Project/Assets/2.%20Scripts/LPE/Docs/README.md)
