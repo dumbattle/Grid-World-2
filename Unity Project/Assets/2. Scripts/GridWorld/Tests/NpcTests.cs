@@ -132,6 +132,102 @@ namespace GridWorld.Tests {
             StringAssert.Contains("'meadow'", error.Message);
         }
 
+        // A 4x4 area at (0,0) where every tile can be entered except blocked.
+        AreaDataSO AreaWithBlockedTile(Vector2Int blocked, params WorldFeatureData[] records) {
+            var bounds = new RectInt(0, 0, 4, 4);
+            var tiles = new ushort[bounds.width * bounds.height];
+            for (int i = 0; i < tiles.Length; i++) {
+                tiles[i] = TileBits.EnterAll;
+            }
+            tiles[blocked.x + blocked.y * bounds.width] = 0;
+
+            var area = assets.Area("meadow", bounds, Vector2Int.zero);
+            area.SetBakedData("meadow", "Assets/meadow.unity", bounds, Vector2Int.zero, tiles, new List<WorldFeatureData>(records));
+            return area;
+        }
+
+        NpcData Patrol(Vector2Int tile, params Vector2Int[] pointTiles) {
+            var points = new PatrolPointSettings[pointTiles.Length];
+            for (int i = 0; i < pointTiles.Length; i++) {
+                points[i] = new PatrolPointSettings(pointTiles[i], Direction4.Enum.none, 0);
+            }
+            return new NpcData(definition, tile, Direction4.Enum.down,
+                new List<NpcAddonData> { new PatrolAIData(false, points, PatrolMode.Loop) });
+        }
+
+        void AssertLoadThrows(AreaDataSO area, string expected) {
+            var error = Assert.Throws<InvalidOperationException>(() => {
+                Load(area);
+            });
+            StringAssert.Contains("'meadow'", error.Message);
+            StringAssert.Contains(expected, error.Message);
+        }
+
+        [Test]
+        public void Load_NpcOutsideAreaBounds_ThrowsNamingArea() {
+            var record = new NpcData(definition, new Vector2Int(4, 1), Direction4.Enum.down, null);
+            var area = assets.Area("meadow", new RectInt(0, 0, 4, 4), Vector2Int.zero, TileBits.EnterAll, record);
+
+            AssertLoadThrows(area, "outside the area's bounds");
+        }
+
+        [Test]
+        public void Load_WanderRegionOutsideAreaBounds_ThrowsNamingArea() {
+            var record = new NpcData(definition, new Vector2Int(1, 1), Direction4.Enum.down,
+                new List<NpcAddonData> { new WanderAIData(false, new RectInt(0, 0, 5, 2), 0, 0) });
+            var area = assets.Area("meadow", new RectInt(0, 0, 4, 4), Vector2Int.zero, TileBits.EnterAll, record);
+
+            AssertLoadThrows(area, "wander region");
+        }
+
+        [Test]
+        public void Load_WanderRegionFillingTheArea_Loads() {
+            var record = new NpcData(definition, new Vector2Int(1, 1), Direction4.Enum.down,
+                new List<NpcAddonData> { new WanderAIData(false, new RectInt(0, 0, 4, 4), 0, 0) });
+            var area = assets.Area("meadow", new RectInt(0, 0, 4, 4), Vector2Int.zero, TileBits.EnterAll, record);
+
+            var world = Load(area);
+
+            Assert.AreEqual(1, world.components.ai.count);
+        }
+
+        [Test]
+        public void Load_PatrolPointOutsideAreaBounds_ThrowsNamingArea() {
+            var area = assets.Area("meadow", new RectInt(0, 0, 4, 4), Vector2Int.zero, TileBits.EnterAll,
+                Patrol(new Vector2Int(1, 1), new Vector2Int(1, 1), new Vector2Int(5, 1)));
+
+            AssertLoadThrows(area, "patrol point 1");
+        }
+
+        [Test]
+        public void Load_TwoNpcsOnOneTile_ThrowsNamingArea() {
+            var first = new NpcData(definition, new Vector2Int(2, 2), Direction4.Enum.down, null);
+            var second = new NpcData(definition, new Vector2Int(2, 2), Direction4.Enum.up, null);
+            var area = assets.Area("meadow", new RectInt(0, 0, 4, 4), Vector2Int.zero, TileBits.EnterAll, first, second);
+
+            AssertLoadThrows(area, "already holds");
+        }
+
+        [Test]
+        public void Load_NpcOnUnenterableTile_LogsWarningAndSpawns() {
+            var record = new NpcData(definition, new Vector2Int(2, 1), Direction4.Enum.down, null);
+
+            LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("'meadow'.*can't be entered from any direction"));
+            var world = Load(AreaWithBlockedTile(new Vector2Int(2, 1), record));
+
+            Assert.IsTrue(world.occupancy.Get(new Vector2Int(2, 1)).IsValid());
+        }
+
+        [Test]
+        public void Load_PatrolPointOnUnenterableTile_LogsWarningAndSpawns() {
+            var record = Patrol(new Vector2Int(0, 1), new Vector2Int(0, 1), new Vector2Int(3, 1));
+
+            LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("'meadow'.*patrol point 1.*can't be entered"));
+            var world = Load(AreaWithBlockedTile(new Vector2Int(3, 1), record));
+
+            Assert.AreEqual(1, world.components.ai.count);
+        }
+
         [Test]
         public void Bake_NpcWithWander_AddsOneRecordWithItsAI() {
             SetRegion(Npc(new Vector2Int(3, 4)).AddComponent<WanderAIBehaviour>(), new RectInt(2, 3, 3, 3));

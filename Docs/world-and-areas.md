@@ -28,7 +28,7 @@ A system gets a context from `world.GetContext<T>()`, which creates it once and 
 
 | Context | Permissions | Used by |
 |---|---|---|
-| `WorldSetupContext` | SetupWorld, ReadEntities | World startup and feature types |
+| `WorldSetupContext` | SetupWorld, ReadEntities, ReadTiles | World startup and feature types |
 | `DecisionPhaseContext` | ReadEntities, RequestMove, PlayerControl | `PlayerInputSystem` |
 | `SpawnContext` | ReadTiles, ReadEntities, ReadAreas, ReadCamera, UseRandom, SpawnEntities, DespawnEntities | `SpawnSystem` and every `SpawnZone` |
 | `AIContext` | ReadTiles, ReadEntities, ReadAreas, RequestMove, UseRandom | `AISystem` and every `EntityAI` |

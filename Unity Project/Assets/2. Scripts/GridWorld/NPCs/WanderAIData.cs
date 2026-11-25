@@ -8,6 +8,9 @@ namespace GridWorld {
         [SerializeField] int minWait;
         [SerializeField] int maxWait;
 
+        /// <summary>In area-local tiles.</summary>
+        public RectInt region => localRegion;
+
         public WanderAIData(bool pauseWhenAreaInactive, RectInt localRegion, int minWaitTicks, int maxWaitTicks) : base(pauseWhenAreaInactive) {
             this.localRegion = localRegion;
             minWait = minWaitTicks;

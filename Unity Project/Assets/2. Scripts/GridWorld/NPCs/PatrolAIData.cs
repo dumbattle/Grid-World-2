@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace GridWorld {
@@ -6,6 +7,9 @@ namespace GridWorld {
     public sealed class PatrolAIData : NpcAIData {
         [SerializeField] PatrolPointSettings[] points;
         [SerializeField] PatrolMode mode;
+
+        /// <summary>Tiles are in area-local tiles.</summary>
+        public IReadOnlyList<PatrolPointSettings> patrolPoints => points;
 
         public PatrolAIData(bool pauseWhenAreaInactive, PatrolPointSettings[] points, PatrolMode mode) : base(pauseWhenAreaInactive) {
             this.points = (PatrolPointSettings[])points.Clone();

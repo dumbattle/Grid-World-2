@@ -54,7 +54,20 @@ The NPC and its profile draw gizmos: a cyan square with a facing line, the wande
 
 ## Startup
 
-The root registers `NpcFeatureType`. For each record it spawns the entity at the world tile, then calls `Register(ctx, area, id)` on each add-on, in order. A null add-on, whose class went missing after the bake, throws naming the area.
+The root registers `NpcFeatureType`. For each record it checks the placement, spawns the entity at the world tile, then calls `Register(ctx, area, id)` on each add-on, in order. The checks run before the spawn, so a failed one leaves nothing half registered. Messages name the area, the NPC's ID if it has one, and its area-local tile.
+
+| Problem | Result |
+|---|---|
+| No definition or no facing | Throws |
+| NPC's tile outside the area's bounds | Throws |
+| NPC's tile already holds an entity | Throws |
+| An add-on whose class went missing after the bake | Throws |
+| Wander region not inside the area's bounds | Throws |
+| A patrol point outside the area's bounds | Throws, giving the point's number |
+| NPC's tile can't be entered from any direction | Warning, and the NPC still spawns |
+| A patrol point can't be entered from any direction | Warning, and the NPC still spawns |
+
+The bake can't catch these, because it doesn't compare features with tile data or with each other. `WanderAIData.region` and `PatrolAIData.patrolPoints` expose the baked tiles for the checks.
 
 AI add-ons derive from `NpcAIData`. Its `Register` calls `CreateAI(area)` for a fresh `EntityAI`, sets `pausesWhenInactive`, and adds it with `AddAI`. Building a new AI per NPC keeps runtime state out of baked data. An entity can have only one AI, and a second `AddAI` throws.
 
