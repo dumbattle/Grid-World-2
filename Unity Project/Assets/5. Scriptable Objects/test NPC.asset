@@ -14,4 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: GridWorld::GridWorld.EntityDefinitionSO
   walkTicksPerTile: 16
   runTicksPerTile: 8
+  animationSet: {fileID: 11400000, guid: ac157250b02937947a47c787fcbf5831, type: 2}
   placeholderColor: {r: 0.94716984, g: 0.21266633, b: 0.89541537, a: 1}
