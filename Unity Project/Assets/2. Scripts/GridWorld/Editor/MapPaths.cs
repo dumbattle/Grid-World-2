@@ -11,6 +11,7 @@ namespace GridWorld {
         public static string legends => Path.Combine(root, "legends");
         public static string areas => Path.Combine(root, "areas");
         public static string previews => Path.Combine(root, "previews");
+        public static string edits => Path.Combine(root, "edits");
 
         public static string Legend(string name) {
             return Path.Combine(legends, name + ".json");

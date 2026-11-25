@@ -43,3 +43,6 @@ desktop.ini
 
 # Map previews, regenerated on demand
 Maps/previews/
+
+# Feature edit files, one-off patches applied to the scenes
+Maps/edits/

@@ -214,7 +214,7 @@ Every area bakes with a world offset of 0 until doors give interiors their own.
 
 ## Feature IDs
 
-NPCs, spawn zones, and the player spawn each have an **ID** field. Saves, cutscenes, and feature edits will find a feature by it, so moving, renaming, or regrouping its object doesn't lose it.
+NPCs, spawn zones, and the player spawn each have an **ID** field. Feature edits find a feature by it, and saves and cutscenes will too, so moving, renaming, or regrouping its object doesn't lose it.
 
 - An ID is unique across the whole world, not just its area, and comparisons ignore case, so `Guard_1` and `guard_1` clash.
 - It uses only ASCII letters, digits, `_` and `-`.
@@ -274,6 +274,48 @@ NPC  Test-A_B
 Any component deriving from `IdentifiedFeatureBehaviour` is listed, so new feature types need no change to the reader. It skips prefab instances and warns when a scene has any.
 
 Code: `Features/FeatureIds`, `IdentifiedFeatureBehaviour`, `IdentifiedFeatureData`, and `Editor/FeatureIdChecks`, `FeatureIdIndex`, `FeatureIdInspector`, `FeatureIdGizmos`, `FeatureIdWindow`. The reader is in `Tools/mapread.py`.
+
+### Editing features from text
+
+An edit file changes one area's features by ID. Files go in `Maps/edits/`, and **Grid World → Apply Feature Edits…** applies one:
+
+```
+area: test_a
+world: Assets/8. Data/Manual Test/Manual WorldData.asset
+move    guard_1  from 12 5   to 12 6
+face    guard_1  from down   to left
+set     guard_1  PatrolAIBehaviour.points[1].tile  from 0 3  to 0 4
+set     guard_1  PatrolAIBehaviour.points.size     from 2    to 3
+remove  mob_old  at 4 3
+```
+
+| Edit | Changes |
+|---|---|
+| `move <ID> from <x> <y> to <x> <y>` | Puts the object at the centre of the new tile, keeping its z |
+| `face <ID> from <dir> to <dir>` | The feature's `facing`. `none` isn't allowed |
+| `set <ID> <Component>.<field> from <value> to <value>` | Any serialized field on a component in `2. Scripts`, by the path `features` prints |
+| `remove <ID> at <x> <y>` | Deletes the object |
+
+Tiles are scene tiles, as `features` prints them. `#` starts a comment line, and "double quotes" hold a value with spaces, such as an asset path, or the word `to` as a value.
+
+**Values** use the text `features` prints: whole numbers and decimals, `true` or `false`, enum names, vectors and rects as numbers separated by spaces, and asset references as a path or `none`. A list is changed through `.size` or one element, and a struct through one of its fields. Unity's own `m_` fields and the feature's `id` can't be set; rename IDs in the Fix Feature IDs window.
+
+**Every edit names the value it expects,** so each is one of:
+
+| Status | Meaning |
+|---|---|
+| Change | The feature has the `from` value |
+| Already applied | It has the `to` value. A `remove` whose ID is gone counts as applied |
+| Conflict | Anything else: the ID is missing or on two features, the value matches neither, a field doesn't exist or doesn't take that value, or a removal would also delete child objects, a prefab instance's part, or another feature |
+
+If any edit conflicts, the dialog lists the conflicts and nothing is applied. Otherwise it lists the changes, the ones already applied, and warnings, then asks to apply. Applying the same file twice is safe, since the second time everything is already applied.
+
+- **The file is checked first.** The parser reports unknown edits and headers, bad IDs and numbers, `from` equal to `to`, a field edited twice, and a feature that's removed and also edited.
+- **Edits run in file order** against staged values, so a list can grow and then have its new element set. A new element starts as a copy of the last one, so that's its `from` value.
+- **Moves warn** when the feature's region is in area tiles and stays behind, when it patrols and its whole route moves with it, and when the new tile is outside the area's bounds.
+- **Applying** opens the area's scene if needed, makes every change as one Undo step, and leaves the scene unsaved. Cancelling closes a scene it opened.
+
+Code: `Editor/FeatureEditParser`, `FeatureEdit`, `FeatureEditKind`, `FeatureEditFile`, `FeatureEditValues`, `FeatureEditApplier`, `FeatureEditPlan`, `FeatureEditResult`, `FeatureEditStatus`, and `FeatureEditMenu`. `FeatureEditApplier.Evaluate` takes the features, grid, and bounds directly, which is what the tests call.
 
 ## Adding a world feature type
 
