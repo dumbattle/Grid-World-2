@@ -11,6 +11,9 @@ namespace GridWorld.Tests {
         class DespawnContext : WorldFunctionContext
                              , IPerm_DespawnEntities { }
 
+        class StartCutsceneContext : WorldFunctionContext
+                                   , IPerm_StartCutscenes { }
+
         public static readonly RectInt AreaBounds = new RectInt(-8, -8, 16, 16);
 
         public readonly WorldInstance world = new WorldInstance();
@@ -64,6 +67,15 @@ namespace GridWorld.Tests {
 
         public void Request(EntityID id, Direction4 direction, bool turnOnly = false, bool run = false) {
             world.GetContext<DecisionPhaseContext>().RequestMove(id, direction, turnOnly, run);
+        }
+
+        /// <summary>Queues a cutscene, which starts on the next tick.</summary>
+        public void StartCutscene(string id, CutsceneStart start = default) {
+            world.GetContext<StartCutsceneContext>().StartCutscene(id, start);
+        }
+
+        public bool IsLocked(EntityID id) {
+            return world.components.scripted.Has(id);
         }
 
         public void Tick(int count = 1) {

@@ -3,8 +3,8 @@ using LPE;
 
 namespace GridWorld {
     /// <summary>
-    /// Runs each entity's AI in the decision phase, skipping entities partway through a step, and
-    /// entities in inactive areas unless their AI opts out of pausing.
+    /// Runs each entity's AI in the decision phase, skipping entities partway through a step or locked
+    /// by a cutscene, and entities in inactive areas unless their AI opts out of pausing.
     /// </summary>
     public class AISystem {
         List<EntityID> entities = new List<EntityID>();
@@ -15,7 +15,7 @@ namespace GridWorld {
 
             for (int i = 0; i < entities.Count; i++) {
                 var id = entities[i];
-                if (ctx.GetStepState(id) == StepState.Moving) {
+                if (ctx.GetStepState(id) == StepState.Moving || ctx.IsLocked(id)) {
                     continue;
                 }
 

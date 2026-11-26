@@ -33,7 +33,7 @@ Settled design is in [architecture.md](../.claude/rules/architecture.md).
 
 Settled in the rules, but not in the code after the first slice.
 
-- **Features:** the `absent` and `scripted` markers, `returnToRoute`, cutscenes and the cutscene phase, props, ledges, doors and interiors, pathfinding, saving, dialogue, the interact button, and game extension.
+- **Features:** the `absent` marker, `returnToRoute`, `Walk(id, tile)`, props, ledges, doors and interiors, pathfinding, saving, dialogue, the interact button, and game extension.
 - **Authoring:** an Inspector button on `PatrolAIBehaviour` that changes where the NPC starts in its cycle, by rotating the points and moving the NPC onto the new first point.
 - **Hooks:** `failedMoves`, `stepsCompleted`, and `interactAttempts`.
 - **Rendering:** pixel snapping, a separate run clip (running plays the walk at double speed), the step visual style asset, and footstep sounds from the `step` frame tag. A turn mid-chain restarts the walk cycle; keeping the frame needs a start frame on LPE's `AnimationPlayer.Set`.

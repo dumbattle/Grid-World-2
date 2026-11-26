@@ -15,7 +15,7 @@ The framework's default root, and the only holder of `WorldInstance`. A game tha
 | `moveAction` | `Player/Move` from `InputSystem_Actions` |
 | `runAction` | `Player/Sprint` |
 
-**Start:** logs an error and stops if the world data or its settings are missing. Otherwise it seeds the world's random generator and sets the view size from the settings, loads the world with `PlayerSpawnFeatureType`, `NpcFeatureType`, and `SpawnZoneFeatureType<SpawnZoneData>` registered, sets a `FollowCameraController` on the player, creates the view, camera view, and scene loader, runs area activation once, and ticks the view once so sprites exist on the first frame.
+**Start:** logs an error and stops if the world data or its settings are missing. Otherwise it calls `RegisterCutscenes` on the world's cutscene catalogue, seeds the world's random generator and sets the view size from the settings, loads the world with `PlayerSpawnFeatureType`, `NpcFeatureType`, and `SpawnZoneFeatureType<SpawnZoneData>` registered, sets a `FollowCameraController` on the player, creates the view, camera view, and scene loader, runs area activation once, and ticks the view once so sprites exist on the first frame.
 
 **Each frame:**
 
@@ -24,7 +24,7 @@ The framework's default root, and the only holder of `WorldInstance`. A game tha
 3. Update the scene loader.
 4. Render sprites, then the camera, using the clock's `alpha`.
 
-A game can subclass the root instead of writing its own. `world` is protected, and `OnEnable`, `StoreInput`, and `TickWorld` are virtual. `Game/TestWorldRootBehaviour` is the example: it adds a debug key that despawns the entity the player faces.
+A game can subclass the root instead of writing its own. `world` is protected, and `OnEnable`, `RegisterCutscenes`, `StoreInput`, and `TickWorld` are virtual. `Game/TestWorldRootBehaviour` is the example: it registers the test cutscenes, and adds debug keys that despawn the entity the player faces (`despawnAction`) or play the test cutscene with it (`cutsceneAction`).
 
 ## `TickClock`
 

@@ -10,7 +10,7 @@ Owns all overworld state as public fields. Only the root holds it.
 
 | Field | What it is | Written by |
 |---|---|---|
-| `entityIds`, `components` | Entity IDs and component stores (`tile`, `facing`, `definition`, `step`, `ai`) | Startup, spawn phase, movement |
+| `entityIds`, `components` | Entity IDs and component stores (`tile`, `facing`, `definition`, `step`, `ai`, and the `scripted` lock) | Startup, spawn phase, cutscene phase, movement |
 | `spawnZones` | Every `SpawnZone`, in the order they were added | Startup |
 | `viewTiles` | The view size in tiles, from the world settings (15×11 by default) | Startup |
 | `random` | A `System.Random`, seeded at startup from the world settings | Startup, decision phase |
@@ -20,7 +20,10 @@ Owns all overworld state as public fields. Only the root holds it.
 | `input` | Held directions and run, as Unity last reported them | Root, each frame |
 | `cameraController` | The current `ICameraController` | Root |
 | `playerControl` | The player's hold timer | Decision phase |
-| `id2moveRequest` | Move requests, Decision → Movement | Decision phase |
+| `id2moveRequest` | Move requests, Decision → Movement. Cutscenes write them too | Cutscene and decision phases |
+| `cutscenes` | The `CutsceneCatalogue` of build functions | Root, before startup |
+| `runningCutscenes` | Each running cutscene, in start order | Cutscene phase |
+| `cutsceneRequests` | Queued cutscene starts, Anyone → Cutscene | Anything with StartCutscenes |
 
 ## Contexts and permissions
 
@@ -32,6 +35,7 @@ A system gets a context from `world.GetContext<T>()`, which creates it once and 
 | `DecisionPhaseContext` | ReadEntities, RequestMove, PlayerControl | `PlayerInputSystem` |
 | `SpawnContext` | ReadTiles, ReadEntities, ReadAreas, ReadCamera, SpawnEntities | `SpawnSystem` and every `SpawnZone` |
 | `AIContext` | ReadTiles, ReadEntities, ReadAreas, RequestMove | `AISystem` and every `EntityAI` |
+| `CutsceneContext` | ReadEntities, ReadTiles, RequestMove, RunCutscenes, Teleport | `CutsceneSystem`, `CutsceneBuilder`, and every cutscene step |
 | `MovementPhaseContext` | ReadTiles, ReadEntities, ReadDefinitions, ResolveMovement | `MovementSystem` |
 | `AreaActivationContext` | ReadAreas, UpdateAreas | `AreaActivationSystem` |
 | `RenderContext` | ReadEntities, ReadDefinitions, ReadCamera, ReadAreas | `WorldView`, `CameraView`, camera controllers, `AreaSceneLoader` |

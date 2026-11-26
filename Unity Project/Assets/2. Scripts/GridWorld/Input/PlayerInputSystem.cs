@@ -14,6 +14,13 @@ namespace GridWorld {
             }
 
             var control = ctx.GetPlayerControl();
+
+            // A cutscene moves the player. Once it ends, a held direction counts as a fresh press.
+            if (ctx.IsLocked(player)) {
+                control.Reset();
+                return;
+            }
+
             var direction = ctx.GetHeldDirection();
             bool run = ctx.IsRunHeld();
 

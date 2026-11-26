@@ -15,6 +15,8 @@ namespace GridWorld {
         public readonly EntityComponent<EntityDefinitionSO> definition = new EntityComponent<EntityDefinitionSO>();
         public readonly EntityComponent<Step> step = new EntityComponent<Step>();
         public readonly EntityComponent<EntityAI> ai = new EntityComponent<EntityAI>();
+        // The cutscene lock. Decision systems skip entities that have it.
+        public readonly EntityComponent<Marker> scripted = new EntityComponent<Marker>();
 
         List<EntityComponentStore> stores = new List<EntityComponentStore>();
 
@@ -24,12 +26,18 @@ namespace GridWorld {
             AddStore(definition);
             AddStore(step);
             AddStore(ai);
+            AddStore(scripted);
         }
 
         public int storeCount => stores.Count;
 
         public void Register<T>(EntityComponent<T> component, EntityID id, T value) {
             component.Add(id, value);
+        }
+
+        /// <summary>Removes one component, such as a marker. Does nothing if the entity doesn't have it.</summary>
+        public void Unregister<T>(EntityComponent<T> component, EntityID id) {
+            component.Remove(id);
         }
 
         /// <summary>

@@ -75,7 +75,8 @@ AI add-ons derive from `NpcAIData`. Its `Register` calls `CreateAI(area)` for a 
 
 `AISystem` runs in the decision phase, after `PlayerInputSystem`, with an `AIContext` (read tiles, entities, and areas; request moves; use random). For each entity with an `ai` component, it calls `Decide(ctx, self)` unless:
 
-- the entity is partway through a step, or
+- the entity is partway through a step,
+- a cutscene has it locked, or
 - its area is inactive and its AI pauses when inactive. An entity outside every area counts as inactive.
 
 An entity that has just finished a step still decides, so a patrol walks consecutive steps without a gap. AI only submits move requests; movement resolves them like the player's, so an NPC can't walk into the player or another NPC.

@@ -335,7 +335,7 @@ For a feature that needs an ID, derive from `IdentifiedFeatureBehaviour` and `Id
 - Three 16 px placeholder tiles: `TEST_GroundA`, `TEST_GroundB`, and `TEST_Wall`.
 - `TEST_TilePropertyTable`, `TEST_WorldSettings`, `TEST_WorldData`, and `TEST_AreaA`, `TEST_AreaB`, and `TEST_AreaC` data.
 - Definitions: `TEST_Player` (orange), `TEST_Villager` (blue), `TEST_Guard` (purple, walking at 20 ticks a tile), and `TEST_Slime` (pink, walking at 24).
-- `TEST_Main`: the camera and a `TEST_World Root`, which is a `TestWorldRootBehaviour`. Pressing `Player/Attack` (Enter or left click) despawns the entity the player faces and logs it.
+- `TEST_Main`: the camera and a `TEST_World Root`, which is a `TestWorldRootBehaviour`. Pressing `Player/Attack` (Enter or left click) despawns the entity the player faces and logs it. Pressing `Player/Jump` (Space) plays [the test cutscene](cutscenes.md#the-test-cutscene) with it.
 - Three areas in a row, with walls on the outer edges and one block each: `TEST_Area_c`, area `TEST_c` (-24,0 to 0,16); `TEST_Area_a`, area `TEST_a` (0,0 to 24,16); and `TEST_Area_b`, area `TEST_b` (24,0 to 48,16). C touches A but not B, so standing in C deactivates B. The player spawns in `TEST_a` at (5, 5), facing down.
 - NPCs:
   - In `TEST_a`, a spinning villager at (3,10), a wandering villager at (15,4) in the region (12,2) to (18,6), and a guard walking back and forth on row 12 between x = 12 and 20, facing outward and waiting a second at each end.

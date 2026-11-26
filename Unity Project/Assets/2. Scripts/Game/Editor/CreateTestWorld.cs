@@ -313,6 +313,7 @@ namespace Game {
             rootProperties.FindProperty("moveAction").objectReferenceValue = FindAction("Move");
             rootProperties.FindProperty("runAction").objectReferenceValue = FindAction("Sprint");
             rootProperties.FindProperty("despawnAction").objectReferenceValue = FindAction("Attack");
+            rootProperties.FindProperty("cutsceneAction").objectReferenceValue = FindAction("Jump");
             rootProperties.ApplyModifiedPropertiesWithoutUndo();
 
             EditorSceneManager.SaveScene(scene, path);

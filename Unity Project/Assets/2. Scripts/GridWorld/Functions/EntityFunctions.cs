@@ -33,5 +33,11 @@ namespace GridWorld {
                     where T : IWorldFunctionContext, IPerm_ReadEntities {
             return ctx.data.components.step.Get(id).state;
         }
+
+        /// <summary>True while a cutscene holds the entity. Decision systems leave it alone.</summary>
+        public static bool IsLocked<T>(this T ctx, EntityID id)
+                    where T : IWorldFunctionContext, IPerm_ReadEntities {
+            return ctx.data.components.scripted.Has(id);
+        }
     }
 }

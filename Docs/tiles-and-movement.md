@@ -36,7 +36,7 @@ The entity's tile is already `to` while a step runs. `BlendedPosition(alpha)` gi
 
 ## A tick
 
-`PhaseExecutionManager.Tick(world)` runs `SpawnSystem` (spawn), `PlayerInputSystem` and `AISystem` (decision), then `MovementSystem` (movement). Spawning goes first, so a new mob decides on the tick it appears, and a removed one is forgotten before anything else runs. It's described in [NPCs and AI](npcs.md#spawn-zones). There's no cutscene phase yet. The two decision systems write requests for different entities, so their order doesn't matter. `AISystem` is described in [NPCs and AI](npcs.md#runtime).
+`PhaseExecutionManager.Tick(world)` runs `SpawnSystem` (spawn), `CutsceneSystem` (cutscene), `PlayerInputSystem` and `AISystem` (decision), then `MovementSystem` (movement). Spawning goes first, so a new mob decides on the tick it appears, and a removed one is forgotten before anything else runs. It's described in [NPCs and AI](npcs.md#spawn-zones). Cutscenes run before the decision phase, so their locks hold on the tick they start; see [Cutscenes](cutscenes.md). The two decision systems write requests for different entities, so their order doesn't matter. `AISystem` is described in [NPCs and AI](npcs.md#runtime).
 
 ### Requests
 
@@ -63,6 +63,7 @@ An entity blocked by one that moves later in the sorted pass simply retries next
 
 | Situation | Result |
 |---|---|
+| Locked by a cutscene | Reset the hold timer; no request |
 | Nothing held | Reset the hold timer |
 | Idle, new direction, not facing it | Turn only, then walk once it's held for `TurnHoldTicks` (6) |
 | Idle, new direction, already facing it | Walk at once |
