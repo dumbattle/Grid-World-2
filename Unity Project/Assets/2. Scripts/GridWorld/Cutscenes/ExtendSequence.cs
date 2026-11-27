@@ -7,20 +7,23 @@ namespace GridWorld {
     /// </summary>
     public class ExtendSequence : ISequence {
         readonly CutsceneContext ctx;
+        readonly CutsceneBuildContext buildCtx;
         readonly RunningCutscene cutscene;
-        readonly Action<CutsceneBuilder> extend;
+        readonly Action<CutsceneBuildContext, CutsceneBuilder> extend;
         ISequence inner;
 
-        internal ExtendSequence(CutsceneContext ctx, RunningCutscene cutscene, Action<CutsceneBuilder> extend) {
+        internal ExtendSequence(CutsceneContext ctx, CutsceneBuildContext buildCtx, RunningCutscene cutscene,
+                                Action<CutsceneBuildContext, CutsceneBuilder> extend) {
             this.ctx = ctx;
+            this.buildCtx = buildCtx;
             this.cutscene = cutscene;
             this.extend = extend;
         }
 
         public void Next() {
             if (inner == null) {
-                var builder = new CutsceneBuilder(ctx, cutscene);
-                extend(builder);
+                var builder = new CutsceneBuilder(ctx, buildCtx, cutscene);
+                extend(buildCtx, builder);
                 inner = builder.Build();
             }
             inner.Next();

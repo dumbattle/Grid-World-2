@@ -45,9 +45,6 @@ namespace GridWorld {
             catalogue.Register(new NpcFeatureType());
             catalogue.Register(new SpawnZoneFeatureType<SpawnZoneData>());
 
-            // Before loading, so startup can check the cutscene IDs that features name.
-            RegisterCutscenes(instance.cutscenes);
-
             var setup = instance.GetContext<WorldSetupContext>();
             setup.SeedRandom(worldData.settings.seed);
             setup.SetViewSize(worldData.settings.viewTiles);
@@ -92,9 +89,6 @@ namespace GridWorld {
         void OnDestroy() {
             view?.Dispose();
         }
-
-        /// <summary>Before the world loads: registers the game's cutscene build functions.</summary>
-        protected virtual void RegisterCutscenes(CutsceneCatalogue catalogue) { }
 
         /// <summary>Runs the phases for one tick.</summary>
         protected virtual void TickWorld() {

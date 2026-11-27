@@ -70,8 +70,8 @@ namespace GridWorld.Tests {
         }
 
         /// <summary>Queues a cutscene, which starts on the next tick.</summary>
-        public void StartCutscene(string id, CutsceneStart start = default) {
-            world.GetContext<StartCutsceneContext>().StartCutscene(id, start);
+        public void StartCutscene(ICutscene cutscene) {
+            world.GetContext<StartCutsceneContext>().StartCutscene(cutscene);
         }
 
         public bool IsLocked(EntityID id) {

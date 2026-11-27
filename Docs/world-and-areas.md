@@ -21,9 +21,8 @@ Owns all overworld state as public fields. Only the root holds it.
 | `cameraController` | The current `ICameraController` | Root |
 | `playerControl` | The player's hold timer | Decision phase |
 | `id2moveRequest` | Move requests, Decision → Movement. Cutscenes write them too | Cutscene and decision phases |
-| `cutscenes` | The `CutsceneCatalogue` of build functions | Root, before startup |
 | `runningCutscenes` | Each running cutscene, in start order | Cutscene phase |
-| `cutsceneRequests` | Queued cutscene starts, Anyone → Cutscene | Anything with StartCutscenes |
+| `cutsceneRequests` | Queued `ICutscene`s to build and start, Anyone → Cutscene | Anything with StartCutscenes |
 
 ## Contexts and permissions
 
@@ -36,6 +35,7 @@ A system gets a context from `world.GetContext<T>()`, which creates it once and 
 | `SpawnContext` | ReadTiles, ReadEntities, ReadAreas, ReadCamera, SpawnEntities | `SpawnSystem` and every `SpawnZone` |
 | `AIContext` | ReadTiles, ReadEntities, ReadAreas, RequestMove | `AISystem` and every `EntityAI` |
 | `CutsceneContext` | ReadEntities, ReadTiles, RequestMove, RunCutscenes, Teleport | `CutsceneSystem`, `CutsceneBuilder`, and every cutscene step |
+| `CutsceneBuildContext` | ReadEntities, ReadTiles | `ICutscene.Build` and `Extend` functions |
 | `MovementPhaseContext` | ReadTiles, ReadEntities, ReadDefinitions, ResolveMovement | `MovementSystem` |
 | `AreaActivationContext` | ReadAreas, UpdateAreas | `AreaActivationSystem` |
 | `RenderContext` | ReadEntities, ReadDefinitions, ReadCamera, ReadAreas | `WorldView`, `CameraView`, camera controllers, `AreaSceneLoader` |

@@ -7,7 +7,8 @@ using UnityEngine.TestTools;
 
 namespace GridWorld.Tests {
     public class CutsceneTests {
-        const string Id = "TEST_Cutscene";
+        // Logs name a cutscene by its type.
+        const string Name = nameof(LambdaCutscene);
 
         TestWorld test;
 
@@ -33,9 +34,10 @@ namespace GridWorld.Tests {
             test.Dispose();
         }
 
-        void Play(Action<CutsceneBuilder, CutsceneStart> build, string id = Id) {
-            test.world.cutscenes.Register(id, build);
-            test.StartCutscene(id);
+        LambdaCutscene Play(Action<CutsceneBuildContext, CutsceneBuilder> build) {
+            var cutscene = new LambdaCutscene(build);
+            test.StartCutscene(cutscene);
+            return cutscene;
         }
 
         // --- Starting and locks ---
@@ -45,7 +47,7 @@ namespace GridWorld.Tests {
             var a = test.Spawn(Vector2Int.zero, Direction4.right);
             var b = test.Spawn(new Vector2Int(0, 2), Direction4.right);
             var other = test.Spawn(new Vector2Int(0, 4), Direction4.right);
-            Play((builder, start) => {
+            Play((ctx, builder) => {
                 builder.Face(a, Direction4.up);
                 builder.Lock(b);
                 builder.Wait(5);
@@ -65,33 +67,37 @@ namespace GridWorld.Tests {
         [Test]
         public void Start_EntityAlreadyLocked_DropsTheSecondCutscene() {
             var a = test.Spawn(Vector2Int.zero, Direction4.right);
-            Play((builder, start) => builder.Walk(a, Direction4.right, 3));
+            var first = Play((ctx, builder) => builder.Walk(a, Direction4.right, 3));
             test.Tick();
 
-            Play((builder, start) => builder.Face(a, Direction4.down), "TEST_Second");
-            LogAssert.Expect(LogType.Log, new Regex("'TEST_Second' didn't start"));
+            Play((ctx, builder) => builder.Face(a, Direction4.down));
+            LogAssert.Expect(LogType.Log, new Regex($"'{Name}' didn't start"));
             test.Tick();
 
             Assert.AreEqual(1, test.world.runningCutscenes.Count);
-            Assert.AreEqual(Id, test.world.runningCutscenes[0].id);
+            Assert.AreSame(first, test.world.runningCutscenes[0].cutscene);
         }
 
         [Test]
-        public void Start_UnknownId_LogsAnError() {
-            test.StartCutscene("TEST_Missing");
-            LogAssert.Expect(LogType.Error, new Regex("TEST_Missing"));
-
-            test.Tick();
-
-            Assert.AreEqual(0, test.world.runningCutscenes.Count);
+        public void StartCutscene_Null_Throws() {
+            Assert.Throws<ArgumentNullException>(() => test.StartCutscene(null));
         }
 
         [Test]
-        public void Register_DuplicateId_Throws() {
-            var catalogue = new CutsceneCatalogue();
-            catalogue.Register(Id, (builder, start) => { });
+        public void Start_SameInstanceTwice_BuildsEachTimeFromCurrentState() {
+            var a = test.Spawn(Vector2Int.zero, Direction4.right);
+            var builtFrom = new System.Collections.Generic.List<Vector2Int>();
+            var cutscene = Play((ctx, builder) => {
+                builtFrom.Add(ctx.GetTile(a));
+                builder.Walk(a, Direction4.right, 1);
+            });
+            test.Tick(17);
 
-            Assert.Throws<InvalidOperationException>(() => catalogue.Register(Id.ToLowerInvariant(), (builder, start) => { }));
+            test.StartCutscene(cutscene);
+            test.Tick(17);
+
+            CollectionAssert.AreEqual(new[] { Vector2Int.zero, Vector2Int.right }, builtFrom);
+            Assert.AreEqual(new Vector2Int(2, 0), test.TileOf(a));
         }
 
         // --- Walk ---
@@ -99,7 +105,7 @@ namespace GridWorld.Tests {
         [Test]
         public void Walk_TwoTiles_KeepsTheWalkRateAndEndsWhenTheLastStepFinishes() {
             var a = test.Spawn(Vector2Int.zero, Direction4.right);
-            Play((builder, start) => builder.Walk(a, Direction4.right, 2));
+            Play((ctx, builder) => builder.Walk(a, Direction4.right, 2));
 
             test.Tick();
             Assert.AreEqual(StepState.Moving, test.StepOf(a).state);
@@ -126,7 +132,7 @@ namespace GridWorld.Tests {
         [Test]
         public void Walk_TwoWalksInARow_SecondStartsOnTheTickTheFirstEnds() {
             var a = test.Spawn(Vector2Int.zero, Direction4.right);
-            Play((builder, start) => {
+            Play((ctx, builder) => {
                 builder.Walk(a, Direction4.right, 1);
                 builder.Walk(a, Direction4.up, 1);
             });
@@ -143,7 +149,7 @@ namespace GridWorld.Tests {
             var a = test.Spawn(Vector2Int.zero, Direction4.right);
             test.Request(a, Direction4.right);
             test.Tick(4);
-            Play((builder, start) => builder.Walk(a, Direction4.right, 1));
+            Play((ctx, builder) => builder.Walk(a, Direction4.right, 1));
 
             // The first step finishes on tick 16, and the walk's step starts on tick 17.
             test.Tick(12);
@@ -157,7 +163,7 @@ namespace GridWorld.Tests {
         public void Walk_BlockedForTheTimeout_TeleportsToItsDestination() {
             var a = test.Spawn(Vector2Int.zero, Direction4.right);
             test.Spawn(new Vector2Int(1, 0), Direction4.left);
-            Play((builder, start) => builder.Walk(a, Direction4.right, 2));
+            Play((ctx, builder) => builder.Walk(a, Direction4.right, 2));
 
             test.Tick(WalkStepsSequence.TimeoutTicks);
             Assert.AreEqual(Vector2Int.zero, test.TileOf(a));
@@ -177,7 +183,7 @@ namespace GridWorld.Tests {
             var a = test.Spawn(Vector2Int.zero, Direction4.right);
             test.Spawn(new Vector2Int(1, 0), Direction4.left);
             test.Spawn(new Vector2Int(2, 0), Direction4.left);
-            Play((builder, start) => builder.Walk(a, Direction4.right, 2));
+            Play((ctx, builder) => builder.Walk(a, Direction4.right, 2));
 
             LogAssert.Expect(LogType.Warning, new Regex("teleported to"));
             test.Tick(WalkStepsSequence.TimeoutTicks + 1);
@@ -190,7 +196,7 @@ namespace GridWorld.Tests {
         [Test]
         public void Face_Entity_TurnsWithoutMoving() {
             var a = test.Spawn(Vector2Int.zero, Direction4.right);
-            Play((builder, start) => builder.Face(a, Direction4.up));
+            Play((ctx, builder) => builder.Face(a, Direction4.up));
 
             test.Tick();
 
@@ -202,7 +208,7 @@ namespace GridWorld.Tests {
         [Test]
         public void Wait_TenTicks_NextStepStartsTenTicksLater() {
             var a = test.Spawn(Vector2Int.zero, Direction4.right);
-            Play((builder, start) => {
+            Play((ctx, builder) => {
                 builder.Face(a, Direction4.up);
                 builder.Wait(10);
                 builder.Walk(a, Direction4.up, 1);
@@ -221,7 +227,7 @@ namespace GridWorld.Tests {
             var a = test.Spawn(Vector2Int.zero, Direction4.right);
             var b = test.Spawn(new Vector2Int(0, 2), Direction4.right);
             var c = test.Spawn(new Vector2Int(0, 4), Direction4.right);
-            Play((builder, start) => {
+            Play((ctx, builder) => {
                 builder.Parallel(
                     x => x.Walk(a, Direction4.right, 1),
                     x => x.Walk(b, Direction4.right, 2),
@@ -246,10 +252,10 @@ namespace GridWorld.Tests {
         public void Extend_AfterAWalk_ReadsTheNewTile() {
             var a = test.Spawn(Vector2Int.zero, Direction4.right);
             var seen = new Vector2Int(-1, -1);
-            Play((builder, start) => {
+            Play((ctx, builder) => {
                 builder.Walk(a, Direction4.right, 2);
-                builder.Extend(e => {
-                    seen = e.context.GetTile(a);
+                builder.Extend((now, e) => {
+                    seen = now.GetTile(a);
                     e.Face(a, Direction4.down);
                 });
             });
@@ -264,12 +270,12 @@ namespace GridWorld.Tests {
         public void Extend_UnlockedEntity_StopsTheCutsceneWithAnError() {
             var a = test.Spawn(Vector2Int.zero, Direction4.right);
             var other = test.Spawn(new Vector2Int(0, 2), Direction4.right);
-            Play((builder, start) => {
+            Play((ctx, builder) => {
                 builder.Face(a, Direction4.up);
-                builder.Extend(e => e.Face(other, Direction4.up));
+                builder.Extend((now, e) => e.Face(other, Direction4.up));
             });
 
-            LogAssert.Expect(LogType.Error, new Regex($"'{Id}' stopped after an error"));
+            LogAssert.Expect(LogType.Error, new Regex($"'{Name}' stopped after an error"));
             test.Tick();
 
             Assert.AreEqual(0, test.world.runningCutscenes.Count);
@@ -284,7 +290,7 @@ namespace GridWorld.Tests {
             var a = test.Spawn(Vector2Int.zero, Direction4.right);
             var ai = new CountingAI();
             test.AddAI(a, ai);
-            Play((builder, start) => {
+            Play((ctx, builder) => {
                 builder.Lock(a);
                 builder.Wait(5);
             });
@@ -301,7 +307,7 @@ namespace GridWorld.Tests {
         public void PlayerInput_LockedPlayer_IgnoresInputUntilTheCutsceneEnds() {
             var player = test.SpawnPlayer(Vector2Int.zero, Direction4.right);
             test.world.input.SetDirectionHeld(Direction4.right, true);
-            Play((builder, start) => {
+            Play((ctx, builder) => {
                 builder.Lock(player);
                 builder.Wait(5);
             });
@@ -319,7 +325,7 @@ namespace GridWorld.Tests {
         public void Walk_EntityDespawned_EndsTheStepAndTheCutsceneCarriesOn() {
             var a = test.Spawn(Vector2Int.zero, Direction4.right);
             var other = test.Spawn(new Vector2Int(0, 2), Direction4.right);
-            Play((builder, start) => {
+            Play((ctx, builder) => {
                 builder.Walk(a, Direction4.right, 3);
                 builder.Face(other, Direction4.up);
             });

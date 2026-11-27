@@ -11,17 +11,18 @@ namespace GridWorld {
     /// </summary>
     public class CutsceneBuilder {
         readonly CutsceneContext ctx;
+        readonly CutsceneBuildContext buildCtx;
         readonly RunningCutscene cutscene;
         SequenceQueue queue = SequenceQueue.GetNew();
 
-        internal CutsceneBuilder(CutsceneContext ctx, RunningCutscene cutscene) {
+        internal CutsceneBuilder(CutsceneContext ctx, CutsceneBuildContext buildCtx, RunningCutscene cutscene) {
             this.ctx = ctx;
+            this.buildCtx = buildCtx;
             this.cutscene = cutscene;
         }
 
-        /// <summary>For reading state while building, and for a game's own steps.</summary>
-        public CutsceneContext context => ctx;
-        public string cutsceneId => cutscene.id;
+        // For a game's own steps' messages.
+        public string cutsceneName => cutscene.name;
 
         /// <summary>
         /// Adds an entity to the cutscene's lock. Steps call this for the entity they act on. Once the
@@ -29,13 +30,13 @@ namespace GridWorld {
         /// </summary>
         public void Lock(EntityID id) {
             if (!id.IsValid()) {
-                throw new ArgumentException($"Cutscene '{cutscene.id}' can't act on an invalid entity.", nameof(id));
+                throw new ArgumentException($"Cutscene '{cutscene.name}' can't act on an invalid entity.", nameof(id));
             }
             if (cutscene.entities.Contains(id)) {
                 return;
             }
             if (cutscene.started) {
-                throw new InvalidOperationException($"Cutscene '{cutscene.id}' acts on {id}, which it didn't lock. Lock it when the cutscene is built, with Lock.");
+                throw new InvalidOperationException($"Cutscene '{cutscene.name}' acts on {id}, which it didn't lock. Lock it when the cutscene is built, with Lock.");
             }
             cutscene.entities.Add(id);
         }
@@ -46,7 +47,7 @@ namespace GridWorld {
                 throw new ArgumentNullException(nameof(sequence));
             }
             if (queue == null) {
-                throw new InvalidOperationException($"Cutscene '{cutscene.id}' has already been built.");
+                throw new InvalidOperationException($"Cutscene '{cutscene.name}' has already been built.");
             }
             queue.AddSequence(sequence, playNextImmediate: true);
         }
@@ -60,10 +61,10 @@ namespace GridWorld {
                 throw new ArgumentNullException(nameof(direction));
             }
             if (count < 1) {
-                throw new ArgumentOutOfRangeException(nameof(count), $"Cutscene '{cutscene.id}' has a walk of {count} tiles. A walk needs at least 1.");
+                throw new ArgumentOutOfRangeException(nameof(count), $"Cutscene '{cutscene.name}' has a walk of {count} tiles. A walk needs at least 1.");
             }
             Lock(id);
-            Add(new WalkStepsSequence(ctx, cutscene.id, id, direction, count, run));
+            Add(new WalkStepsSequence(ctx, cutscene.name, id, direction, count, run));
         }
 
         /// <summary>Turns in place. The new facing shows after this tick's movement phase.</summary>
@@ -72,12 +73,12 @@ namespace GridWorld {
                 throw new ArgumentNullException(nameof(direction));
             }
             Lock(id);
-            Add(new FaceSequence(ctx, cutscene.id, id, direction));
+            Add(new FaceSequence(ctx, cutscene.name, id, direction));
         }
 
         public void Teleport(EntityID id, Vector2Int tile) {
             Lock(id);
-            Add(new TeleportSequence(ctx, cutscene.id, id, tile));
+            Add(new TeleportSequence(ctx, cutscene.name, id, tile));
         }
 
         /// <summary>The next step starts exactly <paramref name="ticks"/> ticks after this one does.</summary>
@@ -112,9 +113,9 @@ namespace GridWorld {
             ISequence combined = null;
             for (int i = 0; i < branches.Length; i++) {
                 if (branches[i] == null) {
-                    throw new ArgumentNullException(nameof(branches), $"Cutscene '{cutscene.id}' has a null parallel branch.");
+                    throw new ArgumentNullException(nameof(branches), $"Cutscene '{cutscene.name}' has a null parallel branch.");
                 }
-                var branch = new CutsceneBuilder(ctx, cutscene);
+                var branch = new CutsceneBuilder(ctx, buildCtx, cutscene);
                 branches[i](branch);
                 var built = branch.Build();
                 // LPE's parallel takes two or three sequences, so more branches nest in pairs.
@@ -130,16 +131,16 @@ namespace GridWorld {
         /// Runs <paramref name="extend"/> when the steps before it finish, then the steps it adds.
         /// It reads up-to-date state, and can act only on entities the cutscene already locked.
         /// </summary>
-        public void Extend(Action<CutsceneBuilder> extend) {
+        public void Extend(Action<CutsceneBuildContext, CutsceneBuilder> extend) {
             if (extend == null) {
                 throw new ArgumentNullException(nameof(extend));
             }
-            Add(new ExtendSequence(ctx, cutscene, extend));
+            Add(new ExtendSequence(ctx, buildCtx, cutscene, extend));
         }
 
         internal ISequence Build() {
             if (queue == null) {
-                throw new InvalidOperationException($"Cutscene '{cutscene.id}' has already been built.");
+                throw new InvalidOperationException($"Cutscene '{cutscene.name}' has already been built.");
             }
             var built = queue;
             queue = null;

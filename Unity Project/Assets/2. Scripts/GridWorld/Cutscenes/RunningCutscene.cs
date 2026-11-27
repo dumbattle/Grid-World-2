@@ -7,14 +7,17 @@ namespace GridWorld {
     /// builder adds entities only until the cutscene starts.
     /// </summary>
     public class RunningCutscene {
-        public readonly string id;
+        public readonly ICutscene cutscene;
+        // For logs.
+        public readonly string name;
 
         internal ISequence root;
         internal bool started;
         internal readonly List<EntityID> entities = new List<EntityID>();
 
-        public RunningCutscene(string id) {
-            this.id = id;
+        public RunningCutscene(ICutscene cutscene) {
+            this.cutscene = cutscene;
+            name = cutscene.GetType().Name;
         }
 
         public IReadOnlyList<EntityID> lockedEntities => entities;

@@ -4,19 +4,29 @@ Scripted sequences that move and turn entities, built from LPE sequences and run
 
 Code: `GridWorld/Cutscenes/`, `Functions/CutsceneFunctions.cs`, `Functions/TeleportFunctions.cs`.
 
-## Registering and starting
+## Writing and starting
 
-1. **Register:** the root's `RegisterCutscenes(catalogue)` runs before the world loads. Each entry is a build function under a string ID, in `WorldInstance.cutscenes`, a `CutsceneCatalogue`. IDs are compared ignoring case, and a duplicate throws.
-2. **Request:** anything with StartCutscenes calls `StartCutscene(id, start)`, which queues a `CutsceneRequest` on `cutsceneRequests`. A `CutsceneStart` names an instigator and a target, either of which can be invalid.
-3. **Build and start:** in the next cutscene phase, `CutsceneSystem` runs the build function with a fresh `CutsceneBuilder`, so every run gets new sequences built from current state.
+A cutscene is a class that implements `ICutscene`:
+
+```cs
+public interface ICutscene {
+    void Build(CutsceneBuildContext ctx, CutsceneBuilder b);
+}
+```
+
+- **Fields hold its settings,** such as the entities it acts on. There are no parameters: whoever creates the cutscene gives it what it needs. The same instance can be started many times, so it must not change while running. Anything that changes belongs in its sequences.
+- **`CutsceneBuildContext`** can only read (ReadEntities, ReadTiles), so a build function describes what happens but can't act. Its steps do the writing.
+- **Starting:** anything with StartCutscenes calls `StartCutscene(cutscene)`, which queues it on `cutsceneRequests`. A null cutscene throws.
+- **Building:** in the next cutscene phase, `CutsceneSystem` calls `Build` with a fresh `CutsceneBuilder`, so every start gets new sequences built from the state at that moment.
+
+Logs name a cutscene by its type name.
 
 ## `CutsceneSystem`
 
-Runs between Spawn and Decision with a `CutsceneContext` (ReadEntities, ReadTiles, RequestMove, RunCutscenes, Teleport). Each tick:
+Runs between Spawn and Decision with a `CutsceneContext` (ReadEntities, ReadTiles, RequestMove, RunCutscenes, Teleport), which its steps use, and the `CutsceneBuildContext` for building. Each tick:
 
 1. **Starts requests in order.** A request is dropped if:
-   - its ID isn't registered (an error)
-   - its build function throws (an error)
+   - `Build` throws (an error)
    - one of its entities doesn't exist or is already locked (a log)
 
    Otherwise `BeginCutscene` locks its entities and adds it to `runningCutscenes`.
@@ -47,11 +57,11 @@ A list of steps over an LPE `SequenceQueue`. Every step is added with `playNextI
 | `Wait(ticks)` | The next step starts exactly `ticks` ticks after this one does. It's a `PauseFramesSequence` of `ticks + 1`, because its first tick is the one the step before it finished on |
 | `Do(action)` | Runs an action once, with no gap |
 | `Parallel(a, b, ...)` | Each lambda is a branch with its own list of steps. The next step starts once every branch is done. LPE's parallel takes two or three sequences, so more branches nest in pairs |
-| `Extend(fn)` | Runs `fn` with a new builder when it's reached, so its steps read up-to-date state, then runs them |
+| `Extend((ctx, b) => ...)` | Runs the function with the build context and a new builder when it's reached, so its steps read up-to-date state, then runs them |
 | `Lock(id)` | Adds an entity to the lock without a step |
 | `Add(sequence)` | Adds any `ISequence`. Call `Lock` for the entities it acts on |
 
-`context` exposes the `CutsceneContext` for reading state while building, and for a game's own steps, which are extension methods that call `Lock` and `Add`.
+A game adds its own steps as extension methods that call `Lock` and `Add`. The builder doesn't expose the cutscene context, so a game step's sequence gets any context it needs from the game. `cutsceneName` is there for its messages.
 
 Once a cutscene has started, `Lock` throws for an entity it didn't already lock. So a step built in an `Extend` can only act on entities the cutscene locked when it was built. Lock others up front with `b.Lock(id)`.
 
@@ -79,7 +89,7 @@ If the tile holds another entity, or can't be entered from any direction, it lan
 
 ## The test cutscene
 
-`Game/TestCutscenes` registers `TEST_FaceAndBackAway`. In `TEST_Main`, face an entity and press `Player/Jump` (Space):
+`Game/TestFaceAndBackAwayCutscene` holds the player and the target. `TestWorldRootBehaviour` starts one when you face an entity in `TEST_Main` and press `Player/Jump` (Space):
 
 1. The target turns to face the player.
 2. Half a second later, both back away 2 tiles together.

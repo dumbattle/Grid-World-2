@@ -8,14 +8,14 @@ namespace GridWorld {
     /// </summary>
     public class FaceSequence : ISequence {
         readonly CutsceneContext ctx;
-        readonly string cutsceneId;
+        readonly string cutsceneName;
         readonly EntityID id;
         readonly Direction4 direction;
         bool done;
 
-        public FaceSequence(CutsceneContext ctx, string cutsceneId, EntityID id, Direction4 direction) {
+        public FaceSequence(CutsceneContext ctx, string cutsceneName, EntityID id, Direction4 direction) {
             this.ctx = ctx;
-            this.cutsceneId = cutsceneId;
+            this.cutsceneName = cutsceneName;
             this.id = id;
             this.direction = direction;
         }
@@ -25,7 +25,7 @@ namespace GridWorld {
                 return;
             }
             if (!ctx.EntityExists(id)) {
-                Debug.LogWarning($"Grid World: cutscene '{cutsceneId}' skipped a turn, because {id} was despawned.");
+                Debug.LogWarning($"Grid World: cutscene '{cutsceneName}' skipped a turn, because {id} was despawned.");
                 done = true;
                 return;
             }

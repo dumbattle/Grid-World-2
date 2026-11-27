@@ -38,16 +38,14 @@ namespace GridWorld {
         // Owned by the decision phase
         public readonly PlayerControlState playerControl = new PlayerControlState();
 
-        // Cutscenes. The root fills the catalogue before the world loads.
-        public readonly CutsceneCatalogue cutscenes = new CutsceneCatalogue();
-        // Owned by the cutscene phase, in start order
+        // Cutscenes, owned by the cutscene phase, in start order
         public readonly List<RunningCutscene> runningCutscenes = new List<RunningCutscene>();
 
         // Command queues
         // Decision -> Movement. One per entity, and the latest wins.
         public readonly Dictionary<EntityID, MoveRequest> id2moveRequest = new Dictionary<EntityID, MoveRequest>();
         // Anyone -> Cutscene phase. Started in order, and a request whose entities are locked is dropped.
-        public readonly List<CutsceneRequest> cutsceneRequests = new List<CutsceneRequest>();
+        public readonly List<ICutscene> cutsceneRequests = new List<ICutscene>();
 
         Dictionary<Type, IWorldFunctionContext> type2context = new Dictionary<Type, IWorldFunctionContext>();
 

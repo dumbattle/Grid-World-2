@@ -4,18 +4,18 @@ using UnityEngine;
 
 namespace GridWorld {
     /// <summary>
-    /// Runs in the cutscene phase. Starts queued cutscenes in order, dropping any whose entities are
-    /// already locked, then advances every running cutscene once and releases the ones that finish.
-    /// A cutscene that throws is stopped and released, so it can't break every tick after it.
+    /// Runs in the cutscene phase. Builds and starts queued cutscenes in order, dropping any whose
+    /// entities are already locked, then advances every running cutscene once and releases the ones
+    /// that finish. A cutscene that throws is stopped and released, so it can't break every tick after it.
     /// </summary>
     public class CutsceneSystem {
-        List<CutsceneRequest> requests = new List<CutsceneRequest>();
+        List<ICutscene> requests = new List<ICutscene>();
 
-        public void Run(CutsceneContext ctx) {
+        public void Run(CutsceneContext ctx, CutsceneBuildContext buildCtx) {
             requests.Clear();
             ctx.TakeCutsceneRequests(requests);
             for (int i = 0; i < requests.Count; i++) {
-                Start(ctx, requests[i]);
+                Start(ctx, buildCtx, requests[i]);
             }
             requests.Clear();
 
@@ -30,19 +30,14 @@ namespace GridWorld {
             }
         }
 
-        void Start(CutsceneContext ctx, CutsceneRequest request) {
-            if (!ctx.TryGetCutscene(request.id, out var build)) {
-                Debug.LogError($"Grid World: no cutscene is registered as '{request.id}'.");
-                return;
-            }
-
-            var cutscene = new RunningCutscene(request.id);
-            var builder = new CutsceneBuilder(ctx, cutscene);
+        void Start(CutsceneContext ctx, CutsceneBuildContext buildCtx, ICutscene request) {
+            var cutscene = new RunningCutscene(request);
+            var builder = new CutsceneBuilder(ctx, buildCtx, cutscene);
             try {
-                build(builder, request.start);
+                request.Build(buildCtx, builder);
             }
             catch (Exception e) {
-                Debug.LogError($"Grid World: cutscene '{request.id}' didn't start, because building it failed. {e}");
+                Debug.LogError($"Grid World: cutscene '{cutscene.name}' didn't start, because building it failed. {e}");
                 return;
             }
             var root = builder.Build();
@@ -58,7 +53,7 @@ namespace GridWorld {
                 }
 
                 if (reason != null) {
-                    Debug.Log($"Grid World: cutscene '{request.id}' didn't start, because {id} {reason}.");
+                    Debug.Log($"Grid World: cutscene '{cutscene.name}' didn't start, because {id} {reason}.");
                     root.OnComplete();
                     return;
                 }
@@ -75,7 +70,7 @@ namespace GridWorld {
                 over = cutscene.root.Done();
             }
             catch (Exception e) {
-                Debug.LogError($"Grid World: cutscene '{cutscene.id}' stopped after an error. {e}");
+                Debug.LogError($"Grid World: cutscene '{cutscene.name}' stopped after an error. {e}");
                 over = true;
             }
 
@@ -84,7 +79,7 @@ namespace GridWorld {
                     cutscene.root.OnComplete();
                 }
                 catch (Exception e) {
-                    Debug.LogError($"Grid World: cutscene '{cutscene.id}' failed to clean up. {e}");
+                    Debug.LogError($"Grid World: cutscene '{cutscene.name}' failed to clean up. {e}");
                 }
             }
             return over;

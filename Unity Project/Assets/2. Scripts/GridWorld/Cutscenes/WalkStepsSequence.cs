@@ -11,7 +11,7 @@ namespace GridWorld {
         public const int TimeoutTicks = 120;
 
         readonly CutsceneContext ctx;
-        readonly string cutsceneId;
+        readonly string cutsceneName;
         readonly EntityID id;
         readonly Direction4 direction;
         readonly int count;
@@ -22,9 +22,9 @@ namespace GridWorld {
         Vector2Int destination;
         int blockedTicks;
 
-        public WalkStepsSequence(CutsceneContext ctx, string cutsceneId, EntityID id, Direction4 direction, int count, bool run) {
+        public WalkStepsSequence(CutsceneContext ctx, string cutsceneName, EntityID id, Direction4 direction, int count, bool run) {
             this.ctx = ctx;
-            this.cutsceneId = cutsceneId;
+            this.cutsceneName = cutsceneName;
             this.id = id;
             this.direction = direction;
             this.count = count;
@@ -36,7 +36,7 @@ namespace GridWorld {
                 return;
             }
             if (!ctx.EntityExists(id)) {
-                Debug.LogWarning($"Grid World: cutscene '{cutsceneId}' skipped the rest of a walk, because {id} was despawned.");
+                Debug.LogWarning($"Grid World: cutscene '{cutsceneName}' skipped the rest of a walk, because {id} was despawned.");
                 done = true;
                 return;
             }
@@ -76,10 +76,10 @@ namespace GridWorld {
         void TimeOut() {
             var from = ctx.GetTile(id);
             if (ctx.Teleport(id, destination, out var landed)) {
-                Debug.LogWarning($"Grid World: cutscene '{cutsceneId}' walk for {id} was blocked at {from} for {TimeoutTicks} ticks, so it teleported to {landed}.");
+                Debug.LogWarning($"Grid World: cutscene '{cutsceneName}' walk for {id} was blocked at {from} for {TimeoutTicks} ticks, so it teleported to {landed}.");
             }
             else {
-                Debug.LogError($"Grid World: cutscene '{cutsceneId}' walk for {id} was blocked at {from} for {TimeoutTicks} ticks, and there's no free tile near {destination} to teleport to.");
+                Debug.LogError($"Grid World: cutscene '{cutsceneName}' walk for {id} was blocked at {from} for {TimeoutTicks} ticks, and there's no free tile near {destination} to teleport to.");
             }
         }
     }
