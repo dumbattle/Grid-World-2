@@ -4,30 +4,28 @@ using UnityEngine;
 
 namespace GridWorld {
     /// <summary>
-    /// What plays when the player interacts with a tile. An entity's interaction is wherever the
-    /// entity is, found through occupancy, so nothing moves it. A tile's interaction stays on its tile.
+    /// What plays when the player interacts with a tile. The adds return false instead of throwing
+    /// when something is already there, since the contexts that add can't look first.
     /// </summary>
     public static class InteractionFunctions {
-        public static void AddTileInteraction<T>(this T ctx, Vector2Int tile, ICutscene cutscene)
-                    where T : IWorldFunctionContext, IPerm_EditInteractions {
+        /// <summary>
+        /// Adds the cutscene to every tile in <paramref name="worldTiles"/>, or to none: if one
+        /// already has an interaction, returns false with it in <paramref name="clash"/>.
+        /// </summary>
+        public static bool TryAddTileInteractions<T>(this T ctx, RectInt worldTiles, ICutscene cutscene, out Vector2Int clash)
+                    where T : IWorldFunctionContext, IPerm_SetupWorld {
             if (cutscene == null) {
                 throw new ArgumentNullException(nameof(cutscene));
             }
-            var tile2interaction = ctx.data.tile2interaction;
-            if (tile2interaction.ContainsKey(tile)) {
-                throw new InvalidOperationException($"Tile {tile} already has an interaction. A tile can have only one.");
+            if (worldTiles.width < 1 || worldTiles.height < 1) {
+                throw new ArgumentException($"Tile interactions need at least one tile, not {worldTiles.size}.", nameof(worldTiles));
             }
-            tile2interaction.Add(tile, cutscene);
+            return ctx.data.interactions.TryAddTiles(worldTiles, cutscene, out clash);
         }
 
-        /// <summary>Does nothing if the tile has no interaction.</summary>
-        public static void RemoveTileInteraction<T>(this T ctx, Vector2Int tile)
-                    where T : IWorldFunctionContext, IPerm_EditInteractions {
-            ctx.data.tile2interaction.Remove(tile);
-        }
-
-        public static void AddEntityInteraction<T>(this T ctx, EntityID id, ICutscene cutscene)
-                    where T : IWorldFunctionContext, IPerm_EditInteractions {
+        /// <summary>The interaction follows the entity. Returns false if it already has one.</summary>
+        public static bool TryAddEntityInteraction<T>(this T ctx, EntityID id, ICutscene cutscene)
+                    where T : IWorldFunctionContext, IPerm_SpawnEntities {
             if (cutscene == null) {
                 throw new ArgumentNullException(nameof(cutscene));
             }
@@ -35,18 +33,12 @@ namespace GridWorld {
             if (!data.entityIds.Exists(id)) {
                 throw new InvalidOperationException($"Can't give {id} an interaction: it doesn't exist.");
             }
-            var components = data.components;
-            if (components.interaction.Has(id)) {
-                throw new InvalidOperationException($"{id} already has an interaction. An entity can have only one.");
+            var entities = data.interactions.entities;
+            if (entities.Has(id)) {
+                return false;
             }
-            components.Register(components.interaction, id, cutscene);
-        }
-
-        /// <summary>Does nothing if the entity has no interaction.</summary>
-        public static void RemoveEntityInteraction<T>(this T ctx, EntityID id)
-                    where T : IWorldFunctionContext, IPerm_EditInteractions {
-            var components = ctx.data.components;
-            components.Unregister(components.interaction, id);
+            data.components.Register(entities, id, cutscene);
+            return true;
         }
 
         /// <summary>
@@ -57,16 +49,10 @@ namespace GridWorld {
                     where T : IWorldFunctionContext, IPerm_ReadInteractions {
             var data = ctx.data;
             var entity = data.occupancy.Get(tile);
-            if (entity.IsValid() && data.components.interaction.TryGet(entity, out cutscene)) {
+            if (entity.IsValid() && data.interactions.entities.TryGet(entity, out cutscene)) {
                 return true;
             }
-            return data.tile2interaction.TryGetValue(tile, out cutscene);
-        }
-
-        /// <summary>Only the tile's own interaction, ignoring any entity on it.</summary>
-        public static bool HasTileInteraction<T>(this T ctx, Vector2Int tile)
-                    where T : IWorldFunctionContext, IPerm_ReadInteractions {
-            return ctx.data.tile2interaction.ContainsKey(tile);
+            return data.interactions.TryGetTile(tile, out cutscene);
         }
     }
 }

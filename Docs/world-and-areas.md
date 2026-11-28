@@ -10,7 +10,7 @@ Owns all overworld state as public fields. Only the root holds it.
 
 | Field | What it is | Written by |
 |---|---|---|
-| `entityIds`, `components` | Entity IDs and component stores (`tile`, `facing`, `definition`, `step`, `ai`, and the `scripted` lock) | Startup, spawn phase, cutscene phase, movement |
+| `entityIds`, `components` | Entity IDs and component stores (`tile`, `facing`, `definition`, `step`, `ai`, `featureId`, and the `scripted` lock) | Startup, spawn phase, cutscene phase, movement |
 | `spawnZones` | Every `SpawnZone`, in the order they were added | Startup |
 | `viewTiles` | The view size in tiles, from the world settings (15×11 by default) | Startup |
 | `random` | A `System.Random`, seeded at startup from the world settings | Startup, decision phase |
@@ -23,6 +23,9 @@ Owns all overworld state as public fields. Only the root holds it.
 | `id2moveRequest` | Move requests, Decision → Movement. Cutscenes write them too | Cutscene and decision phases |
 | `runningCutscenes` | Each running cutscene, in start order | Cutscene phase |
 | `cutsceneRequests` | Queued `ICutscene`s to build and start, Anyone → Cutscene | Anything with StartCutscenes |
+| `interactions` | A `WorldInteractions`: the entity interaction store and the `tile2interaction` map. See [Interaction](interaction.md) | Startup |
+| `interactAttempts` | The player's interact attempts, Decision → next tick's Cutscene | Decision phase |
+| `featureId2entity` | Baked entities by feature ID, ignoring case | Startup, despawn |
 
 ## Contexts and permissions
 
@@ -31,7 +34,8 @@ A system gets a context from `world.GetContext<T>()`, which creates it once and 
 | Context | Permissions | Used by |
 |---|---|---|
 | `WorldSetupContext` | SetupWorld, ReadEntities, ReadTiles, SpawnEntities | World startup and feature types |
-| `DecisionPhaseContext` | ReadEntities, RequestMove, PlayerControl | `PlayerInputSystem` |
+| `DecisionPhaseContext` | ReadEntities, ReadTiles, RequestMove, PlayerControl, WriteInteractAttempts, ClearInteractAttempts | `PlayerInputSystem` |
+| `InteractionContext` | ReadInteractAttempts, ReadInteractions, StartCutscenes | `InteractionSystem` |
 | `SpawnContext` | ReadTiles, ReadEntities, ReadAreas, ReadCamera, SpawnEntities | `SpawnSystem` and every `SpawnZone` |
 | `AIContext` | ReadTiles, ReadEntities, ReadAreas, RequestMove | `AISystem` and every `EntityAI` |
 | `CutsceneContext` | ReadEntities, ReadTiles, RequestMove, RunCutscenes, Teleport | `CutsceneSystem`, `CutsceneBuilder`, and every cutscene step |
@@ -53,12 +57,12 @@ To add an operation, write a function like this. To give a system new access, ad
 
 ## Spawning and despawning
 
-Entities are created with `SpawnEntity` and `AddAI` in `SpawnFunctions`, under SpawnEntities. `WorldSetupContext` holds that permission too, so startup and runtime spawn the same way. `AddAI` throws if the entity already has one.
+Entities are created with `SpawnEntity` and `AddAI` in `SpawnFunctions`, under SpawnEntities. `WorldSetupContext` holds that permission too, so startup and runtime spawn the same way. `AddAI` throws if the entity already has one. `SetFeatureId(id, featureId)` records a baked entity's feature ID for `TryGetEntity`, and throws on an empty ID or one already taken, ignoring case.
 
 `Despawn(id)`, under DespawnEntities, removes an entity completely. No framework context holds that permission; a game grants it to its own context, as the test world's `TestDebugContext` does.
 
 - It releases the entity's tile. Mid-step, that's the target tile, since the old one was released when the step began.
-- It removes the entity from every component store, and drops any pending move request.
+- It removes the entity from every component store and from `featureId2entity`, and drops any pending move request.
 - Its `EntityID` is never reused. `EntityExists(id)`, under ReadEntities, returns false from then on.
 - It throws if the entity doesn't exist, or is the player.
 

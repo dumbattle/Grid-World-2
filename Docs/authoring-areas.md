@@ -326,7 +326,7 @@ Code: `Editor/FeatureEditParser`, `FeatureEdit`, `FeatureEditKind`, `FeatureEdit
 
 For a feature that needs an ID, derive from `IdentifiedFeatureBehaviour` and `IdentifiedFeatureData` instead, and return the record from `BakeRecord(baker)` rather than calling `baker.Add`. The base bake copies the ID onto the record, and the ID checks cover the new feature automatically.
 
-`PlayerSpawnData`, `PlayerSpawnBehaviour`, and `PlayerSpawnFeatureType` are the example. NPCs and spawn zones are feature types too, with add-on components of their own: see [NPCs and AI](npcs.md).
+`PlayerSpawnData`, `PlayerSpawnBehaviour`, and `PlayerSpawnFeatureType` are the example. NPCs and spawn zones are feature types too, with add-on components of their own: see [NPCs and AI](npcs.md). So are interact tiles: see [Interaction](interaction.md#authoring), which also covers the cutscene picker for `[SerializeReference] ICutscene` fields.
 
 ## The test world
 
@@ -342,7 +342,8 @@ For a feature that needs an ID, derive from `IdentifiedFeatureBehaviour` and `Id
   - In `TEST_b`, a guard looping the rectangle from (28,4) to (40,7), waiting half a second at two corners, and a wandering villager at (38,12) in the region (36,11) to (43,13).
   - In `TEST_c`, a wandering villager at (-12,7) in the region (-16,4) to (-8,9).
 - In `TEST_b`, a spawn zone from (41,1) to (45,9) keeping up to 4 wandering slimes, one every 3 seconds. It stops while you're in `TEST_c`.
-- Every feature has an ID: `TEST_player_spawn`, `TEST_a_spinner`, `TEST_a_wanderer`, `TEST_a_patroller`, `TEST_b_patroller`, `TEST_b_wanderer`, `TEST_b_slime_zone`, and `TEST_c_wanderer`.
+- In `TEST_a`, a greeter villager at (5,8), three tiles above the player spawn, and an interact tile on the bottom row of the wall block, (8,6) to (10,6). Press `Player/Interact` facing either; see [Interaction](interaction.md#test-content).
+- Every feature has an ID: `TEST_player_spawn`, `TEST_a_spinner`, `TEST_a_wanderer`, `TEST_a_patroller`, `TEST_a_greeter`, `TEST_a_dance_wall`, `TEST_b_patroller`, `TEST_b_wanderer`, `TEST_b_slime_zone`, and `TEST_c_wanderer`.
 
 Each asset gets its settings before it's first written, because values set after `CreateAsset` were sometimes lost when an asset was recreated at the same path. At the end, the tool checks that `TEST_WorldData` has its settings, its tile table, and all three areas, and logs an error instead of the success message if not.
 

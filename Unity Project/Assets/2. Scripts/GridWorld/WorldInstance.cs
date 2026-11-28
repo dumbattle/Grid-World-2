@@ -19,8 +19,9 @@ namespace GridWorld {
         // Tiles
         public readonly WorldTiles tiles = new WorldTiles();
         public readonly TileOccupancy occupancy = new TileOccupancy();
-        // Interactions that stay on their tile. Entity interactions are a component.
-        public readonly Dictionary<Vector2Int, ICutscene> tile2interaction = new Dictionary<Vector2Int, ICutscene>();
+
+        // Tile and entity interactions. Its entity store is in the components' cleanup registry.
+        public readonly WorldInteractions interactions;
 
         // Areas, with active flags updated once per tick after the phases
         public readonly WorldAreas areas = new WorldAreas();
@@ -56,6 +57,10 @@ namespace GridWorld {
         public readonly List<InteractAttempt> interactAttempts = new List<InteractAttempt>();
 
         Dictionary<Type, IWorldFunctionContext> type2context = new Dictionary<Type, IWorldFunctionContext>();
+
+        public WorldInstance() {
+            interactions = new WorldInteractions(components);
+        }
 
         public T GetContext<T>() where T : IWorldFunctionContext, new() {
             if (type2context.TryGetValue(typeof(T), out var existing)) {

@@ -238,7 +238,7 @@ namespace GridWorld.Tests {
             var world = Load(area);
 
             var id = world.occupancy.Get(new Vector2Int(1, 1));
-            Assert.AreSame(cutscene, world.components.interaction.Get(id));
+            Assert.AreSame(cutscene, world.interactions.entities.Get(id));
         }
 
         [Test]

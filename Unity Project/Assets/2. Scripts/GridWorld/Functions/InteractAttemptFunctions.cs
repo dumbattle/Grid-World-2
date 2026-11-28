@@ -15,7 +15,7 @@ namespace GridWorld {
 
         /// <summary>Clears last tick's attempts, once every reader has seen them.</summary>
         public static void ClearInteractAttempts<T>(this T ctx)
-                    where T : IWorldFunctionContext, IPerm_WriteInteractAttempts {
+                    where T : IWorldFunctionContext, IPerm_ClearInteractAttempts {
             ctx.data.interactAttempts.Clear();
         }
     }

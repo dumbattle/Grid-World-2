@@ -70,9 +70,11 @@ namespace GridWorld.Tests {
             var cutscene = new SerializableTestCutscene("sign");
             var world = Load(Area(new InteractTileData(new Vector2Int(1, 1), new Vector2Int(2, 1), cutscene)));
 
-            Assert.AreSame(cutscene, world.tile2interaction[new Vector2Int(101, 51)]);
-            Assert.AreSame(cutscene, world.tile2interaction[new Vector2Int(102, 51)]);
-            Assert.AreEqual(2, world.tile2interaction.Count);
+            Assert.IsTrue(world.interactions.TryGetTile(new Vector2Int(101, 51), out var left));
+            Assert.IsTrue(world.interactions.TryGetTile(new Vector2Int(102, 51), out var right));
+            Assert.AreSame(cutscene, left);
+            Assert.AreSame(cutscene, right);
+            Assert.AreEqual(2, world.interactions.tileCount);
         }
 
         [Test]

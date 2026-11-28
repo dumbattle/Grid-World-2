@@ -50,20 +50,26 @@ namespace GridWorld.Tests {
             return world.GetContext<CutsceneBuildContext>().TryGetEntity(featureId, out id);
         }
 
+        public bool TryAddTileInteractions(RectInt tiles, ICutscene cutscene, out Vector2Int clash) {
+            return world.GetContext<WorldSetupContext>().TryAddTileInteractions(tiles, cutscene, out clash);
+        }
+
+        /// <summary>For tests that expect the add to work.</summary>
         public void AddTileInteraction(Vector2Int tile, ICutscene cutscene) {
-            world.GetContext<WorldSetupContext>().AddTileInteraction(tile, cutscene);
+            if (!TryAddTileInteractions(new RectInt(tile, Vector2Int.one), cutscene, out _)) {
+                throw new InvalidOperationException($"Tile {tile} already has an interaction.");
+            }
         }
 
-        public void RemoveTileInteraction(Vector2Int tile) {
-            world.GetContext<WorldSetupContext>().RemoveTileInteraction(tile);
+        public bool TryAddEntityInteraction(EntityID id, ICutscene cutscene) {
+            return world.GetContext<WorldSetupContext>().TryAddEntityInteraction(id, cutscene);
         }
 
+        /// <summary>For tests that expect the add to work.</summary>
         public void AddEntityInteraction(EntityID id, ICutscene cutscene) {
-            world.GetContext<WorldSetupContext>().AddEntityInteraction(id, cutscene);
-        }
-
-        public void RemoveEntityInteraction(EntityID id) {
-            world.GetContext<WorldSetupContext>().RemoveEntityInteraction(id);
+            if (!TryAddEntityInteraction(id, cutscene)) {
+                throw new InvalidOperationException($"{id} already has an interaction.");
+            }
         }
 
         public bool TryGetInteractionAt(Vector2Int tile, out ICutscene cutscene) {

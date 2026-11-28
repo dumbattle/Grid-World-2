@@ -21,7 +21,9 @@ namespace GridWorld {
         }
 
         public override void Register(WorldSetupContext ctx, AreaDataSO area, EntityID id) {
-            ctx.AddEntityInteraction(id, interaction);
+            if (!ctx.TryAddEntityInteraction(id, interaction)) {
+                throw new InvalidOperationException($"Area '{area.areaId}' gives {id} a second interaction. An entity can have only one.");
+            }
         }
     }
 }

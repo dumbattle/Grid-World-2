@@ -177,37 +177,41 @@ namespace GridWorld.Tests {
         }
 
         [Test]
-        public void RemoveTileInteraction_Added_IsGone() {
-            test.AddTileInteraction(Vector2Int.one, new CountingCutscene());
+        public void TryAddTileInteractions_OneTileTaken_ReturnsTheClashAndAddsNothing() {
+            var first = new CountingCutscene();
+            test.AddTileInteraction(new Vector2Int(2, 1), first);
 
-            test.RemoveTileInteraction(Vector2Int.one);
+            bool added = test.TryAddTileInteractions(new RectInt(1, 1, 3, 1), new CountingCutscene(), out var clash);
 
-            Assert.IsFalse(test.TryGetInteractionAt(Vector2Int.one, out _));
+            Assert.IsFalse(added);
+            Assert.AreEqual(new Vector2Int(2, 1), clash);
+            Assert.IsFalse(test.TryGetInteractionAt(new Vector2Int(1, 1), out _));
+            Assert.IsFalse(test.TryGetInteractionAt(new Vector2Int(3, 1), out _));
+            Assert.IsTrue(test.TryGetInteractionAt(new Vector2Int(2, 1), out var kept));
+            Assert.AreSame(first, kept);
         }
 
         [Test]
-        public void RemoveEntityInteraction_Added_IsGone() {
+        public void TryAddTileInteractions_AllFree_AddsEveryTile() {
+            var cutscene = new CountingCutscene();
+
+            Assert.IsTrue(test.TryAddTileInteractions(new RectInt(1, 1, 2, 2), cutscene, out _));
+
+            Assert.AreEqual(4, test.world.interactions.tileCount);
+            Assert.IsTrue(test.TryGetInteractionAt(new Vector2Int(2, 2), out var found));
+            Assert.AreSame(cutscene, found);
+        }
+
+        [Test]
+        public void TryAddEntityInteraction_EntityAlreadyHasOne_ReturnsFalseAndKeepsTheFirst() {
             var npc = test.Spawn(Vector2Int.one, Direction4.down);
-            test.AddEntityInteraction(npc, new CountingCutscene());
+            var first = new CountingCutscene();
+            test.AddEntityInteraction(npc, first);
 
-            test.RemoveEntityInteraction(npc);
+            Assert.IsFalse(test.TryAddEntityInteraction(npc, new CountingCutscene()));
 
-            Assert.IsFalse(test.TryGetInteractionAt(Vector2Int.one, out _));
-        }
-
-        [Test]
-        public void AddTileInteraction_TileAlreadyHasOne_Throws() {
-            test.AddTileInteraction(Vector2Int.one, new CountingCutscene());
-
-            Assert.Throws<InvalidOperationException>(() => test.AddTileInteraction(Vector2Int.one, new CountingCutscene()));
-        }
-
-        [Test]
-        public void AddEntityInteraction_EntityAlreadyHasOne_Throws() {
-            var npc = test.Spawn(Vector2Int.one, Direction4.down);
-            test.AddEntityInteraction(npc, new CountingCutscene());
-
-            Assert.Throws<InvalidOperationException>(() => test.AddEntityInteraction(npc, new CountingCutscene()));
+            Assert.IsTrue(test.TryGetInteractionAt(Vector2Int.one, out var kept));
+            Assert.AreSame(first, kept);
         }
 
         // --- Starting the cutscene ---
@@ -279,7 +283,7 @@ namespace GridWorld.Tests {
             test.Tick();
 
             Assert.AreEqual(0, cutscene.builds);
-            Assert.AreEqual(0, test.world.components.interaction.count);
+            Assert.AreEqual(0, test.world.interactions.entities.count);
         }
 
         // --- Feature IDs ---

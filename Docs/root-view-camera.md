@@ -14,8 +14,9 @@ The framework's default root, and the only holder of `WorldInstance`. A game tha
 | `viewCamera` | The Unity camera to move |
 | `moveAction` | `Player/Move` from `InputSystem_Actions` |
 | `runAction` | `Player/Sprint` |
+| `interactAction` | `Player/Interact`. A press is buffered on `world.input` on the frame it happens |
 
-**Start:** logs an error and stops if the world data or its settings are missing. Otherwise it seeds the world's random generator and sets the view size from the settings, loads the world with `PlayerSpawnFeatureType`, `NpcFeatureType`, and `SpawnZoneFeatureType<SpawnZoneData>` registered, sets a `FollowCameraController` on the player, creates the view, camera view, and scene loader, runs area activation once, and ticks the view once so sprites exist on the first frame.
+**Start:** logs an error and stops if the world data or its settings are missing. Otherwise it seeds the world's random generator and sets the view size from the settings, loads the world with `PlayerSpawnFeatureType`, `NpcFeatureType`, `SpawnZoneFeatureType<SpawnZoneData>`, and `InteractTileFeatureType` registered, sets a `FollowCameraController` on the player, creates the view, camera view, and scene loader, runs area activation once, and ticks the view once so sprites exist on the first frame.
 
 **Each frame:**
 

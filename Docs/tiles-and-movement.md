@@ -36,7 +36,7 @@ The entity's tile is already `to` while a step runs. `BlendedPosition(alpha)` gi
 
 ## A tick
 
-`PhaseExecutionManager.Tick(world)` runs `SpawnSystem` (spawn), `CutsceneSystem` (cutscene), `PlayerInputSystem` and `AISystem` (decision), then `MovementSystem` (movement). Spawning goes first, so a new mob decides on the tick it appears, and a removed one is forgotten before anything else runs. It's described in [NPCs and AI](npcs.md#spawn-zones). Cutscenes run before the decision phase, so their locks hold on the tick they start; see [Cutscenes](cutscenes.md). The two decision systems write requests for different entities, so their order doesn't matter. `AISystem` is described in [NPCs and AI](npcs.md#runtime).
+`PhaseExecutionManager.Tick(world)` runs `SpawnSystem` (spawn), `InteractionSystem` then `CutsceneSystem` (cutscene), `PlayerInputSystem` and `AISystem` (decision), then `MovementSystem` (movement). Spawning goes first, so a new mob decides on the tick it appears, and a removed one is forgotten before anything else runs. It's described in [NPCs and AI](npcs.md#spawn-zones). Cutscenes run before the decision phase, so their locks hold on the tick they start; see [Cutscenes](cutscenes.md). `InteractionSystem` must run before `CutsceneSystem`, the one ordered pair within a phase, so an interaction's cutscene starts on the tick after the press's attempt; see [Interaction](interaction.md). The two decision systems write requests for different entities, so their order doesn't matter. `AISystem` is described in [NPCs and AI](npcs.md#runtime).
 
 ### Requests
 
@@ -57,13 +57,14 @@ An entity blocked by one that moves later in the sorted pass simply retries next
 
 ## Player input
 
-`PlayerInput` keeps the held directions in press order, so the most recently pressed one wins, plus `runHeld`. The root writes it each frame from the `Player/Move` and `Player/Sprint` actions: a stick counts as held past 0.5 on an axis.
+`PlayerInput` keeps the held directions in press order, so the most recently pressed one wins, plus `runHeld` and a buffered interact press. The root writes it each frame from the `Player/Move`, `Player/Sprint`, and `Player/Interact` actions: a stick counts as held past 0.5 on an axis. Held directions aren't buffered, but the interact press stays for `ButtonBufferTicks` (6) ticks or until it's used.
 
 `PlayerInputSystem` (with `PlayerControlState` for its hold timer):
 
 | Situation | Result |
 |---|---|
-| Locked by a cutscene | Reset the hold timer; no request |
+| Locked by a cutscene | Reset the hold timer and drop any interact press; no request |
+| Idle, interact press buffered | Record an interact attempt; no request, even with a direction held. See [Interaction](interaction.md#attempts) |
 | Nothing held | Reset the hold timer |
 | Idle, new direction, not facing it | Turn only, then walk once it's held for `TurnHoldTicks` (6) |
 | Idle, new direction, already facing it | Walk at once |

@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace GridWorld {
     /// <summary>
-    /// Adds a baked interact tile's interaction to each of its tiles. Every check runs before any
-    /// tile is added, so a failed one leaves nothing half registered.
+    /// Adds a baked interact tile's interaction to each of its tiles. The tiles are added together or
+    /// not at all, so a clash leaves nothing half registered.
     /// </summary>
     public class InteractTileFeatureType : WorldFeatureType<InteractTileData> {
         protected override void Register(WorldSetupContext ctx, AreaDataSO area, InteractTileData data) {
@@ -24,19 +24,10 @@ namespace GridWorld {
                 throw new InvalidOperationException($"{feature} that reaches outside the area's bounds {bounds}.");
             }
 
-            for (int y = tiles.yMin; y < tiles.yMax; y++) {
-                for (int x = tiles.xMin; x < tiles.xMax; x++) {
-                    var local = new Vector2Int(x, y);
-                    if (ctx.HasTileInteraction(area.ToWorldTile(local))) {
-                        throw new InvalidOperationException($"{feature} that covers {local}, which already has an interaction. A tile can have only one.");
-                    }
-                }
-            }
-
-            for (int y = tiles.yMin; y < tiles.yMax; y++) {
-                for (int x = tiles.xMin; x < tiles.xMax; x++) {
-                    ctx.AddTileInteraction(area.ToWorldTile(new Vector2Int(x, y)), data.cutscene);
-                }
+            var worldTiles = new RectInt(area.ToWorldTile(tiles.position), tiles.size);
+            if (!ctx.TryAddTileInteractions(worldTiles, data.cutscene, out var clash)) {
+                var local = clash - area.offset;
+                throw new InvalidOperationException($"{feature} that covers {local}, which already has an interaction. A tile can have only one.");
             }
         }
     }

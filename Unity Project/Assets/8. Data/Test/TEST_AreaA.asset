@@ -22,21 +22,23 @@ MonoBehaviour:
   worldOffset: {x: 0, y: 0}
   tiles: 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000000000000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000000000000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000000000000000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f000f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
   features:
-  - rid: 6223929116229369856
-  - rid: 6223929116229369857
-  - rid: 6223929116229369858
-  - rid: 6223929116229369859
+  - rid: 6223929146790117378
+  - rid: 6223929146790117379
+  - rid: 6223929146790117380
+  - rid: 6223929146790117381
+  - rid: 6223929146790117382
+  - rid: 6223929146790117383
   references:
     version: 2
     RefIds:
-    - rid: 6223929116229369856
+    - rid: 6223929146790117378
       type: {class: PlayerSpawnData, ns: GridWorld, asm: GridWorld}
       data:
         featureId: TEST_player_spawn
         entityDefinition: {fileID: 11400000, guid: b02cece9bf5965f41bf014e6561b3e58, type: 2}
         localTile: {x: 5, y: 5}
         facingDirection: 2
-    - rid: 6223929116229369857
+    - rid: 6223929146790117379
       type: {class: NpcData, ns: GridWorld, asm: GridWorld}
       data:
         featureId: TEST_a_spinner
@@ -44,8 +46,25 @@ MonoBehaviour:
         localTile: {x: 3, y: 10}
         facingDirection: 2
         addonRecords:
-        - rid: 6223929116229369860
-    - rid: 6223929116229369858
+        - rid: 6223929146790117384
+    - rid: 6223929146790117380
+      type: {class: NpcData, ns: GridWorld, asm: GridWorld}
+      data:
+        featureId: TEST_a_greeter
+        entityDefinition: {fileID: 11400000, guid: 605b28d3caf974444ba76054690db636, type: 2}
+        localTile: {x: 5, y: 8}
+        facingDirection: 2
+        addonRecords:
+        - rid: 6223929146790117385
+    - rid: 6223929146790117381
+      type: {class: InteractTileData, ns: GridWorld, asm: GridWorld}
+      data:
+        featureId: TEST_a_dance_wall
+        localTile: {x: 8, y: 6}
+        tileCount: {x: 3, y: 1}
+        interaction:
+          rid: 6223929146790117386
+    - rid: 6223929146790117382
       type: {class: NpcData, ns: GridWorld, asm: GridWorld}
       data:
         featureId: TEST_a_wanderer
@@ -53,8 +72,8 @@ MonoBehaviour:
         localTile: {x: 15, y: 4}
         facingDirection: 2
         addonRecords:
-        - rid: 6223929116229369861
-    - rid: 6223929116229369859
+        - rid: 6223929146790117387
+    - rid: 6223929146790117383
       type: {class: NpcData, ns: GridWorld, asm: GridWorld}
       data:
         featureId: TEST_a_patroller
@@ -62,14 +81,22 @@ MonoBehaviour:
         localTile: {x: 12, y: 12}
         facingDirection: 2
         addonRecords:
-        - rid: 6223929116229369862
-    - rid: 6223929116229369860
+        - rid: 6223929146790117388
+    - rid: 6223929146790117384
       type: {class: SpinAIData, ns: GridWorld, asm: GridWorld}
       data:
         pauseWhenAreaInactive: 1
         minWait: 60
         maxWait: 180
-    - rid: 6223929116229369861
+    - rid: 6223929146790117385
+      type: {class: NpcInteractData, ns: GridWorld, asm: GridWorld}
+      data:
+        interaction:
+          rid: 6223929146790117389
+    - rid: 6223929146790117386
+      type: {class: TestDanceCutscene, ns: Game, asm: Game}
+      data: 
+    - rid: 6223929146790117387
       type: {class: WanderAIData, ns: GridWorld, asm: GridWorld}
       data:
         pauseWhenAreaInactive: 1
@@ -80,7 +107,7 @@ MonoBehaviour:
           height: 5
         minWait: 30
         maxWait: 120
-    - rid: 6223929116229369862
+    - rid: 6223929146790117388
       type: {class: PatrolAIData, ns: GridWorld, asm: GridWorld}
       data:
         pauseWhenAreaInactive: 1
@@ -92,3 +119,7 @@ MonoBehaviour:
           facing: 1
           waitTicks: 60
         mode: 1
+    - rid: 6223929146790117389
+      type: {class: TestGreetCutscene, ns: Game, asm: Game}
+      data:
+        npcId: TEST_a_greeter

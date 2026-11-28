@@ -83,13 +83,17 @@ An entity that has just finished a step still decides, so a patrol walks consecu
 
 Randomness comes from `WorldInstance.random`, a `System.Random` seeded at startup from **Random Seed** on `WorldSettingsSO`. The same seed and inputs give the same run.
 
+### Feature IDs at runtime
+
+An NPC with an ID gets it through `SetFeatureId` at startup, so a cutscene can find it with `TryGetEntity(featureId, out id)`, under ReadEntities, ignoring case. A despawn removes the ID, and an NPC without one can't be found this way.
+
 ## Adding an AI profile
 
 1. An `EntityAI` subclass with its runtime state, whose `Decide(ctx, self)` calls `ctx.RequestMove`.
 2. A `[Serializable]` record deriving from `NpcAIData`, holding area-local settings, whose `CreateAI(area)` builds the AI with world tiles.
 3. An `NpcAIBehaviour` subclass whose `Bake(baker, localTile)` checks its settings and returns the record.
 
-Other add-ons, such as dialogue later, derive from `NpcAddonBehaviour` and `NpcAddonData` instead, and register their own components in `Register`. Any add-on that needs startup checks against tile data overrides `Validate`. `SpinAIBehaviour`, `SpinAIData`, and `SpinAI` are the simplest example.
+Other add-ons, such as the Interact add-on (`NpcInteractBehaviour`, described in [Interaction](interaction.md#authoring)), derive from `NpcAddonBehaviour` and `NpcAddonData` instead, and register their own components in `Register`. Any add-on that needs startup checks against tile data overrides `Validate`. `SpinAIBehaviour`, `SpinAIData`, and `SpinAI` are the simplest example.
 
 ## Spawn zones
 

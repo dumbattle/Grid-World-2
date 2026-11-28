@@ -17,8 +17,7 @@ namespace GridWorld {
         public readonly EntityComponent<EntityAI> ai = new EntityComponent<EntityAI>();
         // The cutscene lock. Decision systems skip entities that have it.
         public readonly EntityComponent<Marker> scripted = new EntityComponent<Marker>();
-        // What plays when the player interacts with the entity, wherever it stands.
-        public readonly EntityComponent<ICutscene> interaction = new EntityComponent<ICutscene>();
+        // Entity interactions are in WorldInteractions, next to tile interactions.
         // The baked feature ID, also indexed by WorldInstance.featureId2entity.
         public readonly EntityComponent<string> featureId = new EntityComponent<string>();
 
@@ -31,7 +30,6 @@ namespace GridWorld {
             AddStore(step);
             AddStore(ai);
             AddStore(scripted);
-            AddStore(interaction);
             AddStore(featureId);
         }
 

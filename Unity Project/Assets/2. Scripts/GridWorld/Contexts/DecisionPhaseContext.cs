@@ -4,5 +4,6 @@ namespace GridWorld {
                                       , IPerm_ReadTiles
                                       , IPerm_RequestMove
                                       , IPerm_PlayerControl
-                                      , IPerm_WriteInteractAttempts { }
+                                      , IPerm_WriteInteractAttempts
+                                      , IPerm_ClearInteractAttempts { }
 }
