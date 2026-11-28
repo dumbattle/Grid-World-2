@@ -229,6 +229,65 @@ namespace GridWorld.Tests {
         }
 
         [Test]
+        public void Load_InteractAddon_GivesTheNpcItsInteraction() {
+            var cutscene = new SerializableTestCutscene("talk");
+            var record = new NpcData(definition, new Vector2Int(1, 1), Direction4.Enum.down,
+                new List<NpcAddonData> { new NpcInteractData(cutscene) });
+            var area = assets.Area("meadow", new RectInt(0, 0, 4, 4), Vector2Int.zero, TileBits.EnterAll, record);
+
+            var world = Load(area);
+
+            var id = world.occupancy.Get(new Vector2Int(1, 1));
+            Assert.AreSame(cutscene, world.components.interaction.Get(id));
+        }
+
+        [Test]
+        public void Load_InteractAddonWithNoCutscene_ThrowsNamingArea() {
+            var record = new NpcData(definition, Vector2Int.zero, Direction4.Enum.down,
+                new List<NpcAddonData> { new NpcInteractData(null) });
+            var area = assets.Area("meadow", new RectInt(0, 0, 4, 4), Vector2Int.zero, TileBits.EnterAll, record);
+
+            AssertLoadThrows(area, "no cutscene");
+        }
+
+        [Test]
+        public void Load_NpcWithId_IsFoundByItsId() {
+            var npc = Npc(new Vector2Int(2, 1));
+            var properties = new SerializedObject(npc.GetComponent<NpcBehaviour>());
+            properties.FindProperty("id").stringValue = "TEST_Greeter";
+            properties.ApplyModifiedPropertiesWithoutUndo();
+            var area = assets.Area("meadow", new RectInt(0, 0, 4, 4), Vector2Int.zero, TileBits.EnterAll, Bake().ToArray());
+
+            var world = Load(area);
+
+            Assert.IsTrue(world.featureId2entity.TryGetValue("TEST_Greeter", out var id));
+            Assert.AreEqual(new Vector2Int(2, 1), world.components.tile.Get(id));
+        }
+
+        [Test]
+        public void Bake_InteractWithNoCutscene_LogsErrorAndAddsNothing() {
+            Npc(Vector2Int.zero).AddComponent<NpcInteractBehaviour>();
+
+            LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("no cutscene"));
+            CollectionAssert.IsEmpty(Bake());
+        }
+
+        [Test]
+        public void Bake_InteractWithCutscene_RecordHoldsACopy() {
+            var interact = Npc(Vector2Int.zero).AddComponent<NpcInteractBehaviour>();
+            var original = new SerializableTestCutscene("talk");
+            var properties = new SerializedObject(interact);
+            properties.FindProperty("cutscene").managedReferenceValue = original;
+            properties.ApplyModifiedPropertiesWithoutUndo();
+
+            var records = Bake();
+
+            var baked = (SerializableTestCutscene)((NpcInteractData)((NpcData)records[0]).addons[0]).cutscene;
+            Assert.AreNotSame(original, baked);
+            Assert.AreEqual("talk", baked.value);
+        }
+
+        [Test]
         public void Bake_NpcWithWander_AddsOneRecordWithItsAI() {
             SetRegion(Npc(new Vector2Int(3, 4)).AddComponent<WanderAIBehaviour>(), new RectInt(2, 3, 3, 3));
 

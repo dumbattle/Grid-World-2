@@ -42,6 +42,39 @@ namespace GridWorld.Tests {
             world.GetContext<WorldSetupContext>().AddAI(id, ai);
         }
 
+        public void SetFeatureId(EntityID id, string featureId) {
+            world.GetContext<WorldSetupContext>().SetFeatureId(id, featureId);
+        }
+
+        public bool TryGetEntity(string featureId, out EntityID id) {
+            return world.GetContext<CutsceneBuildContext>().TryGetEntity(featureId, out id);
+        }
+
+        public void AddTileInteraction(Vector2Int tile, ICutscene cutscene) {
+            world.GetContext<WorldSetupContext>().AddTileInteraction(tile, cutscene);
+        }
+
+        public void RemoveTileInteraction(Vector2Int tile) {
+            world.GetContext<WorldSetupContext>().RemoveTileInteraction(tile);
+        }
+
+        public void AddEntityInteraction(EntityID id, ICutscene cutscene) {
+            world.GetContext<WorldSetupContext>().AddEntityInteraction(id, cutscene);
+        }
+
+        public void RemoveEntityInteraction(EntityID id) {
+            world.GetContext<WorldSetupContext>().RemoveEntityInteraction(id);
+        }
+
+        public bool TryGetInteractionAt(Vector2Int tile, out ICutscene cutscene) {
+            return world.GetContext<InteractionContext>().TryGetInteractionAt(tile, out cutscene);
+        }
+
+        /// <summary>As the root does on a frame where interact was pressed.</summary>
+        public void PressInteract() {
+            world.input.PressInteract();
+        }
+
         public SpawnZone AddSpawnZone(SpawnZone zone) {
             world.GetContext<WorldSetupContext>().AddSpawnZone(zone);
             return zone;

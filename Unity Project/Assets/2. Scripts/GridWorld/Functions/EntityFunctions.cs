@@ -39,5 +39,19 @@ namespace GridWorld {
                     where T : IWorldFunctionContext, IPerm_ReadEntities {
             return ctx.data.components.scripted.Has(id);
         }
+
+        /// <summary>The entity baked with this feature ID, compared ignoring case. False once it's despawned.</summary>
+        public static bool TryGetEntity<T>(this T ctx, string featureId, out EntityID id)
+                    where T : IWorldFunctionContext, IPerm_ReadEntities {
+            if (string.IsNullOrEmpty(featureId)) {
+                id = EntityID.INVALID;
+                return false;
+            }
+            if (ctx.data.featureId2entity.TryGetValue(featureId, out id)) {
+                return true;
+            }
+            id = EntityID.INVALID;
+            return false;
+        }
     }
 }

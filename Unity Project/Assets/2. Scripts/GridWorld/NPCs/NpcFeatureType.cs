@@ -23,6 +23,9 @@ namespace GridWorld {
             CheckPlacement(ctx, area, data, npc);
 
             var id = ctx.SpawnEntity(data.definition, area.ToWorldTile(data.tile), facing);
+            if (data.id.Length > 0) {
+                ctx.SetFeatureId(id, data.id);
+            }
 
             for (int i = 0; i < data.addons.Count; i++) {
                 data.addons[i].Register(ctx, area, id);

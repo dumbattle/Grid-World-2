@@ -16,6 +16,7 @@ namespace GridWorld {
         [SerializeField] Camera viewCamera;
         [SerializeField] InputActionReference moveAction;
         [SerializeField] InputActionReference runAction;
+        [SerializeField] InputActionReference interactAction;
 
         // Protected so a test or game root that extends this one stays the trusted holder.
         protected WorldInstance world;
@@ -31,6 +32,7 @@ namespace GridWorld {
         protected virtual void OnEnable() {
             EnableAction(moveAction);
             EnableAction(runAction);
+            EnableAction(interactAction);
         }
 
         void Start() {
@@ -44,6 +46,7 @@ namespace GridWorld {
             catalogue.Register(new PlayerSpawnFeatureType());
             catalogue.Register(new NpcFeatureType());
             catalogue.Register(new SpawnZoneFeatureType<SpawnZoneData>());
+            catalogue.Register(new InteractTileFeatureType());
 
             var setup = instance.GetContext<WorldSetupContext>();
             setup.SeedRandom(worldData.settings.seed);
@@ -105,6 +108,11 @@ namespace GridWorld {
             input.SetDirectionHeld(Direction4.left, move.x < -DirectionThreshold);
             input.SetDirectionHeld(Direction4.right, move.x > DirectionThreshold);
             input.runHeld = runAction != null && runAction.action.IsPressed();
+
+            // Buffered in ticks, so a press on a frame that runs no ticks is still there for the next one.
+            if (interactAction != null && interactAction.action.WasPressedThisFrame()) {
+                input.PressInteract();
+            }
         }
 
         void UpdateActiveAreas() {

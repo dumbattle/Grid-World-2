@@ -7,5 +7,7 @@ namespace GridWorld {
                                    , IPerm_SetupWorld
                                    , IPerm_ReadEntities
                                    , IPerm_ReadTiles
-                                   , IPerm_SpawnEntities { }
+                                   , IPerm_SpawnEntities
+                                   , IPerm_ReadInteractions
+                                   , IPerm_EditInteractions { }
 }

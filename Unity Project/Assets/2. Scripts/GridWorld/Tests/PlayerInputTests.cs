@@ -40,5 +40,34 @@ namespace GridWorld.Tests {
 
             Assert.AreSame(Direction4.right, input.direction);
         }
+
+        [Test]
+        public void AgeButtons_PressAgedForTheBuffer_IsGone() {
+            var input = new PlayerInput();
+            input.PressInteract();
+
+            for (int i = 0; i < PlayerInput.ButtonBufferTicks - 1; i++) {
+                input.AgeButtons();
+            }
+            Assert.IsTrue(input.interactBuffered);
+
+            input.AgeButtons();
+            Assert.IsFalse(input.interactBuffered);
+        }
+
+        [Test]
+        public void PressInteract_AgainWhileBuffered_RestartsTheBuffer() {
+            var input = new PlayerInput();
+            input.PressInteract();
+            input.AgeButtons();
+            input.AgeButtons();
+
+            input.PressInteract();
+            for (int i = 0; i < PlayerInput.ButtonBufferTicks - 1; i++) {
+                input.AgeButtons();
+            }
+
+            Assert.IsTrue(input.interactBuffered);
+        }
     }
 }

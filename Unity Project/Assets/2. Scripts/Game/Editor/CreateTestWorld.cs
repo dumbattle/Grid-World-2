@@ -106,6 +106,10 @@ namespace Game {
             CreateAreaScene("TEST_a", "a", boundsA, dataA, world, groundTileA, wallTile, westWall: false, eastWall: false,
                 block: new RectInt(8, 6, 3, 3), player: player, addNpcs: root => {
                     AddSpinner(root, "TEST_a_spinner", villager, new Vector2Int(3, 10));
+                    // Three tiles above the spawn: walk up two and press interact.
+                    AddGreeter(root, "TEST_a_greeter", villager, new Vector2Int(spawnTile.x, spawnTile.y + 3));
+                    // The bottom row of the wall block: face it from below and press interact.
+                    AddInteractTile(root, "TEST_a_dance_wall", new Vector2Int(8, 6), new Vector2Int(3, 1), new TestDanceCutscene());
                     AddWanderer(root, "TEST_a_wanderer", villager, new Vector2Int(15, 4), new RectInt(12, 2, 7, 5));
                     AddPatroller(root, "TEST_a_patroller", guard, PatrolMode.PingPong,
                         new PatrolPointSettings(new Vector2Int(12, 12), Direction4.Enum.left, 60),
@@ -214,6 +218,25 @@ namespace Game {
             AddNpc(root, "TEST_Spinner", id, definition, tile).AddComponent<SpinAIBehaviour>();
         }
 
+        static void AddGreeter(Transform root, string id, EntityDefinitionSO definition, Vector2Int tile) {
+            var interact = AddNpc(root, "TEST_Greeter", id, definition, tile).AddComponent<NpcInteractBehaviour>();
+            var properties = new SerializedObject(interact);
+            properties.FindProperty("cutscene").managedReferenceValue = new TestGreetCutscene(id);
+            properties.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        static void AddInteractTile(Transform root, string id, Vector2Int tile, Vector2Int size, ICutscene cutscene) {
+            var tileObject = new GameObject("TEST_Interact Tile");
+            tileObject.transform.SetParent(root, false);
+            tileObject.transform.position = new Vector3(tile.x + 0.5f, tile.y + 0.5f);
+
+            var properties = new SerializedObject(tileObject.AddComponent<InteractTileBehaviour>());
+            properties.FindProperty("id").stringValue = id;
+            properties.FindProperty("size").vector2IntValue = size;
+            properties.FindProperty("cutscene").managedReferenceValue = cutscene;
+            properties.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         static void AddWanderer(Transform root, string id, EntityDefinitionSO definition, Vector2Int tile, RectInt region) {
             var wander = AddNpc(root, "TEST_Wanderer", id, definition, tile).AddComponent<WanderAIBehaviour>();
             var properties = new SerializedObject(wander);
@@ -312,6 +335,7 @@ namespace Game {
             rootProperties.FindProperty("viewCamera").objectReferenceValue = camera;
             rootProperties.FindProperty("moveAction").objectReferenceValue = FindAction("Move");
             rootProperties.FindProperty("runAction").objectReferenceValue = FindAction("Sprint");
+            rootProperties.FindProperty("interactAction").objectReferenceValue = FindAction("Interact");
             rootProperties.FindProperty("despawnAction").objectReferenceValue = FindAction("Attack");
             rootProperties.FindProperty("cutsceneAction").objectReferenceValue = FindAction("Jump");
             rootProperties.ApplyModifiedPropertiesWithoutUndo();

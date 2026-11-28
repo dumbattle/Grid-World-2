@@ -13,10 +13,14 @@ namespace GridWorld {
         public readonly EntityIDManager entityIds = new EntityIDManager();
         public readonly EntityComponentManager components = new EntityComponentManager();
         public EntityID player = EntityID.INVALID;
+        // Baked entities that have a feature ID, compared ignoring case. A despawn removes its entry.
+        public readonly Dictionary<string, EntityID> featureId2entity = new Dictionary<string, EntityID>(StringComparer.OrdinalIgnoreCase);
 
         // Tiles
         public readonly WorldTiles tiles = new WorldTiles();
         public readonly TileOccupancy occupancy = new TileOccupancy();
+        // Interactions that stay on their tile. Entity interactions are a component.
+        public readonly Dictionary<Vector2Int, ICutscene> tile2interaction = new Dictionary<Vector2Int, ICutscene>();
 
         // Areas, with active flags updated once per tick after the phases
         public readonly WorldAreas areas = new WorldAreas();
@@ -46,6 +50,10 @@ namespace GridWorld {
         public readonly Dictionary<EntityID, MoveRequest> id2moveRequest = new Dictionary<EntityID, MoveRequest>();
         // Anyone -> Cutscene phase. Started in order, and a request whose entities are locked is dropped.
         public readonly List<ICutscene> cutsceneRequests = new List<ICutscene>();
+
+        // Hooks: written in one tick, read in the next tick's cutscene phase
+        // Decision -> Cutscene phase. The player input system clears and refills it each tick.
+        public readonly List<InteractAttempt> interactAttempts = new List<InteractAttempt>();
 
         Dictionary<Type, IWorldFunctionContext> type2context = new Dictionary<Type, IWorldFunctionContext>();
 

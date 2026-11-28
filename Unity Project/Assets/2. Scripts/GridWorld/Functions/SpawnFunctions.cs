@@ -45,6 +45,26 @@ namespace GridWorld {
             components.Register(components.ai, id, ai);
         }
 
+        /// <summary>Lets cutscenes and saves find the entity by its baked feature ID, compared ignoring case.</summary>
+        public static void SetFeatureId<T>(this T ctx, EntityID id, string featureId)
+                    where T : IWorldFunctionContext, IPerm_SpawnEntities {
+            if (string.IsNullOrEmpty(featureId)) {
+                throw new ArgumentException("A feature ID can't be empty.", nameof(featureId));
+            }
+            var data = ctx.data;
+            if (!data.entityIds.Exists(id)) {
+                throw new InvalidOperationException($"Can't give {id} the feature ID '{featureId}': it doesn't exist.");
+            }
+            if (data.components.featureId.Has(id)) {
+                throw new InvalidOperationException($"{id} already has a feature ID.");
+            }
+            if (data.featureId2entity.TryGetValue(featureId, out var existing)) {
+                throw new InvalidOperationException($"Feature ID '{featureId}' already belongs to {existing}.");
+            }
+            data.components.Register(data.components.featureId, id, featureId);
+            data.featureId2entity.Add(featureId, id);
+        }
+
         public static IReadOnlyList<SpawnZone> GetSpawnZones<T>(this T ctx)
                     where T : IWorldFunctionContext, IPerm_SpawnEntities {
             return ctx.data.spawnZones;
@@ -67,6 +87,9 @@ namespace GridWorld {
             // A moving entity has already claimed its target, which is its tile.
             if (data.components.tile.TryGet(id, out var tile)) {
                 data.occupancy.Release(tile, id);
+            }
+            if (data.components.featureId.TryGet(id, out var featureId)) {
+                data.featureId2entity.Remove(featureId);
             }
             data.components.RemoveAll(id);
             data.id2moveRequest.Remove(id);
