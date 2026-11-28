@@ -125,7 +125,7 @@ namespace GridWorld.Tests {
 
         [Test]
         public void Tick_PressWhileLocked_IsDropped() {
-            test.StartCutscene(new LambdaCutscene((ctx, b) => {
+            test.RequestCutscene(new LambdaCutscene((ctx, b) => {
                 b.Lock(player);
                 b.Wait(3);
             }));
@@ -260,7 +260,7 @@ namespace GridWorld.Tests {
                 b.Lock(npc);
                 b.Wait(20);
             });
-            test.StartCutscene(busy);
+            test.RequestCutscene(busy);
             test.PressInteract();
             test.Tick();
 

@@ -62,7 +62,7 @@ namespace Game {
         static void StartFacedCutscene(TestDebugContext ctx) {
             var id = GetFacedEntity(ctx, out _);
             if (id.IsValid()) {
-                ctx.StartCutscene(new TestFaceAndBackAwayCutscene(ctx.GetPlayer(), id));
+                ctx.RequestCutscene(new TestFaceAndBackAwayCutscene(ctx.GetPlayer(), id));
             }
         }
 

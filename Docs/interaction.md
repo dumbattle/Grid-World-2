@@ -41,7 +41,7 @@ The adds return false instead of throwing, because the caller can't check first.
 
 ## `InteractionSystem`
 
-Runs in the cutscene phase with an `InteractionContext` (ReadInteractAttempts, ReadInteractions, StartCutscenes), before `CutsceneSystem`. That's the one ordered pair within a phase, so a press's cutscene starts on the tick after the attempt. For each attempt it calls `TryGetInteractionAt(attempt.tile)` and starts the cutscene it finds.
+Runs in the cutscene phase with an `InteractionContext` (ReadInteractAttempts, ReadInteractions, RequestCutscenes), before `CutsceneSystem`. That's the one ordered pair within a phase, so a press's cutscene starts on the tick after the attempt. For each attempt it calls `TryGetInteractionAt(attempt.tile)` and starts the cutscene it finds.
 
 `CutsceneSystem` drops the cutscene with a log if one of its entities is locked, such as an NPC already in another cutscene. If the target is despawned between the attempt and the cutscene phase, occupancy no longer finds it, so nothing starts.
 

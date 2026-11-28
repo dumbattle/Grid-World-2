@@ -16,14 +16,14 @@ public interface ICutscene {
 
 - **Fields hold its settings,** such as the entities it acts on. There are no parameters: whoever creates the cutscene gives it what it needs. The same instance can be started many times, so it must not change while running. Anything that changes belongs in its sequences.
 - **`CutsceneBuildContext`** can only read (ReadEntities, ReadTiles), so a build function describes what happens but can't act. Its steps do the writing.
-- **Starting:** anything with StartCutscenes calls `StartCutscene(cutscene)`, which queues it on `cutsceneRequests`. A null cutscene throws.
+- **Requesting:** anything with RequestCutscenes calls `RequestCutscene(cutscene)`, which queues it on `cutsceneRequests`. A null cutscene throws.
 - **Building:** in the next cutscene phase, `CutsceneSystem` calls `Build` with a fresh `CutsceneBuilder`, so every start gets new sequences built from the state at that moment.
 
 Logs name a cutscene by its type name.
 
 ## `CutsceneSystem`
 
-Runs between Spawn and Decision with a `CutsceneContext` (ReadEntities, ReadTiles, RequestMove, RunCutscenes, Teleport), which its steps use, and the `CutsceneBuildContext` for building. Each tick:
+Runs between Spawn and Decision with a `CutsceneSystemContext` (ReadEntities, RunCutscenes). It doesn't act on the world itself. It hands the steps a `CutsceneContext` (ReadEntities, ReadTiles, RequestMove, Teleport) from `GetStepContext()`, and the build functions the `CutsceneBuildContext` from `GetBuildContext()`. Both are under RunCutscenes, so that permission grants everything the two contexts allow. Each tick:
 
 1. **Starts requests in order.** A request is dropped if:
    - `Build` throws (an error)

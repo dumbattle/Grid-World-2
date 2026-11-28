@@ -8,12 +8,24 @@ namespace GridWorld {
         /// Queues a cutscene to be built and started in the next cutscene phase, which is this tick's
         /// if it hasn't run yet. It's dropped then if one of its entities is locked.
         /// </summary>
-        public static void StartCutscene<T>(this T ctx, ICutscene cutscene)
-                    where T : IWorldFunctionContext, IPerm_StartCutscenes {
+        public static void RequestCutscene<T>(this T ctx, ICutscene cutscene)
+                    where T : IWorldFunctionContext, IPerm_RequestCutscenes {
             if (cutscene == null) {
                 throw new ArgumentNullException(nameof(cutscene));
             }
             ctx.data.cutsceneRequests.Add(cutscene);
+        }
+
+        /// <summary>The context cutscene steps act through. Only for passing to the steps.</summary>
+        public static CutsceneContext GetStepContext<T>(this T ctx)
+                    where T : IWorldFunctionContext, IPerm_RunCutscenes {
+            return ctx.data.GetContext<CutsceneContext>();
+        }
+
+        /// <summary>The read-only context cutscenes are built with. Only for passing to build functions.</summary>
+        public static CutsceneBuildContext GetBuildContext<T>(this T ctx)
+                    where T : IWorldFunctionContext, IPerm_RunCutscenes {
+            return ctx.data.GetContext<CutsceneBuildContext>();
         }
 
         /// <summary>Moves every queued request into <paramref name="into"/>, in order, and clears the queue.</summary>

@@ -11,8 +11,8 @@ namespace GridWorld.Tests {
         class DespawnContext : WorldFunctionContext
                              , IPerm_DespawnEntities { }
 
-        class StartCutsceneContext : WorldFunctionContext
-                                   , IPerm_StartCutscenes { }
+        class RequestCutsceneContext : WorldFunctionContext
+                                   , IPerm_RequestCutscenes { }
 
         public static readonly RectInt AreaBounds = new RectInt(-8, -8, 16, 16);
 
@@ -109,8 +109,8 @@ namespace GridWorld.Tests {
         }
 
         /// <summary>Queues a cutscene, which starts on the next tick.</summary>
-        public void StartCutscene(ICutscene cutscene) {
-            world.GetContext<StartCutsceneContext>().StartCutscene(cutscene);
+        public void RequestCutscene(ICutscene cutscene) {
+            world.GetContext<RequestCutsceneContext>().RequestCutscene(cutscene);
         }
 
         public bool IsLocked(EntityID id) {

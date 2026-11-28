@@ -15,8 +15,7 @@ namespace GridWorld {
         public void Tick(WorldInstance world) {
             var spawnPhase = world.GetContext<SpawnContext>();
             var interactionPhase = world.GetContext<InteractionContext>();
-            var cutscenePhase = world.GetContext<CutsceneContext>();
-            var cutsceneBuild = world.GetContext<CutsceneBuildContext>();
+            var cutscenePhase = world.GetContext<CutsceneSystemContext>();
             var decision = world.GetContext<DecisionPhaseContext>();
             var aiDecision = world.GetContext<AIContext>();
             var movementPhase = world.GetContext<MovementPhaseContext>();
@@ -32,7 +31,7 @@ namespace GridWorld {
 
             // Before the decision phase, so a cutscene's locks hold on the tick it starts, and a
             // finished cutscene's entities can decide on the tick it ends.
-            cutscenes.Run(cutscenePhase, cutsceneBuild);
+            cutscenes.Run(cutscenePhase);
 
             // Both decision systems write requests for different entities, so their order doesn't matter.
             playerInput.Run(decision);

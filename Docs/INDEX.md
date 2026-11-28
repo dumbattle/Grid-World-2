@@ -21,7 +21,7 @@ Design rules are in [architecture.md](../.claude/rules/architecture.md). The doc
 | Movement and phases | [tiles-and-movement.md](tiles-and-movement.md#a-tick) | `PhaseExecutionManager`, `MovementSystem`, `Step`, `MoveRequest` |
 | NPCs and AI | [npcs.md](npcs.md) | `NpcBehaviour`, `NpcAddonBehaviour`, `NpcFeatureType`, `EntityAI`, `AISystem`, `SpinAI`, `WanderAI`, `PatrolAI`, `TileSpace`, `TileSpaces`, `RegionSpaceInspector` |
 | Spawn zones | [npcs.md](npcs.md#spawn-zones) | `SpawnZoneBehaviour`, `SpawnAIBehaviour`, `SpawnZoneData`, `SpawnZoneFeatureType<TData>`, `SpawnZone`, `SpawnSystem`, `SpawnContext` |
-| Cutscenes | [cutscenes.md](cutscenes.md) | `ICutscene`, `CutsceneBuilder`, `CutsceneSystem`, `CutsceneContext`, `CutsceneBuildContext`, `WalkStepsSequence`, `TeleportFunctions` |
+| Cutscenes | [cutscenes.md](cutscenes.md) | `ICutscene`, `CutsceneBuilder`, `CutsceneSystem`, `CutsceneSystemContext`, `CutsceneContext`, `CutsceneBuildContext`, `WalkStepsSequence`, `TeleportFunctions` |
 | Interaction | [interaction.md](interaction.md) | `WorldInteractions`, `InteractionSystem`, `InteractAttempt`, `InteractTileBehaviour`, `NpcInteractBehaviour`, `CutscenePickerAttribute` |
 | Player input | [tiles-and-movement.md](tiles-and-movement.md#player-input) | `PlayerInputSystem`, `PlayerInput`, `PlayerControlState` |
 | Root and tick loop | [root-view-camera.md](root-view-camera.md#worldrootbehaviour) | `WorldRootBehaviour`, `TickClock`, `TestWorldRootBehaviour` (Game) |

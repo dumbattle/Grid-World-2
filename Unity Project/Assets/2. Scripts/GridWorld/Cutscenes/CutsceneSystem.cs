@@ -11,11 +11,14 @@ namespace GridWorld {
     public class CutsceneSystem {
         List<ICutscene> requests = new List<ICutscene>();
 
-        public void Run(CutsceneContext ctx, CutsceneBuildContext buildCtx) {
+        public void Run(CutsceneSystemContext ctx) {
+            var stepCtx = ctx.GetStepContext();
+            var buildCtx = ctx.GetBuildContext();
+
             requests.Clear();
             ctx.TakeCutsceneRequests(requests);
             for (int i = 0; i < requests.Count; i++) {
-                Start(ctx, buildCtx, requests[i]);
+                Start(ctx, stepCtx, buildCtx, requests[i]);
             }
             requests.Clear();
 
@@ -30,9 +33,9 @@ namespace GridWorld {
             }
         }
 
-        void Start(CutsceneContext ctx, CutsceneBuildContext buildCtx, ICutscene request) {
+        void Start(CutsceneSystemContext ctx, CutsceneContext stepCtx, CutsceneBuildContext buildCtx, ICutscene request) {
             var cutscene = new RunningCutscene(request);
-            var builder = new CutsceneBuilder(ctx, buildCtx, cutscene);
+            var builder = new CutsceneBuilder(stepCtx, buildCtx, cutscene);
             try {
                 request.Build(buildCtx, builder);
             }

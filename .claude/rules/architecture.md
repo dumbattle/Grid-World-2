@@ -126,6 +126,7 @@ The goal is a base that other games can be built on, so these rules favor a clea
 - Helpers with no gameplay effect, such as random draws, are constrained only on `IWorldFunctionContext` and need no permission.
 - Never cast a context to `IWorldFunctionContext`.
 - Code outside the tick, such as menus, is plain code and doesn't use contexts.
+- A context can hand out other contexts only through a function under one of its own permissions, and only to pass them to the code it drives, such as `CutsceneSystem` giving its steps their context. It never calls the other context's operations itself. Holding such a permission grants everything the handed-out contexts allow, so its doc comment says so.
 
 ## Phases
 
@@ -241,7 +242,7 @@ Each tick: Spawn → Cutscene → Decision → Movement, then UI and render outs
 - Dialogue is a type of cutscene. Talking to an NPC plays a small cutscene, and the cutscene context exposes `PlayDialogue(...)` or similar.
 - Cutscenes are LPE sequences, advanced once per tick in the cutscene phase, and they use the cutscene context to modify the world.
 - Cutscenes are hard-coded, because most are one-offs. Each is a class implementing `ICutscene`, whose `Build(ctx, b)` adds its steps. It takes no parameters: its fields hold whatever it needs, such as entity or feature IDs, and they're fixed settings, never run state. There's no visual editor or data format for cutscenes.
-- `StartCutscene(cutscene)` is the only way to start one. Requesters never hold a builder: the cutscene system builds it in the cutscene phase with a read-only build context, so building can describe actions but not take them.
+- `RequestCutscene(cutscene)` is the only way to start one. Requesters never hold a builder: the cutscene system builds it in the cutscene phase with a read-only build context, so building can describe actions but not take them.
 - There's no cutscene catalogue or string IDs. Baked content, such as NPC add-ons, triggers, and props, holds its `ICutscene` with `[SerializeReference]`, so the class can live in the game's assembly. A record whose class is missing is a startup error naming the area.
 - Common cutscenes, such as door transitions and ledge hops, belong to their own systems, which create their `ICutscene` directly. Simple NPC talk and signs belong to a talk system, which plays the text in an NPC's `dialogue` component or on a prop.
 - `CutsceneBuilder` is a thin layer over LPE sequences, with linear and parallel blocks. Instant steps run with no gap between them. A game adds steps as extension methods, or passes any `ISequence`.

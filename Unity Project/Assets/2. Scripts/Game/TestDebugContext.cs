@@ -5,5 +5,5 @@ namespace Game {
                                   , IPerm_ReadEntities
                                   , IPerm_ReadTiles
                                   , IPerm_DespawnEntities
-                                  , IPerm_StartCutscenes { }
+                                  , IPerm_RequestCutscenes { }
 }

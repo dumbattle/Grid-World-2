@@ -9,7 +9,7 @@ namespace GridWorld {
             var attempts = ctx.GetInteractAttempts();
             for (int i = 0; i < attempts.Count; i++) {
                 if (ctx.TryGetInteractionAt(attempts[i].tile, out var cutscene)) {
-                    ctx.StartCutscene(cutscene);
+                    ctx.RequestCutscene(cutscene);
                 }
             }
         }

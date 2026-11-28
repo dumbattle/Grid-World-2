@@ -36,7 +36,7 @@ namespace GridWorld.Tests {
 
         LambdaCutscene Play(Action<CutsceneBuildContext, CutsceneBuilder> build) {
             var cutscene = new LambdaCutscene(build);
-            test.StartCutscene(cutscene);
+            test.RequestCutscene(cutscene);
             return cutscene;
         }
 
@@ -79,8 +79,8 @@ namespace GridWorld.Tests {
         }
 
         [Test]
-        public void StartCutscene_Null_Throws() {
-            Assert.Throws<ArgumentNullException>(() => test.StartCutscene(null));
+        public void RequestCutscene_Null_Throws() {
+            Assert.Throws<ArgumentNullException>(() => test.RequestCutscene(null));
         }
 
         [Test]
@@ -93,7 +93,7 @@ namespace GridWorld.Tests {
             });
             test.Tick(17);
 
-            test.StartCutscene(cutscene);
+            test.RequestCutscene(cutscene);
             test.Tick(17);
 
             CollectionAssert.AreEqual(new[] { Vector2Int.zero, Vector2Int.right }, builtFrom);
@@ -338,6 +338,16 @@ namespace GridWorld.Tests {
             Assert.AreEqual(Direction4.up, test.FacingOf(other));
             Assert.AreEqual(0, test.world.runningCutscenes.Count);
             Assert.IsFalse(test.IsLocked(other));
+        }
+
+        // --- Contexts ---
+
+        [Test]
+        public void GetStepContext_FromSystemContext_ReturnsCachedStepContext() {
+            var systemCtx = test.world.GetContext<CutsceneSystemContext>();
+
+            Assert.AreSame(test.world.GetContext<CutsceneContext>(), systemCtx.GetStepContext());
+            Assert.AreSame(test.world.GetContext<CutsceneBuildContext>(), systemCtx.GetBuildContext());
         }
     }
 }

@@ -22,7 +22,7 @@ Owns all overworld state as public fields. Only the root holds it.
 | `playerControl` | The player's hold timer | Decision phase |
 | `id2moveRequest` | Move requests, Decision → Movement. Cutscenes write them too | Cutscene and decision phases |
 | `runningCutscenes` | Each running cutscene, in start order | Cutscene phase |
-| `cutsceneRequests` | Queued `ICutscene`s to build and start, Anyone → Cutscene | Anything with StartCutscenes |
+| `cutsceneRequests` | Queued `ICutscene`s to build and start, Anyone → Cutscene | Anything with RequestCutscenes |
 | `interactions` | A `WorldInteractions`: the entity interaction store and the `tile2interaction` map. See [Interaction](interaction.md) | Startup |
 | `interactAttempts` | The player's interact attempts, Decision → next tick's Cutscene | Decision phase |
 | `featureId2entity` | Baked entities by feature ID, ignoring case | Startup, despawn |
@@ -35,10 +35,11 @@ A system gets a context from `world.GetContext<T>()`, which creates it once and 
 |---|---|---|
 | `WorldSetupContext` | SetupWorld, ReadEntities, ReadTiles, SpawnEntities | World startup and feature types |
 | `DecisionPhaseContext` | ReadEntities, ReadTiles, RequestMove, PlayerControl, WriteInteractAttempts, ClearInteractAttempts | `PlayerInputSystem` |
-| `InteractionContext` | ReadInteractAttempts, ReadInteractions, StartCutscenes | `InteractionSystem` |
+| `InteractionContext` | ReadInteractAttempts, ReadInteractions, RequestCutscenes | `InteractionSystem` |
 | `SpawnContext` | ReadTiles, ReadEntities, ReadAreas, ReadCamera, SpawnEntities | `SpawnSystem` and every `SpawnZone` |
 | `AIContext` | ReadTiles, ReadEntities, ReadAreas, RequestMove | `AISystem` and every `EntityAI` |
-| `CutsceneContext` | ReadEntities, ReadTiles, RequestMove, RunCutscenes, Teleport | `CutsceneSystem`, `CutsceneBuilder`, and every cutscene step |
+| `CutsceneSystemContext` | ReadEntities, RunCutscenes | `CutsceneSystem`. It hands out the other two cutscene contexts |
+| `CutsceneContext` | ReadEntities, ReadTiles, RequestMove, Teleport | `CutsceneBuilder` and every cutscene step |
 | `CutsceneBuildContext` | ReadEntities, ReadTiles | `ICutscene.Build` and `Extend` functions |
 | `MovementPhaseContext` | ReadTiles, ReadEntities, ReadDefinitions, ResolveMovement | `MovementSystem` |
 | `AreaActivationContext` | ReadAreas, UpdateAreas | `AreaActivationSystem` |
